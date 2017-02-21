@@ -7,13 +7,13 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class MyGitServer {
-	static boolean checkParams(String[] args) {
+	
+	private static boolean checkParams(String[] args) {
 		return (args.length == 1) ? true : false;
 	}
 
 	public static void main(String[] args) {
 		System.out.println("MyGitServer is Running:");
-
 		MyGitServer myGitServer = new MyGitServer();
 		myGitServer.startServer(args);
 	}
