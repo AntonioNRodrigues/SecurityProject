@@ -47,7 +47,7 @@ public class MyGitServer {
 
 		ServerThread(Socket inSoc) {
 			socket = inSoc;
-			System.out.println("thread do server para cada cliente");
+			System.out.println("server thread to each client");
 		}
 
 		public void run() {

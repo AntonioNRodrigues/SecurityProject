@@ -13,6 +13,7 @@ public class RemoteRepository {
 	private Timestamp timestamp;
 	private String nameRepo;
 	private Map<String, Set<Ficheiro>> mapFiles;
+	
 	public User getOnwer() {
 		return onwer;
 	}
