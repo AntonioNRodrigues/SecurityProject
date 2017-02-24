@@ -44,4 +44,9 @@ public class MessageRS extends Message implements Serializable {
 		this.typeOperation = typeOperation;
 	}
 
+	@Override
+	public String toString() {
+		return "MessageRS [typeOperation=" + typeOperation + ", repoName=" + repoName + ", userId=" + userId + "]";
+	}
+	
 }

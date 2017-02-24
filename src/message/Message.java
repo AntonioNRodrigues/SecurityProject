@@ -41,4 +41,9 @@ public class Message implements Serializable{
 		this.password = password;
 	}
 
+	@Override
+	public String toString() {
+		return "Message [localUser=" + localUser + ", serverAdress=" + serverAdress + ", password=" + password + "]";
+	}
+	
 }

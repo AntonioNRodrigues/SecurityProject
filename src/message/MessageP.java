@@ -44,4 +44,9 @@ public class MessageP extends Message implements Serializable {
 		this.operation = operation;
 	}
 
+	@Override
+	public String toString() {
+		return "MessageP [User "+this.getLocalUser() +"operation=" + operation + ", typeSend=" + typeSend + ", name=" + name + "]";
+	}
+	
 }
