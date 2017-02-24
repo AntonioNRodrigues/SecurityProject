@@ -6,6 +6,8 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import message.Message;
+
 public class MyGitServer {
 	
 	private static boolean checkParams(String[] args) {
@@ -54,6 +56,19 @@ public class MyGitServer {
 			try {
 				ObjectOutputStream outStream = new ObjectOutputStream(socket.getOutputStream());
 				ObjectInputStream inStream = new ObjectInputStream(socket.getInputStream());
+				
+				ServerSkell  sk = new ServerSkell(outStream, inStream);
+				
+				//receive message
+				try {
+					sk.receiveMsg((Message)inStream.readObject());
+					sk.receiveMsg((Message)inStream.readObject());
+					sk.receiveMsg((Message)inStream.readObject());
+				} catch (ClassNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
 				/*
 				 * String user = null; String passwd = null;
 				 * 
