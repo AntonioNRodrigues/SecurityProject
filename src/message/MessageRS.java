@@ -5,16 +5,17 @@ import java.io.Serializable;
 import enums.TypeOperation;
 import user.User;
 
-public class MessageRS extends Message implements Serializable{
-	
+public class MessageRS extends Message implements Serializable {
+
 	private static final long serialVersionUID = 1L;
 	private TypeOperation typeOperation;
 	private String repoName;
-	private User userId;
-	
-	public MessageRS(User localUser, String serverAdress, String password, String repoName, User userid, String typeOpe) {
+	private String userId;
+
+	public MessageRS(User localUser, String serverAdress, String password, String repoName, String userid,
+			TypeOperation typeOpe) {
 		super(localUser, serverAdress, password);
-		this.setTypeOperation(enums.TypeOperation.valueOf(typeOpe));
+		this.typeOperation = typeOpe;
 		this.repoName = repoName;
 		this.userId = userid;
 	}
@@ -27,11 +28,11 @@ public class MessageRS extends Message implements Serializable{
 		this.repoName = repoName;
 	}
 
-	public User getUserId() {
+	public String getUserId() {
 		return userId;
 	}
 
-	public void setUserId(User userId) {
+	public void setUserId(String userId) {
 		this.userId = userId;
 	}
 
@@ -42,6 +43,5 @@ public class MessageRS extends Message implements Serializable{
 	public void setTypeOperation(TypeOperation typeOperation) {
 		this.typeOperation = typeOperation;
 	}
-	
 
 }

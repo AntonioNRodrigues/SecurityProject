@@ -6,17 +6,18 @@ import enums.TypeOperation;
 import enums.TypeSend;
 import user.User;
 
-public class MessageP extends Message implements Serializable{
+public class MessageP extends Message implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private TypeOperation operation;
 	private TypeSend typeSend;
 	private String name;
 
-	public MessageP(String operation, User localUser, String serverAdress, String password, String typeSend, String name) {
+	public MessageP(User localUser, String serverAdress, String password, TypeSend typeSend, String name,
+			TypeOperation operation) {
 		super(localUser, serverAdress, password);
 		this.name = name;
-		this.operation = TypeOperation.valueOf(operation);
-		this.typeSend = TypeSend.valueOf(typeSend);
+		this.operation = operation;
+		this.typeSend = typeSend;
 	}
 
 	public TypeSend getTypeSend() {
@@ -43,6 +44,4 @@ public class MessageP extends Message implements Serializable{
 		this.operation = operation;
 	}
 
-	
-	
 }
