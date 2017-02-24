@@ -38,14 +38,7 @@ public class MessageFactory {
 	}
 
 	private TypeSend typeSend(String typeSend) {
-		TypeSend tSend = null;
-		if (typeSend.equals(TypeSend.FILE)) {
-			tSend = TypeSend.FILE;
-		} else if (typeSend.equals(TypeSend.REPOSITORY)) {
-			tSend = TypeSend.REPOSITORY;
-		}
-		
-		return tSend;
+		return (typeSend.equals(TypeSend.FILE)) ? TypeSend.FILE : TypeSend.REPOSITORY;
 	}
 
 }
