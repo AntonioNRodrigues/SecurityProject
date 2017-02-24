@@ -2,10 +2,10 @@ package files;
 
 import java.sql.Timestamp;
 
-import repository.Repository;
+import server.repository.RemoteRepository;
 
 public class Ficheiro {
 	private String nameFile;
 	private Timestamp timestamp;
-	private Repository repository;
+	private RemoteRepository repository;
 }

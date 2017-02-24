@@ -1,4 +1,4 @@
-package users;
+package user;
 
 public class User {
 	private String name;
