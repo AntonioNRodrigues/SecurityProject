@@ -5,11 +5,14 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import message.Message;
 
 public class MyGitServer {
-	
+	private static final int MAX_THREADS = 5;
+
 	private static boolean checkParams(String[] args) {
 		return (args.length == 1) ? true : false;
 	}
@@ -29,12 +32,13 @@ public class MyGitServer {
 			System.err.println(e.getMessage());
 			System.exit(-1);
 		}
-
+		ExecutorService executorService = Executors.newFixedThreadPool(MAX_THREADS);
+		System.out.println("MyGitServer Waiting for clients:");
 		while (true) {
 			try {
 				Socket inSoc = sSoc.accept();
 				ServerThread newServerThread = new ServerThread(inSoc);
-				newServerThread.start();
+				executorService.execute(newServerThread);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
