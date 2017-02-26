@@ -23,6 +23,7 @@ public class MyGitServer {
 		myGitServer.startServer(args);
 	}
 
+	@SuppressWarnings("resource")
 	public void startServer(String[] args) {
 		ServerSocket sSoc = null;
 

@@ -6,16 +6,18 @@ import java.io.ObjectOutputStream;
 import message.Message;
 import message.MessageP;
 import message.MessageRS;
+import server.repository.RepositoryCatalog;
 
 public class ServerSkell {
 	private ObjectOutputStream out;
 	private ObjectInputStream in;
-	//private RepositoryCatalog catRepo;
+	private RepositoryCatalog catRepo;
 	//private UsersCatalog catUsers;
 	
 	public ServerSkell(ObjectOutputStream out, ObjectInputStream in) {
 		this.out = out;
 		this.in = in;	
+		catRepo = new RepositoryCatalog();
 	}
 
 	public void receiveMsg(Message msg) {
