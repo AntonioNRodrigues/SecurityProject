@@ -8,14 +8,14 @@ import user.User;
 public class MessageRS extends Message implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	private TypeOperation typeOperation;
+	private TypeOperation operation;
 	private String repoName;
 	private String userId;
 
 	public MessageRS(User localUser, String serverAdress, String password, String repoName, String userid,
 			TypeOperation typeOpe) {
 		super(localUser, serverAdress, password);
-		this.typeOperation = typeOpe;
+		this.operation = typeOpe;
 		this.repoName = repoName;
 		this.userId = userid;
 	}
@@ -37,16 +37,16 @@ public class MessageRS extends Message implements Serializable {
 	}
 
 	public TypeOperation getTypeOperation() {
-		return typeOperation;
+		return operation;
 	}
 
 	public void setTypeOperation(TypeOperation typeOperation) {
-		this.typeOperation = typeOperation;
+		this.operation = typeOperation;
 	}
 
 	@Override
 	public String toString() {
-		return "MessageRS [typeOperation=" + typeOperation + ", repoName=" + repoName + ", userId=" + userId + "]";
+		return "MessageRS [typeOperation=" + operation + ", repoName=" + repoName + ", userId=" + userId + "]";
 	}
 	
 }
