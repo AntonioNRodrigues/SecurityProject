@@ -18,7 +18,7 @@ public class RepositoryCatalog {
 		super();
 		buildMap();
 	}
-	
+
 	private void buildMap() {
 		this.setMapFiles(new ConcurrentHashMap<>());
 		// if buildFolder == true do nothing
@@ -55,8 +55,9 @@ public class RepositoryCatalog {
 				if (owner != null) {
 					rr.setOnwer(owner);
 				}
+				mapFiles.put(rr.getNameRepo(), Arrays.asList(f.listFiles()));
 			}
-			mapFiles.put(rr.getNameRepo(), Arrays.asList(f.listFiles()));
+
 		}
 
 	}
