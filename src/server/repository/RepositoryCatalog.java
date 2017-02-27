@@ -1,62 +1,128 @@
 package server.repository;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import files.Ficheiro;
-
 public class RepositoryCatalog {
-	private Map<String, Set<Ficheiro>> mapFiles;
+	private Map<String, List<File>> mapFiles;
 	private static final String SERVER = "SERVER";
+	private static final String OWNER = "owner.txt";
 
 	public RepositoryCatalog() {
 		super();
 		buildMap();
 	}
-
+	
 	private void buildMap() {
 		this.setMapFiles(new ConcurrentHashMap<>());
 		// if buildFolder == true do nothing
 		// there is no need to populate the map with repositories
 		// else going to read the folder and populate the map
 		if (!buildFolder()) {
-			// readFolder()
+			readFolder();
+		}
+		System.out.println(mapFiles);
+
+	}
+
+	/**
+	 * method to read the SERVER folder, build the object representation of each
+	 * Repository and populate the mapFiles with each Repository and its files.
+	 */
+	private void readFolder() {
+		RemoteRepository rr = null;
+		// list of files inside Server
+		for (String strFolder : new File(SERVER).list()) {
+			// repositories folders
+			File f = new File(SERVER + "/" + strFolder);
+			if (f.isDirectory()) {
+				// build a repository
+				rr = new RemoteRepository(f.lastModified(), f.getName());
+				// inside each folder/repositoriy exists a owner.txt file
+				String owner = null;
+				try {
+					owner = getOwnerFolder(f);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				if (owner != null) {
+					rr.setOnwer(owner);
+				}
+			}
+			mapFiles.put(rr.getNameRepo(), Arrays.asList(f.listFiles()));
 		}
 
 	}
 
 	/**
+	 * method to iterate over a Repository folder and to read its owner.
+	 * 
+	 * @param f
+	 *            File Server
+	 * @return the owner of the REpository
+	 * @throws IOException
+	 */
+	private String getOwnerFolder(File f) throws IOException {
+		BufferedReader br = null;
+		String str = null;
+
+		File repFolder = new File(f.getCanonicalPath() + "/");
+
+		if (repFolder.isDirectory()) {
+			// list all its files
+			for (String s : repFolder.list()) {
+				// get owner.txt and red it
+				if (s.equals(OWNER)) {
+					File g = new File(repFolder.getCanonicalPath() + "/" + OWNER);
+					try {
+						br = new BufferedReader(new FileReader(g));
+						str = br.readLine();
+						br.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+		return str;
+	}
+
+	/**
 	 * Method to create a folder to keep all the repositories if does not exists
-	 * it means the server is running for the fisrt time and has no elements
+	 * it means the server is running for the first time and has no elements
 	 * 
 	 * @return
 	 */
 	private boolean buildFolder() {
-		File f = new File(SERVER);
+		File serverFolder = new File(SERVER);
 		boolean create = false;
-		if (!f.exists()) {
+		if (!serverFolder.exists()) {
 			try {
-				create = f.mkdir();
+				create = serverFolder.mkdir();
 			} catch (Exception e) {
-				System.err.println("The folder can not be created");
+				System.err.println("THE FOLDER CAN NOT BE CREATED:: CHECK PERMISSIONS");
 			}
 
 			if (create) {
 				System.out.println("THE SERVER IS RUNNING FOR THE FIRST TIME");
 			}
-
 		}
 		return create;
 
 	}
 
-	public Map<String, Set<Ficheiro>> getMapFiles() {
+	public Map<String, List<File>> getMapFiles() {
 		return mapFiles;
 	}
 
-	public void setMapFiles(Map<String, Set<Ficheiro>> mapFiles) {
+	public void setMapFiles(Map<String, List<File>> mapFiles) {
 		this.mapFiles = mapFiles;
 	}
 
