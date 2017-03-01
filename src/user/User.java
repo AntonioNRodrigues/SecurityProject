@@ -7,6 +7,17 @@ public class User implements Serializable {
 	private String name;
 	private String password;
 
+	public User(String name) {
+		super();
+		this.name = name;
+	}
+
+	public User(String name, String password) {
+		super();
+		this.name = name;
+		this.password = password;
+	}
+
 	public String getName() {
 		return name;
 	}
@@ -20,12 +31,6 @@ public class User implements Serializable {
 	}
 
 	public void setPassword(String password) {
-		this.password = password;
-	}
-
-	public User(String name, String password) {
-		super();
-		this.name = name;
 		this.password = password;
 	}
 
