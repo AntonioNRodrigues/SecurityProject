@@ -1,10 +1,12 @@
 package user;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -24,8 +26,7 @@ public class UserCatalog {
 
 	private void readFile() {
 		File f = new File(SERVER + "/" + USERS);
-		
-		
+
 		try {
 			BufferedReader b = null;
 			b = new BufferedReader(new FileReader(f));
@@ -36,7 +37,6 @@ public class UserCatalog {
 			}
 			b.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -67,6 +67,29 @@ public class UserCatalog {
 
 	public void setMapUsers(Map<String, User> mapUsers) {
 		this.mapUsers = mapUsers;
+	}
+
+	public boolean registerUser(String name, String password) {
+		System.out.println("REGISTER USER");
+		User u = mapUsers.put(name, new User(name, password));
+		System.out.println(u == null);
+		if (u != null) {
+			persisteUser(name, password);
+		}
+		System.out.println(mapUsers);
+		return true;
+
+	}
+
+	public void persisteUser(String name, String password) {
+		try (FileWriter fw = new FileWriter(new File(SERVER + "/" + USERS), true);
+				BufferedWriter bf = new BufferedWriter(fw);
+				PrintWriter out = new PrintWriter(bf)) {
+			out.println(name + ":" + password);
+		} catch (IOException e) {
+			System.err.println("PROBLEM PERSISTING THE USER");
+		}
+
 	}
 
 }
