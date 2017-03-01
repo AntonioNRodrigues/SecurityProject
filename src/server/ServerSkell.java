@@ -1,5 +1,6 @@
 package server;
 
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
@@ -9,6 +10,7 @@ import message.Message;
 import message.MessageP;
 import message.MessageRS;
 import server.repository.RepositoryCatalog;
+import user.User;
 import user.UserCatalog;
 
 public class ServerSkell {
@@ -31,7 +33,7 @@ public class ServerSkell {
 
 			switch (op) {
 			case REMOVE:
-				
+
 				break;
 			case SHARE:
 
@@ -50,10 +52,10 @@ public class ServerSkell {
 			case REPOSITORY:
 				switch (op) {
 				case PULL:
-					
+
 					break;
 				case PUSH:
-					
+
 					break;
 				default:
 					break;
@@ -62,7 +64,7 @@ public class ServerSkell {
 			case FILE:
 				switch (op) {
 				case PULL:
-					
+
 					break;
 
 				case PUSH:
@@ -76,6 +78,26 @@ public class ServerSkell {
 
 		} else if (msg instanceof Message) {
 			System.out.println(msg);
+			User u = catUsers.getMapUsers().get(msg.getLocalUser().getName());
+			// the user already exists check is the password is filled
+			if (u != null && u.getPassword() == null) {
+				//ask for password
+				try {
+					out.writeObject((Object)"Please fill your password");
+					String password = (String) in.readObject();
+					u.setPassword(password);
+					//persite the user in the file users.txt 
+					catUsers.persisteUser(u.getName(), password);
+				} catch (IOException | ClassNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}				
+			}
+			// there is no user with that name, register the user
+			if (u == null) {
+				catUsers.registerUser(msg.getLocalUser().getName(), msg.getPassword());
+			}
+
 		}
 
 	}
