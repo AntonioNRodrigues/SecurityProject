@@ -15,14 +15,16 @@ public class RemoteRepository {
 	private Long timestamp;
 	private String nameRepo;
 	private Map<String, List<File>> mapFiles;
-	private List<String> sharedUsers; //users com acesso ao repositório
+	private List<String> sharedUsers; // outros users também com acesso ao
+										// repositório
 
-	public RemoteRepository( Long timestamp, String nameRepo) {
+	public RemoteRepository(Long timestamp, String nameRepo) {
 		super();
 		this.timestamp = timestamp;
 		this.nameRepo = nameRepo;
 		this.mapFiles = new ConcurrentHashMap<>();
 	}
+
 	public RemoteRepository(String onwer, Long timestamp, String nameRepo) {
 		super();
 		this.onwer = onwer;
@@ -55,42 +57,44 @@ public class RemoteRepository {
 		this.nameRepo = nameRepo;
 	}
 
-
 	public List<File> getVersionList(String nameFile) {
 		return mapFiles.get(nameFile);
 	}
-	
+
 	public Map<String, List<File>> getMapFiles() {
 		return mapFiles;
 	}
+
 	public void setMapFiles(Map<String, List<File>> mapFiles) {
 		this.mapFiles = mapFiles;
 	}
-	
-	public void addFilesToRepo(String repoName, List<File> listFiles){
+
+	public void addFilesToRepo(String repoName, List<File> listFiles) {
 		this.mapFiles.put(repoName, listFiles);
 	}
-	
+
 	public void addUserToRepo(String userName) {
 		if (sharedUsers.isEmpty()) {
-			//versão concorrente da Lista
+			// versão concorrente da Lista
 			this.sharedUsers = new CopyOnWriteArrayList<String>();
 			sharedUsers.add(userName);
 		} else
 			sharedUsers.add(userName);
 	}
-	
+
 	public void removeUserFromRepo(String userId) {
 		sharedUsers.remove(userId);
 	}
-	
-	public List<String> getSharedUsers(){
+
+	public List<String> getSharedUsers() {
 		return sharedUsers;
 	}
-	
+
 	@Override
 	public String toString() {
-		return "RemoteRepository [onwer=" + onwer + ", timestamp=" + timestamp + ", nameRepo=" + nameRepo + ", shared with=" + sharedUsers + "]";
+		return "RemoteRepository [onwer=" + onwer + ", timestamp=" + timestamp
+				+ ", nameRepo=" + nameRepo + ", shared with=" + sharedUsers
+				+ "]";
 	}
 
 }
