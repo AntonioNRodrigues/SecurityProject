@@ -72,16 +72,14 @@ public class UserCatalog {
 	public boolean registerUser(String name, String password) {
 		System.out.println("REGISTER USER");
 		User u = mapUsers.put(name, new User(name, password));
-		System.out.println(u == null);
-		if (u != null) {
-			persisteUser(name, password);
-		}
+		persisteUser(name, password);
 		System.out.println(mapUsers);
 		return true;
 
 	}
 
 	public void persisteUser(String name, String password) {
+		System.out.println("PERSISTING USER");
 		try (FileWriter fw = new FileWriter(new File(SERVER + "/" + USERS), true);
 				BufferedWriter bf = new BufferedWriter(fw);
 				PrintWriter out = new PrintWriter(bf)) {
@@ -89,7 +87,7 @@ public class UserCatalog {
 		} catch (IOException e) {
 			System.err.println("PROBLEM PERSISTING THE USER");
 		}
-
+		System.out.println(mapUsers);
 	}
 
 }

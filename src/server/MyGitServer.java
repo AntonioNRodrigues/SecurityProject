@@ -1,6 +1,5 @@
 package server;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -10,10 +9,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import message.Message;
-import utilities.ReadWriteUtil;
 
 public class MyGitServer {
 	private static final int MAX_THREADS = 5;
+	private static ServerSkell sk;
 
 	private static boolean checkParams(String[] args) {
 		return (args.length == 1) ? true : false;
@@ -22,6 +21,7 @@ public class MyGitServer {
 	public static void main(String[] args) {
 		System.out.println("MyGitServer is Running:");
 		MyGitServer myGitServer = new MyGitServer();
+		sk = new ServerSkell();
 		myGitServer.startServer(args);
 	}
 
@@ -63,34 +63,17 @@ public class MyGitServer {
 			try {
 				ObjectOutputStream outStream = new ObjectOutputStream(socket.getOutputStream());
 				ObjectInputStream inStream = new ObjectInputStream(socket.getInputStream());
-				
-				ServerSkell  sk = new ServerSkell(outStream, inStream);
-				
-				//receive message
+				sk.setIn(inStream);
+				sk.setOut(outStream);
+
+				// receive message
 				try {
-					sk.receiveMsg((Message)inStream.readObject());
-					sk.receiveMsg((Message)inStream.readObject());
-					sk.receiveMsg((Message)inStream.readObject());
-					sk.receiveMsg((Message)inStream.readObject());
+					sk.receiveMsg((Message) inStream.readObject());
 				} catch (ClassNotFoundException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				
-				/*
-				 * String user = null; String passwd = null;
-				 * 
-				 * try { user = (String) inStream.readObject(); passwd =
-				 * (String) inStream.readObject(); System.out.
-				 * println("thread: depois de receber a password e o user"); }
-				 * catch (ClassNotFoundException e1) { e1.printStackTrace(); }
-				 * 
-				 * if (user.length() != 0) { outStream.writeObject(new
-				 * Boolean(true)); } else { outStream.writeObject(new
-				 * Boolean(false)); }
-				 * 
-				 * // File f = receiveFile();
-				 */
+
 				outStream.close();
 				inStream.close();
 

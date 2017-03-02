@@ -22,11 +22,32 @@ public class ServerSkell {
 	private RepositoryCatalog catRepo;
 	private UserCatalog catUsers;
 
+	public ServerSkell() {
+		this.catRepo = new RepositoryCatalog();
+		this.catUsers = new UserCatalog();
+	}
+
 	public ServerSkell(ObjectOutputStream out, ObjectInputStream in) {
 		this.out = out;
 		this.in = in;
 		this.catRepo = new RepositoryCatalog();
 		this.catUsers = new UserCatalog();
+	}
+
+	public ObjectOutputStream getOut() {
+		return out;
+	}
+
+	public void setOut(ObjectOutputStream out) {
+		this.out = out;
+	}
+
+	public ObjectInputStream getIn() {
+		return in;
+	}
+
+	public void setIn(ObjectInputStream in) {
+		this.in = in;
 	}
 
 	public void receiveMsg(Message msg) throws ClassNotFoundException, IOException {
@@ -63,7 +84,7 @@ public class ServerSkell {
 					RemoteRepository rr = catRepo.getRemRepository(mp.getRepoFileName());
 					int numberFiles = (Integer) mp.getNumberFiles();
 					System.out.println(rr);
-					
+
 					break;
 				default:
 					break;
@@ -103,6 +124,7 @@ public class ServerSkell {
 			User u = catUsers.getMapUsers().get(msg.getLocalUser().getName());
 			// the user already exists check is the password is filled
 			if (u != null && u.getPassword() == null) {
+				System.out.println("the user is in the cat");
 				// ask for password
 				try {
 					out.writeObject((Object) "Please fill your password");
@@ -117,6 +139,7 @@ public class ServerSkell {
 			}
 			// there is no user with that name, register the user
 			if (u == null) {
+				System.out.println("The user is not in catalog");
 				catUsers.registerUser(msg.getLocalUser().getName(), msg.getPassword());
 			}
 

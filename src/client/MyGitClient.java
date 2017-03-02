@@ -31,19 +31,19 @@ public class MyGitClient {
 		out = new ObjectOutputStream(socket.getOutputStream());
 
 		out.writeObject((Object) new Message(new User("manel", "manel"), "address", "manel"));
-		out.writeObject((Object) new MessageRS(new User("name", "password"), "serverAddres", "pass", "reposName",
-				"userId", TypeOperation.PULL));
+		//out.writeObject((Object) new MessageRS(new User("name", "password"), "serverAddres", "pass", "reposName",
+			//	"userId", TypeOperation.PULL));
 
-		List<File> tempList = Arrays.asList(new File("CLIENT/REP01/").listFiles());
-		System.out.println(tempList);
-		out.writeObject((Object) new MessageP(new User("n", "p"), "password", "sss", TypeSend.REPOSITORY, "REP01",
-				TypeOperation.PUSH, tempList.size()));
-		for (File f : tempList) {
+		//List<File> tempList = Arrays.asList(new File("CLIENT/REP01/").listFiles());
+		//System.out.println(tempList);
+		//out.writeObject((Object) new MessageP(new User("n", "p"), "password", "sss", TypeSend.REPOSITORY, "REP01",
+			//	TypeOperation.PUSH, tempList.size()));
+		/*for (File f : tempList) {
 			out.writeObject((Object) new MessageP(new User("n", "p"), "password", "sss", TypeSend.REPOSITORY,
 					"REP01/" + f.getName(), TypeOperation.PUSH, 0));
 			ReadWriteUtil.sendFile("REP01/" + f.getName(), in, out);
 
-		}
+		}*/
 
 		// out.writeObject((Object) new MessageP(new User("n", "p"), "password",
 		// "sss", TypeSend.FILE,
