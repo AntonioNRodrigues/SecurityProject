@@ -74,7 +74,7 @@ public class RemoteRepository {
 	}
 
 	public void addUserToRepo(String userName) {
-		if (sharedUsers.isEmpty()) {
+		if (sharedUsers.isEmpty()) { 
 			// versão concorrente da Lista
 			this.sharedUsers = new CopyOnWriteArrayList<String>();
 			sharedUsers.add(userName);
