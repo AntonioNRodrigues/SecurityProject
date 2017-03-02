@@ -10,14 +10,16 @@ public class MessageP extends Message implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private TypeOperation operation;
 	private TypeSend typeSend;
-	private String name;
-
-	public MessageP(User localUser, String serverAdress, String password, TypeSend typeSend, String name,
-			TypeOperation operation) {
+	private String repo_file_name;
+	private int numberFiles;
+	
+	public MessageP(User localUser, String serverAdress, String password, TypeSend typeSend, String repoFileName,
+			TypeOperation operation, int numberFiles) {
 		super(localUser, serverAdress, password);
-		this.name = name;
+		this.repo_file_name = repoFileName;
 		this.operation = operation;
 		this.typeSend = typeSend;
+		this.setNumberFiles(numberFiles);
 	}
 
 	public TypeSend getTypeSend() {
@@ -28,12 +30,12 @@ public class MessageP extends Message implements Serializable {
 		this.typeSend = typeSend;
 	}
 
-	public String getName() {
-		return name;
+	public String getRepoFileName() {
+		return repo_file_name;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setRepoFileName(String repoFileName) {
+		this.repo_file_name = repoFileName;
 	}
 
 	public TypeOperation getOperation() {
@@ -46,7 +48,16 @@ public class MessageP extends Message implements Serializable {
 
 	@Override
 	public String toString() {
-		return "MessageP [User "+this.getLocalUser() +"operation=" + operation + ", typeSend=" + typeSend + ", name=" + name + "]";
+		return "MessageP [User " + this.getLocalUser() + "operation=" + operation + ", typeSend=" + typeSend + ", name="
+				+ repo_file_name + "]";
 	}
-	
+
+	public int getNumberFiles() {
+		return numberFiles;
+	}
+
+	public void setNumberFiles(int numberFiles) {
+		this.numberFiles = numberFiles;
+	}
+
 }

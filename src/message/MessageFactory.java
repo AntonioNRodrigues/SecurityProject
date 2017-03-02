@@ -11,9 +11,9 @@ public class MessageFactory {
 	}
 
 	public MessageP getMessageP(User localUser, String serverAdress, String password, String operation,
-			String repo_file_name, String typeSend) {
+			String repo_file_name, String typeSend, int numberFiles) {
 		return new MessageP(localUser, serverAdress, password, typeSend(typeSend), repo_file_name,
-				operation(operation));
+				operation(operation), numberFiles);
 	}
 
 	public MessageRS getMessageRS(User localUser, String serverAdress, String password, String opertaion,
