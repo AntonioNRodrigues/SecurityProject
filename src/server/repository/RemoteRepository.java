@@ -3,12 +3,8 @@ package server.repository;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import files.Ficheiro;
-import user.User;
 
 public class RemoteRepository {
 	private String onwer;
@@ -23,6 +19,7 @@ public class RemoteRepository {
 		this.timestamp = timestamp;
 		this.nameRepo = nameRepo;
 		this.mapFiles = new ConcurrentHashMap<>();
+		this.sharedUsers = new CopyOnWriteArrayList<String>();
 	}
 
 	public RemoteRepository(String onwer, Long timestamp, String nameRepo) {
@@ -31,6 +28,7 @@ public class RemoteRepository {
 		this.timestamp = timestamp;
 		this.nameRepo = nameRepo;
 		this.mapFiles = new ConcurrentHashMap<>();
+		this.sharedUsers = new CopyOnWriteArrayList<String>();
 	}
 
 	public String getOnwer() {
@@ -74,12 +72,7 @@ public class RemoteRepository {
 	}
 
 	public void addUserToRepo(String userName) {
-		if (sharedUsers.isEmpty()) { 
-			// versão concorrente da Lista
-			this.sharedUsers = new CopyOnWriteArrayList<String>();
-			sharedUsers.add(userName);
-		} else
-			sharedUsers.add(userName);
+		sharedUsers.add(userName);
 	}
 
 	public void removeUserFromRepo(String userId) {
