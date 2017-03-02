@@ -10,7 +10,6 @@ import java.io.ObjectOutputStream;
 
 public class ReadWriteUtil {
 	private static final int VALUE = 1024;
-
 	public static void sendFile(String filename, ObjectInputStream inStream, ObjectOutputStream outStream)
 			throws IOException {
 		System.out.println("SENDING FILE");
@@ -39,7 +38,7 @@ public class ReadWriteUtil {
 		System.out.println("RECEIVING FILE");
 		Long sizeFile = (Long) inStream.readObject();
 		String filename = (String) inStream.readObject();
-		File fileReceived = new File(filename+"received");
+		File fileReceived = new File("SERVER/REP01/"+filename);
 		System.out.println(filename);
 		byte[] buffer = new byte[1024];
 		// change the fileoutputstream to buffreadOutoutStream

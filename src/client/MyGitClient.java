@@ -30,28 +30,33 @@ public class MyGitClient {
 		in = new ObjectInputStream(socket.getInputStream());
 		out = new ObjectOutputStream(socket.getOutputStream());
 
-		out.writeObject((Object) new Message(new User("manel", "manel"), "address", "manel"));
-		//out.writeObject((Object) new MessageRS(new User("name", "password"), "serverAddres", "pass", "reposName",
-			//	"userId", TypeOperation.PULL));
+	//	out.writeObject((Object) new Message(new User("manel", "manel"), "address", "manel"));
+		// out.writeObject((Object) new MessageRS(new User("name", "password"),
+		// "serverAddres", "pass", "reposName",
+		// "userId", TypeOperation.PULL));
 
-		//List<File> tempList = Arrays.asList(new File("CLIENT/REP01/").listFiles());
-		//System.out.println(tempList);
-		//out.writeObject((Object) new MessageP(new User("n", "p"), "password", "sss", TypeSend.REPOSITORY, "REP01",
-			//	TypeOperation.PUSH, tempList.size()));
-		/*for (File f : tempList) {
-			out.writeObject((Object) new MessageP(new User("n", "p"), "password", "sss", TypeSend.REPOSITORY,
-					"REP01/" + f.getName(), TypeOperation.PUSH, 0));
-			ReadWriteUtil.sendFile("REP01/" + f.getName(), in, out);
-
-		}*/
-
+		// List<File> tempList = Arrays.asList(new
+		// File("CLIENT/REP01/").listFiles());
+		// System.out.println(tempList);
 		// out.writeObject((Object) new MessageP(new User("n", "p"), "password",
-		// "sss", TypeSend.FILE,
-		// new File("CLIENT/REP01/1.txt").getCanonicalPath(),
-		// TypeOperation.PUSH, 1));
-		// ReadWriteUtil.sendFile(new
-		// File("CLIENT/REP01/1.txt").getAbsolutePath(), in, out);
-
+		// "sss", TypeSend.REPOSITORY, "REP01",
+		// TypeOperation.PUSH, tempList.size()));
+		/*
+		 * for (File f : tempList) { out.writeObject((Object) new MessageP(new
+		 * User("n", "p"), "password", "sss", TypeSend.REPOSITORY, "REP01/" +
+		 * f.getName(), TypeOperation.PUSH, 0)); ReadWriteUtil.sendFile("REP01/"
+		 * + f.getName(), in, out);
+		 * 
+		 * }
+		 */
+		//-PUSH FILE_NAME
+		File f = new File("CLIENT/REP01/1.txt");
+		out.writeObject((Object) new MessageP(new User("n", "p"), "p", "REP01", TypeSend.FILE,
+				f.getName(), TypeOperation.PUSH, 1, f.lastModified()));
+		out.writeObject((Object)f.length());
+		out.writeObject((Object)f.getName());
+		ReadWriteUtil.sendFile(f.getName(), in, out);
+		
 		out.close();
 		in.close();
 		socket.close();
