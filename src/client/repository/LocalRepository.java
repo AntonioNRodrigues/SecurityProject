@@ -1,16 +1,15 @@
 package client.repository;
 
-import java.sql.Timestamp;
+import java.io.File;
 import java.util.List;
 
-import files.Ficheiro;
 import user.User;
 
 public class LocalRepository {
 	private User onwer;
-	private Timestamp timestamp;
+	private Long timestamp;
 	private String nameRepo;
-	private List<Ficheiro> listFiles;
+	private List<File> listFiles;
 	
 	public User getOnwer() {
 		return onwer;
@@ -20,11 +19,11 @@ public class LocalRepository {
 		this.onwer = onwer;
 	}
 
-	public Timestamp getTimestamp() {
+	public Long getTimestamp() {
 		return timestamp;
 	}
 
-	public void setTimestamp(Timestamp timestamp) {
+	public void setTimestamp(Long timestamp) {
 		this.timestamp = timestamp;
 	}
 
@@ -36,11 +35,11 @@ public class LocalRepository {
 		this.nameRepo = nameRepo;
 	}
 
-	public List<Ficheiro> getListFiles() {
+	public List<File> getListFiles() {
 		return listFiles;
 	}
 
-	public void setListFiles(List<Ficheiro> listFiles) {
+	public void setListFiles(List<File> listFiles) {
 		this.listFiles = listFiles;
 	}
 

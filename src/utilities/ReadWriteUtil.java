@@ -31,7 +31,7 @@ public class ReadWriteUtil {
 			outStream.write(buffer, 0, n);
 		}
 
-		inputFileStream.close();
+		//inputFileStream.close();
 	}
 
 	public static File receiveFile(ObjectInputStream inStream, ObjectOutputStream outStream)
@@ -59,7 +59,7 @@ public class ReadWriteUtil {
 			}
 			count += n;
 		}
-		out_fileOutoutS.close();
+		//out_fileOutoutS.close();
 		return fileReceived;
 	}
 

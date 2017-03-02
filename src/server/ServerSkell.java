@@ -29,8 +29,9 @@ public class ServerSkell {
 		this.catUsers = new UserCatalog();
 	}
 
-	public void receiveMsg(Message msg) {
+	public void receiveMsg(Message msg) throws ClassNotFoundException, IOException {
 		if (msg instanceof MessageRS) {
+			System.out.println(msg);
 			TypeOperation op = ((MessageRS) msg).getTypeOperation();
 
 			switch (op) {
@@ -61,19 +62,8 @@ public class ServerSkell {
 					System.out.println("-push repo_name");
 					RemoteRepository rr = catRepo.getRemRepository(mp.getRepoFileName());
 					int numberFiles = (Integer) mp.getNumberFiles();
-					System.out.println(numberFiles);
 					System.out.println(rr);
-					while (numberFiles != 0) {
-						try {
-							File f = ReadWriteUtil.receiveFile(in, out);
-							System.out.println(f.getName());
-						} catch (ClassNotFoundException e) {
-							e.printStackTrace();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-						numberFiles--;
-					}
+					
 					break;
 				default:
 					break;
@@ -93,7 +83,7 @@ public class ServerSkell {
 
 					try {
 						File f = ReadWriteUtil.receiveFile(in, out);
-						//do timestamps check
+						// do timestamps check
 					} catch (ClassNotFoundException e) {
 						e.printStackTrace();
 					} catch (IOException e) {

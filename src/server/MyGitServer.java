@@ -1,5 +1,6 @@
 package server;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -9,6 +10,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import message.Message;
+import utilities.ReadWriteUtil;
 
 public class MyGitServer {
 	private static final int MAX_THREADS = 5;
@@ -66,6 +68,7 @@ public class MyGitServer {
 				
 				//receive message
 				try {
+					sk.receiveMsg((Message)inStream.readObject());
 					sk.receiveMsg((Message)inStream.readObject());
 					sk.receiveMsg((Message)inStream.readObject());
 					sk.receiveMsg((Message)inStream.readObject());
