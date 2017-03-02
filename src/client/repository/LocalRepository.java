@@ -10,6 +10,7 @@ public class LocalRepository {
 	private Long timestamp;
 	private String nameRepo;
 	private List<File> listFiles;
+	private List<User> sharedUsers;
 	
 	public User getOnwer() {
 		return onwer;
@@ -41,6 +42,14 @@ public class LocalRepository {
 
 	public void setListFiles(List<File> listFiles) {
 		this.listFiles = listFiles;
+	}
+	
+	public List<User> getListSharedUsers(){
+		return sharedUsers;
+	}
+	
+	public void setListUsers(List<User> listUsers) {
+		this.sharedUsers = listUsers;
 	}
 
 }

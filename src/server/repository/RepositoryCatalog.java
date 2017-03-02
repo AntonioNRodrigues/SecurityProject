@@ -79,7 +79,7 @@ public class RepositoryCatalog {
 		if (repFolder.isDirectory()) {
 			// list all its files
 			for (String s : repFolder.list()) {
-				// get owner.txt and red it
+				// get owner.txt and read it
 				if (s.equals(OWNER)) {
 					File g = new File(repFolder.getCanonicalPath() + "/" + OWNER);
 					try {

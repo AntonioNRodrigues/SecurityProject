@@ -57,10 +57,20 @@ public class ServerSkell {
 
 			switch (op) {
 			case REMOVE:
-
+				// -remove <rep_name> <user_id>
+				//TODO Falta verificar se é o owner que está a aceder ao repositório. Porque só ele pode adicionar users.
+				System.out.println("-remove repo_name userID");
+				RemoteRepository rrr = catRepo.getRemRepository(((MessageRS) msg).getRepoName());
+				rrr.removeUserFromRepo(((MessageRS) msg).getUserId());
+				System.out.println(rrr);
 				break;
 			case SHARE:
-
+				// -share <rep_name> <user_id>
+				//TODO Falta verificar se é o owner que está a aceder ao repositório. Porque só ele pode adicionar users.
+				System.out.println("-share repo_name userID");
+				RemoteRepository rrs = catRepo.getRemRepository(((MessageRS) msg).getRepoName());
+				rrs.addUserToRepo(((MessageRS) msg).getUserId());
+				System.out.println(rrs);
 				break;
 			default:
 				break;

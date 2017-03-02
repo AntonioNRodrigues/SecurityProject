@@ -5,14 +5,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import files.Ficheiro;
+import user.User;
 
 public class RemoteRepository {
 	private String onwer;
 	private Long timestamp;
 	private String nameRepo;
 	private Map<String, List<File>> mapFiles;
+	private List<String> sharedUsers; //users com acesso ao repositório
 
 	public RemoteRepository( Long timestamp, String nameRepo) {
 		super();
@@ -67,8 +70,27 @@ public class RemoteRepository {
 	public void addFilesToRepo(String repoName, List<File> listFiles){
 		this.mapFiles.put(repoName, listFiles);
 	}
+	
+	public void addUserToRepo(String userName) {
+		if (sharedUsers.isEmpty()) {
+			//versão concorrente da Lista
+			this.sharedUsers = new CopyOnWriteArrayList<String>();
+			sharedUsers.add(userName);
+		} else
+			sharedUsers.add(userName);
+	}
+	
+	public void removeUserFromRepo(String userId) {
+		sharedUsers.remove(userId);
+	}
+	
+	public List<String> getSharedUsers(){
+		return sharedUsers;
+	}
+	
 	@Override
 	public String toString() {
-		return "RemoteRepository [onwer=" + onwer + ", timestamp=" + timestamp + ", nameRepo=" + nameRepo + "]";
+		return "RemoteRepository [onwer=" + onwer + ", timestamp=" + timestamp + ", nameRepo=" + nameRepo + ", shared with=" + sharedUsers + "]";
 	}
+
 }
