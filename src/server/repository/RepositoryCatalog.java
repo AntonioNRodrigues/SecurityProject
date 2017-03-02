@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RepositoryCatalog {
-	private Map<String, List<File>> mapFiles;
+	private Map<String, RemoteRepository> mapRemRepos;
 	private static final String SERVER = "SERVER";
 	private static final String OWNER = "owner.txt";
 
@@ -20,15 +20,13 @@ public class RepositoryCatalog {
 	}
 
 	private void buildMap() {
-		this.setMapFiles(new ConcurrentHashMap<>());
+		this.mapRemRepos = new ConcurrentHashMap<String, RemoteRepository>();
 		// if buildFolder == true do nothing
 		// there is no need to populate the map with repositories
 		// else going to read the folder and populate the map
 		if (!buildFolder()) {
 			readFolder();
 		}
-		System.out.println(mapFiles);
-
 	}
 
 	/**
@@ -36,6 +34,7 @@ public class RepositoryCatalog {
 	 * Repository and populate the mapFiles with each Repository and its files.
 	 */
 	private void readFolder() {
+		System.out.println("READ FOLDER");
 		RemoteRepository rr = null;
 		// list of files inside Server
 		for (String strFolder : new File(SERVER).list()) {
@@ -44,6 +43,7 @@ public class RepositoryCatalog {
 			if (f.isDirectory()) {
 				// build a repository
 				rr = new RemoteRepository(f.lastModified(), f.getName());
+				rr.addFilesToRepo(rr.getNameRepo(), Arrays.asList(f.listFiles()));
 				// inside each folder/repositoriy exists a owner.txt file
 				String owner = null;
 				try {
@@ -55,7 +55,7 @@ public class RepositoryCatalog {
 				if (owner != null) {
 					rr.setOnwer(owner);
 				}
-				mapFiles.put(rr.getNameRepo(), Arrays.asList(f.listFiles()));
+				mapRemRepos.put(rr.getNameRepo(), rr);
 			}
 
 		}
@@ -119,12 +119,17 @@ public class RepositoryCatalog {
 
 	}
 
-	public Map<String, List<File>> getMapFiles() {
-		return mapFiles;
+	public Map<String, RemoteRepository> getMapRemRepos() {
+		return mapRemRepos;
 	}
 
-	public void setMapFiles(Map<String, List<File>> mapFiles) {
-		this.mapFiles = mapFiles;
+	public void setMapRemRepos(Map<String, RemoteRepository> mapRemRepos) {
+		this.mapRemRepos = mapRemRepos;
 	}
 
+	public RemoteRepository getRemRepository(String repoFileName) {
+		return mapRemRepos.get(repoFileName);
+	}
+	
+	
 }
