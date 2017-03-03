@@ -19,7 +19,7 @@ public class RemoteRepository {
 		this.timestamp = timestamp;
 		this.nameRepo = nameRepo;
 		this.mapFiles = new ConcurrentHashMap<>();
-		this.sharedUsers = new CopyOnWriteArrayList<String>();
+		this.sharedUsers = new CopyOnWriteArrayList<String>(); //Lista concorrente
 	}
 
 	public RemoteRepository(String onwer, Long timestamp, String nameRepo) {

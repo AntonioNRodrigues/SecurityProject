@@ -16,9 +16,9 @@ public class MessageFactory {
 				operation(operation), numberFiles, ts);
 	}
 
-	public MessageRS getMessageRS(User localUser, String serverAdress, String password, String opertaion,
+	public MessageRS getMessageRS(User localUser, String serverAdress, String password, String operation,
 			String repo_name, String userId) {
-		return new MessageRS(localUser, serverAdress, password, repo_name, userId, operation(opertaion));
+		return new MessageRS(localUser, serverAdress, password, repo_name, userId, operation(operation));
 	}
 
 	private TypeOperation operation(String op) {
