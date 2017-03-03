@@ -51,8 +51,9 @@ public class MyGitClient {
 		 */
 		//-PUSH FILE_NAME
 		File f = new File("CLIENT/REP01/1.txt");
-		out.writeObject((Object) new MessageP(new User("n", "p"), "p", "REP01", TypeSend.FILE,
-				f.getName(), TypeOperation.PUSH, 1, f.lastModified()));
+		out.writeObject((Object) new MessageP(
+				new User("name", "password"), "127.0.0.1:23456", "password", TypeSend.REPOSITORY,
+				"REP03", TypeOperation.PUSH, 1, f.lastModified()));
 		out.writeObject((Object)f.length());
 		out.writeObject((Object)f.getName());
 		ReadWriteUtil.sendFile(f.getName(), in, out);
