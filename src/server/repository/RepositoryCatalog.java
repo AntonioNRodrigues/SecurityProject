@@ -16,6 +16,7 @@ public class RepositoryCatalog {
 
 	public RepositoryCatalog() {
 		super();
+		System.out.println("REPOSITORY CATALOG IS ON");
 		buildMap();
 	}
 

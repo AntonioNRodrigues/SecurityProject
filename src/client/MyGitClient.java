@@ -57,6 +57,9 @@ public class MyGitClient {
 		out.writeObject((Object)f.getName());
 		ReadWriteUtil.sendFile(f.getName(), in, out);
 		
+		//-PULL FILE_NAME
+		
+		
 		out.close();
 		in.close();
 		socket.close();

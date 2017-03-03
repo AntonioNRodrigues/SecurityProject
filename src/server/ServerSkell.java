@@ -54,11 +54,11 @@ public class ServerSkell {
 		if (msg instanceof MessageRS) {
 			System.out.println(msg);
 			TypeOperation op = ((MessageRS) msg).getTypeOperation();
-
+			
 			switch (op) {
 			case REMOVE:
 				// -remove <rep_name> <user_id>
-				//TODO Falta verificar se é o owner que está a aceder ao repositório. Porque só ele pode adicionar users.
+				//TODO Falta verificar se ï¿½ o owner que estï¿½ a aceder ao repositï¿½rio. Porque sï¿½ ele pode adicionar users.
 				System.out.println("-remove repo_name userID");
 				RemoteRepository rrr = catRepo.getRemRepository(((MessageRS) msg).getRepoName());
 				rrr.removeUserFromRepo(((MessageRS) msg).getUserId());
@@ -66,7 +66,7 @@ public class ServerSkell {
 				break;
 			case SHARE:
 				// -share <rep_name> <user_id>
-				//TODO Falta verificar se é o owner que está a aceder ao repositório. Porque só ele pode adicionar users.
+				//TODO Falta verificar se ï¿½ o owner que estï¿½ a aceder ao repositï¿½rio. Porque sï¿½ ele pode adicionar users.
 				System.out.println("-share repo_name userID");
 				RemoteRepository rrs = catRepo.getRemRepository(((MessageRS) msg).getRepoName());
 				rrs.addUserToRepo(((MessageRS) msg).getUserId());
@@ -92,8 +92,6 @@ public class ServerSkell {
 					// -push repo_name
 					System.out.println("-push repo_name");
 					RemoteRepository rr = catRepo.getRemRepository(mp.getRepoFileName());
-					int numberFiles = (Integer) mp.getNumberFiles();
-					System.out.println(rr);
 
 					break;
 				default:
@@ -105,12 +103,10 @@ public class ServerSkell {
 				case PULL:
 
 					break;
-
 				case PUSH:
 					// -push file_name
 					System.out.println("-push file_name");
 					RemoteRepository rr = catRepo.getRemRepository(mp.getRepoFileName());
-					int numberFiles = (Integer) mp.getNumberFiles();
 					
 					try {
 						File f = ReadWriteUtil.receiveFile(in, out);
