@@ -5,9 +5,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import user.User;
 
 public class RepositoryCatalog {
 	private Map<String, RemoteRepository> mapRemRepos;
@@ -43,18 +44,17 @@ public class RepositoryCatalog {
 			File f = new File(SERVER + "/" + strFolder);
 			if (f.isDirectory()) {
 				// build a repository
-				rr = new RemoteRepository(f.lastModified(), f.getName());
+				rr = new RemoteRepository(f.getName());
 				rr.addFilesToRepo(rr.getNameRepo(), Arrays.asList(f.listFiles()));
 				// inside each folder/repositoriy exists a owner.txt file
 				String owner = null;
 				try {
 					owner = getOwnerFolder(f);
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				if (owner != null) {
-					rr.setOnwer(owner);
+					rr.setOwner(owner);
 				}
 				mapRemRepos.put(rr.getNameRepo(), rr);
 			}
@@ -72,21 +72,19 @@ public class RepositoryCatalog {
 	 * @throws IOException
 	 */
 	private String getOwnerFolder(File f) throws IOException {
-		BufferedReader br = null;
+		System.out.println("GET OWNER FOLDER");
 		String str = null;
 
 		File repFolder = new File(f.getCanonicalPath() + "/");
-
+		
 		if (repFolder.isDirectory()) {
 			// list all its files
 			for (String s : repFolder.list()) {
 				// get owner.txt and read it
 				if (s.equals(OWNER)) {
 					File g = new File(repFolder.getCanonicalPath() + "/" + OWNER);
-					try {
-						br = new BufferedReader(new FileReader(g));
+					try (BufferedReader br = new BufferedReader(new FileReader(g))){
 						str = br.readLine();
-						br.close();
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -131,6 +129,9 @@ public class RepositoryCatalog {
 	public RemoteRepository getRemRepository(String repoFileName) {
 		return mapRemRepos.get(repoFileName);
 	}
-	
-	
+
+	public RemoteRepository buildRepo(User localUser, String repoFileName) {
+		return new RemoteRepository(localUser.getName(), repoFileName);
+	}
+
 }

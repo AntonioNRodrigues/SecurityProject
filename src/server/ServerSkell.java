@@ -54,11 +54,12 @@ public class ServerSkell {
 		if (msg instanceof MessageRS) {
 			System.out.println(msg);
 			TypeOperation op = ((MessageRS) msg).getTypeOperation();
-			
+
 			switch (op) {
 			case REMOVE:
 				// -remove <rep_name> <user_id>
-				//TODO Falta verificar se � o owner que est� a aceder ao reposit�rio. Porque s� ele pode adicionar users.
+				// TODO Falta verificar se � o owner que est� a aceder ao
+				// reposit�rio. Porque s� ele pode adicionar users.
 				System.out.println("-remove repo_name userID");
 				RemoteRepository rrr = catRepo.getRemRepository(((MessageRS) msg).getRepoName());
 				rrr.removeUserFromRepo(((MessageRS) msg).getUserId());
@@ -66,7 +67,8 @@ public class ServerSkell {
 				break;
 			case SHARE:
 				// -share <rep_name> <user_id>
-				//TODO Falta verificar se � o owner que est� a aceder ao reposit�rio. Porque s� ele pode adicionar users.
+				// TODO Falta verificar se � o owner que est� a aceder ao
+				// reposit�rio. Porque s� ele pode adicionar users.
 				System.out.println("-share repo_name userID");
 				RemoteRepository rrs = catRepo.getRemRepository(((MessageRS) msg).getRepoName());
 				rrs.addUserToRepo(((MessageRS) msg).getUserId());
@@ -92,6 +94,10 @@ public class ServerSkell {
 					// -push repo_name
 					System.out.println("-push repo_name");
 					RemoteRepository rr = catRepo.getRemRepository(mp.getRepoFileName());
+					if(rr == null){
+						//repository does not exist 
+						rr = catRepo.buildRepo(mp.getLocalUser(), mp.getRepoFileName());
+					}
 
 					break;
 				default:
@@ -107,14 +113,18 @@ public class ServerSkell {
 					// -push file_name
 					System.out.println("-push file_name");
 					RemoteRepository rr = catRepo.getRemRepository(mp.getRepoFileName());
-					
-					try {
-						File f = ReadWriteUtil.receiveFile(in, out);
-						// do timestamps check
-					} catch (ClassNotFoundException e) {
-						e.printStackTrace();
-					} catch (IOException e) {
-						e.printStackTrace();
+					if (rr != null) {
+						// the repo exists them proceed with push file
+						try {
+							File f = ReadWriteUtil.receiveFile(in, out);
+							// do timestamps check
+						} catch (ClassNotFoundException e) {
+							e.printStackTrace();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					} else {
+						out.writeObject((Object) "THE REPOSITORY DOES NOT EXIST");
 					}
 
 					break;
