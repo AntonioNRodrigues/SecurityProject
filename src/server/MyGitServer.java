@@ -19,6 +19,11 @@ public class MyGitServer {
 	}
 
 	public static void main(String[] args) {
+		if(!checkParams(args)){
+			System.out.println("MyGitServer is NOT Running");
+			System.out.println("MyGitServer requires port number");
+			System.exit(-1);
+		}
 		System.out.println("MyGitServer is Running:");
 		MyGitServer myGitServer = new MyGitServer();
 		sk = new ServerSkell();
