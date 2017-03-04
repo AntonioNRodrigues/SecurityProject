@@ -92,13 +92,12 @@ public class ServerSkell {
 					break;
 				case PUSH:
 					// -push repo_name
-					System.out.println("-push repo_name");
+					System.out.println("-PUSH REPO");
 					RemoteRepository rr = catRepo.getRemRepository(mp.getRepoFileName());
-					if(rr == null){
-						//repository does not exist 
+					if (rr == null) {
+						// repository does not exist
 						rr = catRepo.buildRepo(mp.getLocalUser(), mp.getRepoFileName());
 					}
-
 					break;
 				default:
 					break;
@@ -111,7 +110,7 @@ public class ServerSkell {
 					break;
 				case PUSH:
 					// -push file_name
-					System.out.println("-push file_name");
+					System.out.println("-PUSH FILE");
 					RemoteRepository rr = catRepo.getRemRepository(mp.getRepoFileName());
 					if (rr != null) {
 						// the repo exists them proceed with push file

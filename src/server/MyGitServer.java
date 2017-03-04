@@ -19,7 +19,7 @@ public class MyGitServer {
 	}
 
 	public static void main(String[] args) {
-		if(!checkParams(args)){
+		if (!checkParams(args)) {
 			System.out.println("MyGitServer is NOT Running");
 			System.out.println("MyGitServer requires port number");
 			System.exit(-1);
@@ -40,13 +40,14 @@ public class MyGitServer {
 			System.err.println(e.getMessage());
 			System.exit(-1);
 		}
-		ExecutorService executorService = Executors.newFixedThreadPool(MAX_THREADS);
+		//ExecutorService executorService = Executors.newFixedThreadPool(MAX_THREADS);
 		System.out.println("MyGitServer Waiting for clients:");
 		while (true) {
 			try {
 				Socket inSoc = sSoc.accept();
 				ServerThread newServerThread = new ServerThread(inSoc);
-				executorService.execute(newServerThread);
+				 newServerThread.start();
+				//executorService.execute(newServerThread);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -59,7 +60,7 @@ public class MyGitServer {
 
 		private Socket socket = null;
 
-		ServerThread(Socket inSoc) {
+		ServerThread(Socket inSoc) throws IOException {
 			socket = inSoc;
 			System.out.println("server thread to each client");
 		}
@@ -75,13 +76,10 @@ public class MyGitServer {
 				try {
 					sk.receiveMsg((Message) inStream.readObject());
 				} catch (ClassNotFoundException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-
 				outStream.close();
 				inStream.close();
-
 				socket.close();
 
 			} catch (IOException e) {
