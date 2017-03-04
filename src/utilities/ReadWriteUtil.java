@@ -1,6 +1,7 @@
 package utilities;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -10,6 +11,7 @@ import java.io.ObjectOutputStream;
 
 public class ReadWriteUtil {
 	private static final int VALUE = 1024;
+
 	public static void sendFile(String filename, ObjectInputStream inStream, ObjectOutputStream outStream)
 			throws IOException {
 		System.out.println("SENDING FILE");
@@ -19,9 +21,9 @@ public class ReadWriteUtil {
 		Long sizeFile = f.length();
 		// send size of file
 		outStream.writeObject((Object) sizeFile);
-
+		System.out.println(f.getName());
 		// send the filename
-		outStream.writeObject((Object) f.getAbsolutePath());
+		outStream.writeObject((Object) f.getName());
 
 		byte buffer[] = new byte[VALUE];
 		int n = 0;
@@ -30,35 +32,36 @@ public class ReadWriteUtil {
 			outStream.write(buffer, 0, n);
 		}
 
-		//inputFileStream.close();
+		inputFileStream.close();
 	}
 
 	public static File receiveFile(ObjectInputStream inStream, ObjectOutputStream outStream)
 			throws ClassNotFoundException, IOException {
 		System.out.println("RECEIVING FILE");
+
 		Long sizeFile = (Long) inStream.readObject();
 		String filename = (String) inStream.readObject();
-		File fileReceived = new File("SERVER/REP01/"+filename);
-		System.out.println(filename);
-		byte[] buffer = new byte[1024];
-		// change the fileoutputstream to buffreadOutoutStream
-		FileOutputStream out_fileOutoutS = new FileOutputStream(fileReceived);
-		int count = 0;
-		int n = 0;
-		long resto = 0;
+		File fileReceived = new File(filename);
 
-		while ((n != -1) && (count <= sizeFile)) {
-			resto = ((sizeFile - count) > 1024) ? 1024 : (sizeFile - count);
-			n = inStream.read(buffer, 0, (int) resto);
+		BufferedOutputStream bf = new BufferedOutputStream(new FileOutputStream(fileReceived));
+		int len = 0;
+		byte[] buffer = new byte[VALUE];
+		int lido;
 
-			if (n == -1) {
-				out_fileOutoutS.write(buffer, 0, (int) resto);
-			} else {
-				out_fileOutoutS.write(buffer, 0, n);
+		while (len < sizeFile) {
+			int resto = (int) (sizeFile - len);
+			int n = (resto < VALUE) ? resto : buffer.length;
+			lido = inStream.read(buffer, 0, n);
+
+			if (lido == -1) {
+				break;
 			}
-			count += n;
+
+			bf.write(buffer, 0, n);
+			len += lido;
+			System.out.println(".......");
 		}
-		//out_fileOutoutS.close();
+		bf.close();
 		return fileReceived;
 	}
 
