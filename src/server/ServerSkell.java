@@ -51,115 +51,128 @@ public class ServerSkell {
 	}
 
 	public void receiveMsg(Message msg) throws ClassNotFoundException, IOException {
-		if (msg instanceof MessageRS) {
-			System.out.println(msg);
-			TypeOperation op = ((MessageRS) msg).getTypeOperation();
+		if (authentication(msg)) {
+			out.writeObject((Object)"THE USER IS AUTHENTICATED");
+			if (msg instanceof MessageRS) {
+				System.out.println(msg);
+				TypeOperation op = ((MessageRS) msg).getTypeOperation();
 
-			switch (op) {
-			case REMOVE:
-				// -remove <rep_name> <user_id>
-				// TODO Falta verificar se � o owner que est� a aceder ao
-				// reposit�rio. Porque s� ele pode adicionar users.
-				System.out.println("-remove repo_name userID");
-				RemoteRepository rrr = catRepo.getRemRepository(((MessageRS) msg).getRepoName());
-				rrr.removeUserFromRepo(((MessageRS) msg).getUserId());
-				System.out.println(rrr);
-				break;
-			case SHARE:
-				// -share <rep_name> <user_id>
-				// TODO Falta verificar se � o owner que est� a aceder ao
-				// reposit�rio. Porque s� ele pode adicionar users.
-				System.out.println("-share repo_name userID");
-				RemoteRepository rrs = catRepo.getRemRepository(((MessageRS) msg).getRepoName());
-				rrs.addUserToRepo(((MessageRS) msg).getUserId());
-				System.out.println(rrs);
-				break;
-			default:
-				break;
-			}
-
-		} else if (msg instanceof MessageP) {
-			System.out.println(msg);
-			MessageP mp = ((MessageP) msg);
-			TypeSend ts = mp.getTypeSend();
-			TypeOperation op = mp.getOperation();
-
-			switch (ts) {
-			case REPOSITORY:
 				switch (op) {
-				case PULL:
-
+				case REMOVE:
+					// -remove <rep_name> <user_id>
+					// TODO Falta verificar se � o owner que est� a aceder ao
+					// reposit�rio. Porque s� ele pode adicionar users.
+					System.out.println("-remove repo_name userID");
+					RemoteRepository rrr = catRepo.getRemRepository(((MessageRS) msg).getRepoName());
+					rrr.removeUserFromRepo(((MessageRS) msg).getUserId());
+					System.out.println(rrr);
 					break;
-				case PUSH:
-					// -push repo_name
-					System.out.println("-PUSH REPO");
-					RemoteRepository rr = catRepo.getRemRepository(mp.getRepoFileName());
-					if (rr == null) {
-						// repository does not exist
-						rr = catRepo.buildRepo(mp.getLocalUser(), mp.getRepoFileName());
-					}
+				case SHARE:
+					// -share <rep_name> <user_id>
+					// TODO Falta verificar se � o owner que est� a aceder ao
+					// reposit�rio. Porque s� ele pode adicionar users.
+					System.out.println("-share repo_name userID");
+					RemoteRepository rrs = catRepo.getRemRepository(((MessageRS) msg).getRepoName());
+					rrs.addUserToRepo(((MessageRS) msg).getUserId());
+					System.out.println(rrs);
 					break;
 				default:
 					break;
 				}
-				break;
-			case FILE:
-				switch (op) {
-				case PULL:
 
-					break;
-				case PUSH:
-					// -push file_name
-					System.out.println("-PUSH FILE");
-					RemoteRepository rr = catRepo.getRemRepository(mp.getRepoFileName());
-					if (rr != null) {
-						// the repo exists them proceed with push file
-						try {
-							File f = ReadWriteUtil.receiveFile(in, out);
-							// do timestamps check
-						} catch (ClassNotFoundException e) {
-							e.printStackTrace();
-						} catch (IOException e) {
-							e.printStackTrace();
+			} else if (msg instanceof MessageP) {
+				System.out.println(msg);
+				MessageP mp = ((MessageP) msg);
+				TypeSend ts = mp.getTypeSend();
+				TypeOperation op = mp.getOperation();
+
+				switch (ts) {
+				case REPOSITORY:
+					switch (op) {
+					case PULL:
+						
+						break;
+					case PUSH:
+						// -push repo_name
+						System.out.println("-PUSH REPO");
+						RemoteRepository rr = catRepo.getRemRepository(mp.getRepoFileName());
+						if (rr == null) {
+							// repository does not exist
+							rr = catRepo.buildRepo(mp.getLocalUser(), mp.getRepoFileName());
 						}
-					} else {
-						out.writeObject((Object) "THE REPOSITORY DOES NOT EXIST");
+						break;
+					default:
+						break;
 					}
-
 					break;
+				case FILE:
+					switch (op) {
+					case PULL:
+
+						break;
+					case PUSH:
+						// -push file_name
+						System.out.println("-PUSH FILE");
+						RemoteRepository rr = catRepo.getRemRepository(mp.getRepoFileName());
+						if (rr != null) {
+							// the repo exists them proceed with push file
+							try {
+								File f = ReadWriteUtil.receiveFile(in, out);
+								// do timestamps check
+							} catch (ClassNotFoundException e) {
+								e.printStackTrace();
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						} else {
+							out.writeObject((Object) "THE REPOSITORY DOES NOT EXIST");
+						}
+
+						break;
+					default:
+						break;
+					}
 				default:
 					break;
 				}
-			default:
-				break;
 			}
+		}
+		else{
+			out.writeObject((Object)"YOU DOT NOT HAVE PREMISSIONS TO KEEP GOING PLEASE CHECK PASSWORD");
+		}
+	}
 
-		} else if (msg instanceof Message) {
-			System.out.println(msg);
-			User u = catUsers.getMapUsers().get(msg.getLocalUser().getName());
-			// the user already exists check is the password is filled
-			if (u != null && u.getPassword() == null) {
-				System.out.println("the user is in the cat");
-				// ask for password
+	private boolean authentication(Message msg) {
+		User u = catUsers.getMapUsers().get(msg.getLocalUser().getName());
+		// user does not exist, register user
+		if (u == null) {
+			catUsers.registerUser(msg.getLocalUser().getName(), msg.getPassword());
+			return true;
+		}
+		// user exists check permissions
+		if (u != null) {
+			// user exists but does not have the password filled
+			if (u.getPassword().equals(null)) {
 				try {
 					out.writeObject((Object) "Please fill your password");
 					String password = (String) in.readObject();
+					// password did not come
+					if (password == null) {
+						return false;
+					}
 					u.setPassword(password);
-					// persite the user in the file users.txt
+					// persist the user in the file users.txt
 					catUsers.persisteUser(u.getName(), password);
 				} catch (IOException | ClassNotFoundException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
-			// there is no user with that name, register the user
-			if (u == null) {
-				System.out.println("The user is not in catalog");
-				catUsers.registerUser(msg.getLocalUser().getName(), msg.getPassword());
+			// user has password filled and its the same
+			if (u.getPassword().equals(msg.getLocalUser().getPassword())) {
+				return true;
 			}
-
 		}
-
+		return false;
 	}
 
 }
