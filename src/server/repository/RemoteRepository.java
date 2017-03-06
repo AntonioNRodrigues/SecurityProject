@@ -1,42 +1,65 @@
 package server.repository;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class RemoteRepository {
-	private String onwer;
+	private String owner;
 	private Long timestamp;
 	private String nameRepo;
 	private Map<String, List<File>> mapFiles;
-	private List<String> sharedUsers; // outros users também com acesso ao
-										// repositório
+	private List<String> sharedUsers; // outros users tambï¿½m com acesso ao
+										// repositï¿½rio
 
-	public RemoteRepository(Long timestamp, String nameRepo) {
+	public RemoteRepository(String nameRepo) {
 		super();
-		this.timestamp = timestamp;
 		this.nameRepo = nameRepo;
 		this.mapFiles = new ConcurrentHashMap<>();
+<<<<<<< HEAD
 		this.sharedUsers = new CopyOnWriteArrayList<String>(); //Lista concorrente
+=======
+		this.sharedUsers = new CopyOnWriteArrayList<String>();
+		persisteRemRepo();
+>>>>>>> branch 'master' of https://github.com/AntonioNRodrigues/SecurityProject.git
 	}
 
-	public RemoteRepository(String onwer, Long timestamp, String nameRepo) {
+	private void persisteRemRepo() {
+		File f = new File("SERVER/" + this.nameRepo);
+		if (!f.exists()) {
+			f.mkdirs();
+			File ff = new File(f.getAbsolutePath() + "/owner.txt");
+			try (BufferedWriter fi = new BufferedWriter(new FileWriter(ff))) {
+				fi.write(this.owner);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		setTimestamp(f.lastModified());
+		System.out.println(this);
+	}
+
+	public RemoteRepository(String onwer, String nameRepo) {
 		super();
-		this.onwer = onwer;
-		this.timestamp = timestamp;
+		this.owner = onwer;
 		this.nameRepo = nameRepo;
 		this.mapFiles = new ConcurrentHashMap<>();
 		this.sharedUsers = new CopyOnWriteArrayList<String>();
+		persisteRemRepo();
 	}
 
-	public String getOnwer() {
-		return onwer;
+	public String getOwner() {
+		return owner;
 	}
 
-	public void setOnwer(String onwer) {
-		this.onwer = onwer;
+	public void setOwner(String owner) {
+		this.owner = owner;
 	}
 
 	public Long getTimestamp() {
@@ -85,9 +108,8 @@ public class RemoteRepository {
 
 	@Override
 	public String toString() {
-		return "RemoteRepository [onwer=" + onwer + ", timestamp=" + timestamp
-				+ ", nameRepo=" + nameRepo + ", shared with=" + sharedUsers
-				+ "]";
+		return "RemoteRepository [onwer=" + owner + ", timestamp=" + timestamp + ", nameRepo=" + nameRepo
+				+ ", shared with=" + sharedUsers + "]";
 	}
 
 }
