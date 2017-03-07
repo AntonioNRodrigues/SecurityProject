@@ -22,12 +22,8 @@ public class RemoteRepository {
 		super();
 		this.nameRepo = nameRepo;
 		this.mapFiles = new ConcurrentHashMap<>();
-<<<<<<< HEAD
 		this.sharedUsers = new CopyOnWriteArrayList<String>(); //Lista concorrente
-=======
-		this.sharedUsers = new CopyOnWriteArrayList<String>();
 		persisteRemRepo();
->>>>>>> branch 'master' of https://github.com/AntonioNRodrigues/SecurityProject.git
 	}
 
 	private void persisteRemRepo() {

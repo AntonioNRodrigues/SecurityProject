@@ -100,6 +100,9 @@ public class ServerSkell {
 							// repository does not exist
 							rr = catRepo.buildRepo(mp.getLocalUser(), mp.getRepoFileName());
 						}
+						int sizeList = mp.getNumberFiles();
+						
+						
 						break;
 					default:
 						break;

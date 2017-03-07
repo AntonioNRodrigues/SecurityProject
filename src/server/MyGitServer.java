@@ -1,14 +1,14 @@
 package server;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import message.Message;
+import utilities.ReadWriteUtil;
 
 public class MyGitServer {
 	private static final int MAX_THREADS = 5;
@@ -75,8 +75,19 @@ public class MyGitServer {
 				// receive message
 				try {
 					sk.receiveMsg((Message) inStream.readObject());
+					
 				} catch (ClassNotFoundException e) {
 					e.printStackTrace();
+				}
+				
+				for (int i = 0; i < 3; i++) {
+					try {
+						File f = ReadWriteUtil.receiveFile(inStream, outStream);
+					} catch (ClassNotFoundException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					//do timestamp check and reject or accept the file; 
 				}
 				outStream.close();
 				inStream.close();
