@@ -5,6 +5,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,14 +18,13 @@ public class RemoteRepository {
 	private Long timestamp;
 	private String nameRepo;
 	private Map<String, List<File>> mapFiles;
-	private List<String> sharedUsers; // outros users tamb�m com acesso ao
-										// reposit�rio
+	private List<String> sharedUsers; // other users have access to repo
 
 	public RemoteRepository(String nameRepo) {
 		super();
 		this.nameRepo = nameRepo;
 		this.mapFiles = new ConcurrentHashMap<>();
-		this.sharedUsers = new CopyOnWriteArrayList<String>(); //Lista concorrente
+		this.sharedUsers = new CopyOnWriteArrayList<String>();
 		persisteRemRepo();
 	}
 
@@ -48,6 +50,22 @@ public class RemoteRepository {
 		this.mapFiles = new ConcurrentHashMap<>();
 		this.sharedUsers = new CopyOnWriteArrayList<String>();
 		persisteRemRepo();
+	}
+
+	/**
+	 * Get the recent version of a file, this is wrong it has to be sorted by
+	 * lastModified param
+	 * TO DO ----------------------->
+	 * FOR THE MOMENT GETS THE FIRST VALUE OF LIST 
+	 * I DONT KNOW HOW THIS IS SORTED
+	 * CHECK THE DEFAULT ORDER OF A FILE
+	 * @param nameFile
+	 * @return
+	 */
+	public File getMostRecentFile(String nameFile) {
+		List<File> temp = getMapFiles().get(nameFile);
+		Collections.sort(temp, Collections.reverseOrder());
+		return temp.get(0);
 	}
 
 	public String getOwner() {
