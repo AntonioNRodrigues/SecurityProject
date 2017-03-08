@@ -8,6 +8,8 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Iterator;
 
+import org.omg.CORBA.OBJ_ADAPTER;
+
 import enums.TypeOperation;
 import enums.TypeSend;
 import message.Message;
@@ -60,7 +62,7 @@ public class MyGitClient {
 				0);
 
 		out.writeObject((Object) m);
-
+		out.writeObject((Object)listFolder.length);
 		for (File file : listFolder) {
 			ReadWriteUtil.sendFile(file.getAbsolutePath(), in, out);
 		}

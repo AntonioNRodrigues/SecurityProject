@@ -6,6 +6,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import message.Message;
 import utilities.ReadWriteUtil;
@@ -41,14 +43,14 @@ public class MyGitServer {
 			System.err.println(e.getMessage());
 			System.exit(-1);
 		}
-		//ExecutorService executorService = Executors.newFixedThreadPool(MAX_THREADS);
+		ExecutorService executorService = Executors.newFixedThreadPool(MAX_THREADS);
 		System.out.println("MyGitServer Waiting for clients:");
 		while (true) {
 			try {
 				Socket inSoc = sSoc.accept();
 				ServerThread newServerThread = new ServerThread(inSoc);
-				 newServerThread.start();
-				//executorService.execute(newServerThread);
+				 //newServerThread.start();
+				executorService.execute(newServerThread);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -75,17 +77,18 @@ public class MyGitServer {
 
 				// receive message
 				try {
-					sk.receiveMsg((Message) inStream.readObject());
-					
+					sk.receiveMsg((Message) inStream.readObject());	
 				} catch (ClassNotFoundException e) {
 					e.printStackTrace();
 				}
+				//its not a message is list of files when we do a push repository
+				// see a better way to get the number of files that have to be send
 				
-				for (int i = 0; i < 3; i++) {
+				int sizeList = (Integer) inStream.readObject();
+				for (int i = 0; i < sizeList; i++) {
 					try {
 						File f = ReadWriteUtil.receiveFile(inStream, outStream);
 					} catch (ClassNotFoundException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 					//do timestamp check and reject or accept the file; 
@@ -94,7 +97,7 @@ public class MyGitServer {
 				inStream.close();
 				socket.close();
 
-			} catch (IOException e) {
+			} catch (IOException | ClassNotFoundException e) {
 				e.printStackTrace();
 			}
 		}
