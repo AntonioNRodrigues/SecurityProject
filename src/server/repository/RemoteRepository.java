@@ -2,15 +2,15 @@ package server.repository;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class RemoteRepository {
@@ -22,6 +22,15 @@ public class RemoteRepository {
 
 	public RemoteRepository(String nameRepo) {
 		super();
+		this.nameRepo = nameRepo;
+		this.mapFiles = new ConcurrentHashMap<>();
+		this.sharedUsers = new CopyOnWriteArrayList<String>();
+		persisteRemRepo();
+	}
+
+	public RemoteRepository(String onwer, String nameRepo) {
+		super();
+		this.owner = onwer;
 		this.nameRepo = nameRepo;
 		this.mapFiles = new ConcurrentHashMap<>();
 		this.sharedUsers = new CopyOnWriteArrayList<String>();
@@ -43,22 +52,12 @@ public class RemoteRepository {
 		System.out.println(this);
 	}
 
-	public RemoteRepository(String onwer, String nameRepo) {
-		super();
-		this.owner = onwer;
-		this.nameRepo = nameRepo;
-		this.mapFiles = new ConcurrentHashMap<>();
-		this.sharedUsers = new CopyOnWriteArrayList<String>();
-		persisteRemRepo();
-	}
-
 	/**
 	 * Get the recent version of a file, this is wrong it has to be sorted by
-	 * lastModified param
-	 * TO DO ----------------------->
-	 * FOR THE MOMENT GETS THE FIRST VALUE OF LIST 
-	 * I DONT KNOW HOW THIS IS SORTED
-	 * CHECK THE DEFAULT ORDER OF A FILE
+	 * lastModified param TO DO -----------------------> FOR THE MOMENT GETS THE
+	 * FIRST VALUE OF LIST I DONT KNOW HOW THIS IS SORTED CHECK THE NATURAL
+	 * ORDER OF A FILE
+	 * 
 	 * @param nameFile
 	 * @return
 	 */
@@ -66,6 +65,29 @@ public class RemoteRepository {
 		List<File> temp = getMapFiles().get(nameFile);
 		Collections.sort(temp, Collections.reverseOrder());
 		return temp.get(0);
+	}
+
+	/**
+	 * method to give a set of the most recent file that are in the map
+	 * 
+	 * @return set with unique files and each file is the recent version
+	 */
+	public Set<File> getListMostRecentFiles() {
+		Set<File> set = new ConcurrentSkipListSet<>();
+		for (String name : mapFiles.keySet()) {
+			set.add(getMostRecentFile(name));
+		}
+		return set;
+	}
+
+	/**
+	 * method to give the size of the unique values present in the map This
+	 * exclude the files that have different versions in the repository.
+	 * 
+	 * @return size of set
+	 */
+	public int sizeUniqueFilesInMap() {
+		return getListMostRecentFiles().size();
 	}
 
 	public String getOwner() {
