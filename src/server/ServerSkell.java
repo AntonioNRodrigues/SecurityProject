@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.file.Files;
 
 import enums.TypeOperation;
 import enums.TypeSend;
@@ -51,30 +52,29 @@ public class ServerSkell {
 	}
 
 	public void receiveMsg(Message msg) throws ClassNotFoundException, IOException {
+		RemoteRepository rr = null;
 		if (authentication(msg)) {
-			out.writeObject((Object)"THE USER IS AUTHENTICATED");
+			out.writeObject((Object) "THE USER IS AUTHENTICATED");
 			if (msg instanceof MessageRS) {
 				System.out.println(msg);
-				TypeOperation op = ((MessageRS) msg).getTypeOperation();
-
+				MessageRS mrs = (MessageRS) msg;
+				TypeOperation op = mrs.getTypeOperation();
 				switch (op) {
 				case REMOVE:
-					// -remove <rep_name> <user_id>
-					// TODO Falta verificar se � o owner que est� a aceder ao
-					// reposit�rio. Porque s� ele pode adicionar users.
-					System.out.println("-remove repo_name userID");
-					RemoteRepository rrr = catRepo.getRemRepository(((MessageRS) msg).getRepoName());
-					rrr.removeUserFromRepo(((MessageRS) msg).getUserId());
-					System.out.println(rrr);
+					System.out.println("-REMOVE REPO NAME USERID");
+					rr = catRepo.getRemRepository(mrs.getRepoName());
+					if (mrs.getLocalUser().getName().equals(rr.getOwner())) {
+						rr.removeUserFromRepo(mrs.getUserId());
+					}
+					System.out.println(rr);
 					break;
 				case SHARE:
-					// -share <rep_name> <user_id>
-					// TODO Falta verificar se � o owner que est� a aceder ao
-					// reposit�rio. Porque s� ele pode adicionar users.
-					System.out.println("-share repo_name userID");
-					RemoteRepository rrs = catRepo.getRemRepository(((MessageRS) msg).getRepoName());
-					rrs.addUserToRepo(((MessageRS) msg).getUserId());
-					System.out.println(rrs);
+					System.out.println("-SHARE REPO NAME USERID");
+					rr = catRepo.getRemRepository(mrs.getRepoName());
+					if (mrs.getLocalUser().getName().equals(rr.getOwner())) {
+						rr.addUserToRepo(mrs.getUserId());
+					}
+					System.out.println(rr);
 					break;
 				default:
 					break;
@@ -90,19 +90,19 @@ public class ServerSkell {
 				case REPOSITORY:
 					switch (op) {
 					case PULL:
-						
+						System.out.println("-PULL REPOSITORY");
+						rr = catRepo.getRemRepository(mp.getRepoName());
+
 						break;
 					case PUSH:
 						// -push repo_name
-						System.out.println("-PUSH REPO");
-						RemoteRepository rr = catRepo.getRemRepository(mp.getRepoFileName());
+						System.out.println("-PUSH REPOSITORY");
+						rr = catRepo.getRemRepository(mp.getRepoName());
 						if (rr == null) {
 							// repository does not exist
-							rr = catRepo.buildRepo(mp.getLocalUser(), mp.getRepoFileName());
+							rr = catRepo.buildRepo(mp.getLocalUser(), mp.getRepoName());
 						}
-						int sizeList = mp.getNumberFiles();
-						
-						
+
 						break;
 					default:
 						break;
@@ -111,17 +111,41 @@ public class ServerSkell {
 				case FILE:
 					switch (op) {
 					case PULL:
-
+						System.out.println("-PULL FILE");
+						rr = catRepo.getRemRepository(mp.getRepoName());
+						long lastModifiedDate = mp.getTimestamp();
+						if (rr != null) {
+							File inRepo = rr.getMostRecentFile(mp.getFileName());
+							// client does not have the recent file so send it
+							if (lastModifiedDate < inRepo.lastModified()) {
+								try {
+									ReadWriteUtil.sendFile(mp.getFileName(), in, out);
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+							} else {
+								out.writeObject((Object) "THE SERVER HAS NOT A RECENT VERSION FOR U");
+							}
+						}
 						break;
 					case PUSH:
 						// -push file_name
 						System.out.println("-PUSH FILE");
-						RemoteRepository rr = catRepo.getRemRepository(mp.getRepoFileName());
+						rr = catRepo.getRemRepository(mp.getRepoName());
 						if (rr != null) {
 							// the repo exists them proceed with push file
 							try {
-								File f = ReadWriteUtil.receiveFile(in, out);
-								// do timestamps check
+								File received = ReadWriteUtil.receiveFile(in, out);
+								File inRepo = rr.getMostRecentFile(received.getName());
+								// if received file has lastmodified > than the
+								// one that exists in the repo
+								if (received.lastModified() > inRepo.lastModified()) {
+									// added to the list
+									rr.getVersionList(received.getName()).add(received);
+								} else {
+									// delete file the repo has a recent file
+									Files.deleteIfExists(received.toPath());
+								}
 							} catch (ClassNotFoundException e) {
 								e.printStackTrace();
 							} catch (IOException e) {
@@ -139,9 +163,8 @@ public class ServerSkell {
 					break;
 				}
 			}
-		}
-		else{
-			out.writeObject((Object)"YOU DOT NOT HAVE PREMISSIONS TO KEEP GOING PLEASE CHECK PASSWORD");
+		} else {
+			out.writeObject((Object) "YOU DOT NOT HAVE PREMISSIONS TO KEEP GOING PLEASE CHECK PASSWORD");
 		}
 	}
 
