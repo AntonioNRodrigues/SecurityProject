@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import message.Message;
+import server.repository.RemoteRepository;
 import utilities.ReadWriteUtil;
 
 public class MyGitServer {
@@ -83,11 +84,11 @@ public class MyGitServer {
 				}
 				//its not a message is list of files when we do a push repository
 				// see a better way to get the number of files that have to be send
-				
+				RemoteRepository rr = null;
 				int sizeList = (Integer) inStream.readObject();
 				for (int i = 0; i < sizeList; i++) {
 					try {
-						File f = ReadWriteUtil.receiveFile(inStream, outStream);
+						File received = ReadWriteUtil.receiveFile(inStream, outStream);
 					} catch (ClassNotFoundException e) {
 						e.printStackTrace();
 					}
