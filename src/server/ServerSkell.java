@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Files;
+import java.util.Set;
 
 import enums.TypeOperation;
 import enums.TypeSend;
@@ -92,6 +93,17 @@ public class ServerSkell {
 					case PULL:
 						System.out.println("-PULL REPOSITORY");
 						rr = catRepo.getRemRepository(mp.getRepoName());
+						out.writeObject((Object) rr.sizeUniqueFilesInMap());
+						Set<File> set = rr.getListMostRecentFiles();
+
+						/*
+						 * TO DO iterate over the set and send each file check a
+						 * better place to do so i dont think this works inside
+						 * this method
+						 */
+						for (File f : set) {
+							ReadWriteUtil.sendFile(f.getName(), in, out);
+						}
 
 						break;
 					case PUSH:
@@ -102,7 +114,6 @@ public class ServerSkell {
 							// repository does not exist
 							rr = catRepo.buildRepo(mp.getLocalUser(), mp.getRepoName());
 						}
-
 						break;
 					default:
 						break;
