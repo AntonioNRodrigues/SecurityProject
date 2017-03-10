@@ -78,6 +78,7 @@ public class MyGitServer {
 
 				// receive message
 				try {
+					System.err.println("INSIDE TRY TO READ MSG");
 					sk.receiveMsg((Message) inStream.readObject());	
 				} catch (ClassNotFoundException e) {
 					e.printStackTrace();
