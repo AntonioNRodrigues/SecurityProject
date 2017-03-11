@@ -12,6 +12,11 @@ public class LocalRepository {
 	private List<File> listFiles;
 	private List<User> sharedUsers;
 	
+	public LocalRepository(String name){
+		this.nameRepo = name;
+	}
+		
+	
 	public User getOnwer() {
 		return onwer;
 	}
