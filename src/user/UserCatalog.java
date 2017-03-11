@@ -28,8 +28,7 @@ public class UserCatalog {
 		File f = new File(SERVER + "/" + USERS);
 
 		try {
-			BufferedReader b = null;
-			b = new BufferedReader(new FileReader(f));
+			BufferedReader b = new BufferedReader(new FileReader(f));
 			String str = b.readLine();
 			while (str != null) {
 				splitLine(str);
@@ -44,7 +43,12 @@ public class UserCatalog {
 
 	private void splitLine(String str) {
 		String[] userPass = str.split(":");
-		User u = new User(userPass[0], userPass[1]);
+		User u = null;
+		if (userPass.length == 1) {
+			u = new User(userPass[0]);
+		} else {
+			u = new User(userPass[0], userPass[1]);
+		}
 		mapUsers.put(u.getName(), u);
 	}
 
