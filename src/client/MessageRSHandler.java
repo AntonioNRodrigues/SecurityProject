@@ -13,7 +13,7 @@ public class MessageRSHandler extends MessageHandler {
 	@Override
 	public String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient2 params) {
 		// TODO Auto-generated method stub
-		return "MessageRHHandler:sendMessage:"+params.getLocalUser()+" "+params.getServerAddress()+" "+(params.getPassword()==null?"":"-p "+params.getPassword())+" -"+params.getOperation()+" "+params.getRepOrFileName();
+		return "MessageRSHHandler:sendMessage:"+params.getLocalUser()+" "+params.getServerAddress()+" "+(params.getPassword()==null?"":"-p "+params.getPassword())+" -"+params.getOperation()+" "+params.getRepOrFileName();
 	}
 
 }

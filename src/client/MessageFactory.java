@@ -26,6 +26,7 @@ public enum MessageFactory {
 	 */
 	private void loadmsgTypes() {
 
+		msgTypes.put("AUTH", new MessageAHandler());
 		msgTypes.put("PUSH", new MessagePHandler());
 		msgTypes.put("PULL", new MessagePHandler());
 		msgTypes.put("SHARE", new MessageRSHandler());
