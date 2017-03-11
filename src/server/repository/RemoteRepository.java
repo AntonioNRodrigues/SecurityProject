@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -53,17 +54,34 @@ public class RemoteRepository {
 	}
 
 	/**
-	 * Get the recent version of a file, this is wrong it has to be sorted by
-	 * lastModified param TO DO -----------------------> FOR THE MOMENT GETS THE
-	 * FIRST VALUE OF LIST I DONT KNOW HOW THIS IS SORTED CHECK THE NATURAL
-	 * ORDER OF A FILE
+	 * Get the recent version of a file, NOT TESTED-------------------
 	 * 
 	 * @param nameFile
 	 * @return
 	 */
 	public File getMostRecentFile(String nameFile) {
 		List<File> temp = getMapFiles().get(nameFile);
-		Collections.sort(temp, Collections.reverseOrder());
+		System.out.println("BEFORE SORT " + temp);
+		Collections.sort(temp, new Comparator<File>() {
+
+			@Override
+			public int compare(File file1, File file2) {
+				int value = 0;
+				if (file1.lastModified() < file2.lastModified()) {
+					value = 1;
+				}
+				if (file1.lastModified() > file2.lastModified()) {
+					value = -1;
+				}
+				if (file1.lastModified() == file2.lastModified()) {
+					value = 0;
+				}
+				return value;
+			}
+		});
+
+		System.out.println("AFTER SORT " + temp);
+		// Collections.sort(temp, Collections.reverseOrder());
 		return temp.get(0);
 	}
 

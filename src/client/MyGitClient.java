@@ -58,7 +58,7 @@ public class MyGitClient {
 		MessageP mp2 = new MessageP(new User("n"), HOST + PORT, "P", TypeSend.REPOSITORY, "REP01", TypeOperation.PUSH,
 				1, 0);
 		MessageP mp4 = new MessageP(new User("n"), HOST + PORT, "P", TypeSend.FILE, "REP01", TypeOperation.PUSH, 1, 0);
-		MessageP mp1 = new MessageP(new User("n", "p"), HOST + PORT, "P", TypeSend.FILE, "REP01", TypeOperation.PUSH, 1,
+		MessageP mp1 = new MessageP(new User("n", "p"), HOST + PORT, "p", TypeSend.FILE, "REP01/1.txt", TypeOperation.PUSH, 1,
 				0);
 
 		out.writeObject((Object) m);
@@ -66,7 +66,8 @@ public class MyGitClient {
 		for (File file : listFolder) {
 			ReadWriteUtil.sendFile(file.getAbsolutePath(), in, out);
 		}
-
+		//out.writeObject((Object) mp1);
+		//ReadWriteUtil.sendFile("REP01/1.txt",in, out);
 		out.close();
 		in.close();
 		socket.close();

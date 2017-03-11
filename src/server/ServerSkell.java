@@ -100,6 +100,7 @@ public class ServerSkell {
 						 * TO DO iterate over the set and send each file check a
 						 * better place to do so i dont think this works inside
 						 * this method
+						 * WAITING FOR CLIENT TO DEAL WITH IT
 						 */
 						for (File f : set) {
 							ReadWriteUtil.sendFile(f.getName(), in, out);
@@ -147,7 +148,9 @@ public class ServerSkell {
 							// the repo exists them proceed with push file
 							try {
 								File received = ReadWriteUtil.receiveFile(in, out);
+								System.out.println(received.getName() + received.lastModified());
 								File inRepo = rr.getMostRecentFile(received.getName());
+								System.out.println(inRepo.getName() + inRepo.lastModified());
 								// if received file has lastmodified > than the
 								// one that exists in the repo
 								if (received.lastModified() > inRepo.lastModified()) {
