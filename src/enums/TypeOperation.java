@@ -2,7 +2,7 @@ package enums;
 
 public enum TypeOperation {
 
-	PUSH, PULL, REMOVE, SHARE;
+	PUSH, PULL, REMOVE, SHARE, AUTH;
 
 	public static boolean contains(String operacao) {
 		for (int i = 0; i < TypeOperation.values().length; i++) {
