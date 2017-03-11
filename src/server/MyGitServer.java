@@ -16,7 +16,6 @@ import utilities.ReadWriteUtil;
 public class MyGitServer {
 	private static final int MAX_THREADS = 5;
 	private static ServerSkell sk;
-	
 
 	private static boolean checkParams(String[] args) {
 		return (args.length == 1) ? true : false;
@@ -44,14 +43,15 @@ public class MyGitServer {
 			System.err.println(e.getMessage());
 			System.exit(-1);
 		}
-		ExecutorService executorService = Executors.newFixedThreadPool(MAX_THREADS);
+		// ExecutorService executorService =
+		// Executors.newFixedThreadPool(MAX_THREADS);
 		System.out.println("MyGitServer Waiting for clients:");
 		while (true) {
 			try {
 				Socket inSoc = sSoc.accept();
 				ServerThread newServerThread = new ServerThread(inSoc);
-				 //newServerThread.start();
-				executorService.execute(newServerThread);
+				newServerThread.start();
+				// executorService.execute(newServerThread);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -78,28 +78,32 @@ public class MyGitServer {
 
 				// receive message
 				try {
-					System.err.println("INSIDE TRY TO READ MSG");
-					sk.receiveMsg((Message) inStream.readObject());	
+					sk.receiveMsg((Message) inStream.readObject());
 				} catch (ClassNotFoundException e) {
 					e.printStackTrace();
 				}
-				//its not a message is list of files when we do a push repository
-				// see a better way to get the number of files that have to be send
+				// its not a message is list of files when we do a push
+				// repository
+				// see a better way to get the number of files that have to be
+				// send
+				
 				RemoteRepository rr = null;
-				int sizeList = (Integer) inStream.readObject();
+
+				int sizeList = 0;// (Integer) inStream.readObject();
 				for (int i = 0; i < sizeList; i++) {
 					try {
 						File received = ReadWriteUtil.receiveFile(inStream, outStream);
 					} catch (ClassNotFoundException e) {
 						e.printStackTrace();
 					}
-					//do timestamp check and reject or accept the file; 
+					// do timestamp check and reject or accept the file;
 				}
+
 				outStream.close();
 				inStream.close();
 				socket.close();
 
-			} catch (IOException | ClassNotFoundException e) {
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
