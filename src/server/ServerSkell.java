@@ -186,13 +186,15 @@ public class ServerSkell {
 		User u = catUsers.getMapUsers().get(msg.getLocalUser().getName());
 		// user does not exist, register user
 		if (u == null) {
+			System.out.println("THE USER WAS NOT FOUND:: REGISTERING USER");
 			catUsers.registerUser(msg.getLocalUser().getName(), msg.getPassword());
+			
 			return true;
 		}
 		// user exists check permissions
 		if (u != null) {
 			// user exists but does not have the password filled
-			if (u.getPassword().equals(null)) {
+			if (u.getPassword().equals("")) {
 				try {
 					out.writeObject((Object) "Please fill your password");
 					String password = (String) in.readObject();

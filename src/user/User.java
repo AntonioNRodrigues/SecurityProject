@@ -10,6 +10,7 @@ public class User implements Serializable {
 	public User(String name) {
 		super();
 		this.name = name;
+		this.password = "";
 	}
 
 	public User(String name, String password) {

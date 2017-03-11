@@ -6,16 +6,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.Iterator;
-
-import org.omg.CORBA.OBJ_ADAPTER;
 
 import enums.TypeOperation;
 import enums.TypeSend;
 import message.Message;
 import message.MessageP;
 import user.User;
-import utilities.ReadWriteUtil;
 
 public class MyGitClient {
 	private static final String HOST = "127.0.0.1";
@@ -48,6 +44,20 @@ public class MyGitClient {
 		 * } while (!(str.equalsIgnoreCase("QUIT")));
 		 */
 
+		// test AUTH -- new user
+		Message auth = new Message(new User("antonio", "password"), HOST + ":" + PORT, "password");
+		// out.writeObject((Object)auth);
+		// register new user ----DONE
+
+		Message auth2 = new Message(new User("manel"), HOST + ":" + PORT, "");
+		out.writeObject((Object) auth2);
+		String str = "newPass";
+		try {
+			str = (String) in.readObject();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 		Message m = new Message(new User("n", "p"), HOST + PORT, "p");
 		File folder = new File("CLIENT/REP01");
 		File[] listFolder = folder.listFiles();
@@ -58,16 +68,16 @@ public class MyGitClient {
 		MessageP mp2 = new MessageP(new User("n"), HOST + PORT, "P", TypeSend.REPOSITORY, "REP01", TypeOperation.PUSH,
 				1, 0);
 		MessageP mp4 = new MessageP(new User("n"), HOST + PORT, "P", TypeSend.FILE, "REP01", TypeOperation.PUSH, 1, 0);
-		MessageP mp1 = new MessageP(new User("n", "p"), HOST + PORT, "p", TypeSend.FILE, "REP01/1.txt", TypeOperation.PUSH, 1,
-				0);
+		MessageP mp1 = new MessageP(new User("n", "p"), HOST + PORT, "p", TypeSend.FILE, "REP01/1.txt",
+				TypeOperation.PUSH, 1, 0);
 
-		out.writeObject((Object) m);
-		out.writeObject((Object)listFolder.length);
+		// out.writeObject((Object) m);
+		// out.writeObject((Object)listFolder.length);
 		for (File file : listFolder) {
-			ReadWriteUtil.sendFile(file.getAbsolutePath(), in, out);
+			// ReadWriteUtil.sendFile(file.getAbsolutePath(), in, out);
 		}
-		//out.writeObject((Object) mp1);
-		//ReadWriteUtil.sendFile("REP01/1.txt",in, out);
+		// out.writeObject((Object) mp1);
+		// ReadWriteUtil.sendFile("REP01/1.txt",in, out);
 		out.close();
 		in.close();
 		socket.close();
