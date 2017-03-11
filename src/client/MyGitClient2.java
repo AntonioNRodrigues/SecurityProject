@@ -11,6 +11,10 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +23,7 @@ import java.util.Properties;
 
 import com.sun.glass.ui.TouchInputSupport;
 
+import client.repository.LocalRepository;
 import enums.TypeOperation;
 import enums.TypeSend;
 import message.Message;
@@ -35,6 +40,7 @@ public class MyGitClient2 {
 	private static String version;
 	private static File propertiesFile;
 	private String operation;
+	private String typeSend;
 	private String serverAddress;
 	private String host;
 	private int port;
@@ -42,6 +48,7 @@ public class MyGitClient2 {
 	private String password;
 	private String userId;
 	private String fileName;
+	private Path file;
 	private String repName;
 	private String repOrFileName;
 	
@@ -58,7 +65,7 @@ public class MyGitClient2 {
 
 		MyGitClient2 myGitClient = new MyGitClient2(args);
 		String op = myGitClient.getOperation();
-		System.out.println("op: "+myGitClient.operation);
+		System.out.println("op: "+op);
 
 		if (TypeOperation.contains(op)) {
 
@@ -120,12 +127,25 @@ public class MyGitClient2 {
 		}
 		else {
 			
+			if (op.toUpperCase().contentEquals("INIT")) {
+				
+				createRep(myGitClient.repName);
+				
+			}
+			
 			
 
 		}
 	}
 		
 		
+	private static void createRep(String repName) {
+		// TODO Auto-generated method stub
+		
+		LocalRepository lRep = new LocalRepository(repName, "INIT");
+		
+	}
+
 	public String getOperation() {
 		// TODO Auto-generated method stub
 		return this.operation;
@@ -226,6 +246,10 @@ public class MyGitClient2 {
 			
 			if (!valConnArgs(lArgs, ind))
 				return false;
+			
+			if (!valTypeSend(this.repOrFileName))
+				return false;
+			
 		}
 		else if (lArgs.contains("-pull")) {
 			ind = lArgs.indexOf("-pull");
@@ -271,18 +295,13 @@ public class MyGitClient2 {
 		}
 		else {
 			
-			if (lArgs.size()==2) {
-				this.localUser=lArgs.get(0);
-				this.serverAddress=lArgs.get(1);
-			}
-			else if (lArgs.size()==4) {
-				this.localUser=lArgs.get(0);
-				this.serverAddress=lArgs.get(1);
-				this.password=lArgs.get(3);
+			if (lArgs.size()==2 || lArgs.size()==4) {
+				if (!valConnArgs(lArgs, lArgs.size()))
+					return false;
+				this.operation="AUTH";
 			}
 			else
 				return false;
-			
 		}
 		
 		System.out.println("localUser: "+this.localUser);
@@ -299,6 +318,32 @@ public class MyGitClient2 {
 		
 		return true;
 	}
+
+	//para ser usado apenas no push, ver como adaptar para pull...
+	private boolean valTypeSend(String repOrFileName) {
+		// TODO Auto-generated method stub
+		
+		Path path = Paths.get("CLIENT/myrep/" + repOrFileName);
+		boolean exists = Files.exists(path);
+		boolean isDirectory = Files.isDirectory(path);
+		boolean isFile = Files.isRegularFile(path); 
+		
+		// for now...if file exists and is a directory then...is a repo!
+		if (exists && isDirectory) {
+			this.setTypeSend("REPOSITORY");
+			this.repName=repOrFileName;
+		}
+		else if  (exists && isFile) {
+			this.setTypeSend("FILE");
+			this.fileName=repOrFileName;
+			this.setFile(path);
+		}
+		else {
+			return false;
+		}
+		return true;
+	}
+	
 
 	private boolean valConnArgs(List<String> lArgs, int ind){
 		if (ind==2) {
@@ -406,6 +451,22 @@ public class MyGitClient2 {
 	        }
 	    }
 	   }
+
+		public String getTypeSend() {
+			return typeSend;
+		}
+
+		public void setTypeSend(String typeSend) {
+			this.typeSend = typeSend;
+		}
+
+		public Path getFile() {
+			return file;
+		}
+
+		public void setFile(Path file) {
+			this.file = file;
+		}
 	
 
 			
