@@ -32,6 +32,14 @@ import message.MessageRS;
 import user.User;
 import utilities.ReadWriteUtil;
 
+/**
+ * @author pedrocandido
+ *
+ */
+/**
+ * @author pedrocandido
+ *
+ */
 public class MyGitClient2 {
 	private static final int VALUE = 1024;
 	private static final String HOST = "127.0.0.1";
