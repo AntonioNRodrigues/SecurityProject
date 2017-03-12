@@ -27,7 +27,7 @@ public class MessagePHandler extends MessageHandler {
 		else if (params.getTypeSend().contentEquals("REPOSITORY"))
 			sendPushRepMessage(in, out, params);
 		else {
-			// tenho de tratar do error handling em todo o lado!!!...
+			// TODO: tratar do error handling!!!
 			System.out.println("ERRO: param invalido");
 		}
 
@@ -78,12 +78,6 @@ public class MessagePHandler extends MessageHandler {
 			e.printStackTrace();
 		}	
 
-		try {
-			out.writeObject((Object)mp);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		
 		/*Message m = new Message(new User("n", "p"), HOST + PORT, "p");
 		File folder = new File("CLIENT/REP01");
