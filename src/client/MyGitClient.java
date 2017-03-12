@@ -70,10 +70,10 @@ public class MyGitClient {
 		// send each file in repo
 		System.err.println("next");
 		for (File file : listFolder) {
-			MessageP p = new MessageP(new User("antonio","password"), HOST + ":" + PORT, "password", TypeSend.FILE, folder.getName(),
-					file.getAbsolutePath(), TypeOperation.PUSH, 1, file.lastModified());
+			MessageP pp = new MessageP(new User("antonio","password"), HOST + ":" + PORT, "password", TypeSend.FILE, folder.getName(),
+					file.getName(), TypeOperation.PUSH, 1, file.lastModified());
 			System.out.println( file.getName());
-			out.writeObject((Object) p);
+			out.writeObject((Object) pp);
 		}
 		MessageP mp2 = new MessageP(new User("n"), HOST + PORT, "P", TypeSend.REPOSITORY, "REP01", TypeOperation.PUSH,
 				1, 0);
