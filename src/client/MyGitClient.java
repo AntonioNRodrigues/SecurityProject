@@ -59,8 +59,13 @@ public class MyGitClient {
 			 * local O programa limitar-se-á a criar a directoria
 			 * correspondente ao repositório, se ainda não existir...
 			 */
-
-			createLocalRepo(myGitClient.getRepName());
+			
+			File client = new File("CLIENT");
+			if (!client.exists())
+				client.mkdir();
+				//se não existir, cria o diretorio CLIENT
+			else
+				createLocalRepo(myGitClient.getRepName());
 			
 		} else if (TypeOperation.contains(op)) {
 
@@ -135,7 +140,7 @@ public class MyGitClient {
 
 	private static void createLocalRepo(String repName) {
 
-		Path path = Paths.get("CLIENT" + File.separator+repName);
+		Path path = Paths.get("CLIENT" + File.separator +repName);
 		boolean exists = Files.exists(path);
 		boolean isDirectory = Files.isDirectory(path);
 
