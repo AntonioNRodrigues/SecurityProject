@@ -154,6 +154,7 @@ public class MyGitClient {
 		} else
 			try {
 				Files.createDirectory(path);
+				System.out.println("Diretório criado com o nome: " + repName);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -291,6 +292,12 @@ public class MyGitClient {
 
 			if (!valConnArgs(lArgs, ind))
 				validated = false;
+			
+			if (!valTypeSend(this.repName)){
+				System.err.println("Só pode partilhar repositórios que também sejam locais");
+				validated = false;
+			}
+				
 
 		} else if (lArgs.contains("-remove")) {
 			ind = lArgs.indexOf("-remove");
@@ -305,6 +312,11 @@ public class MyGitClient {
 
 			if (!valConnArgs(lArgs, ind))
 				validated = false;
+			
+			if (!valTypeSend(this.repName)) {
+				System.err.println("Só pode remover utilizadores de repositórios que também sejam locais");
+				validated = false;
+			}
 			
 		} else {
 
