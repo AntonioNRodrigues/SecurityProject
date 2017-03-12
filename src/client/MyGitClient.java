@@ -52,7 +52,17 @@ public class MyGitClient {
 		String op = myGitClient.getOperation();
 		System.out.println("op: " + op);
 
-		if (TypeOperation.contains(op)) {
+		if (op.toUpperCase().contentEquals("INIT")) {
+
+			/*
+			 * Neste caso não é necessário criar objecto repositório
+			 * local O programa limitar-se-á a criar a directoria
+			 * correspondente ao repositório, se ainda não existir...
+			 */
+
+			createLocalRepo(myGitClient.getRepName());
+			
+		} else if (TypeOperation.contains(op)) {
 
 			Socket socket = new Socket(myGitClient.getHost(),
 					myGitClient.getPort());
@@ -119,16 +129,7 @@ public class MyGitClient {
 			socket.close();
 		} else {
 
-			if (op.toUpperCase().contentEquals("INIT")) {
-
-				/*
-				 * Neste caso não é necessário criar objecto repositório
-				 * local O programa limitar-se-á a criar a directoria
-				 * correspondente ao repositório, se ainda não existir...
-				 */
-
-				createLocalRepo(myGitClient.getRepName());
-			}
+			System.out.println("ERRO");
 		}
 	}
 
@@ -331,22 +332,36 @@ public class MyGitClient {
 		return validated;
 	}
 
-	// TODO: para ser usado apenas no push, ver como adaptar para pull...
-	// TODO: rep ainda hardcoded
+	
+	@SuppressWarnings("unused")
 	private boolean valTypeSend(String repOrFileName) {
 
-		Path path = Paths.get("CLIENT/myrep/" + repOrFileName);
+		// TODO: working on it now...confusing specs...see
+		// java myGit maria 127.0.0.1:23456 -p badpwd  -push myrep
+		// java myGit pedro 127.0.0.1:23456 -p badpwd1 -pull maria/myrep
+		// java myGit pedro 127.0.0.1:23456 -p badpwd1 -push maria/myrep/myGit.java
+		// java myGit maria 127.0.0.1:23456 -p badpwd  -pull myrep/myGit.java
+		// java myGit pedro 127.0.0.1:23456 -p badpwd1 -pull maria/myrep
+		// Obrigo que se escreva sempre o rep no caminho do ficheiro como nos exemplos do trabalho?
+		// Se quiser fazer push do ficheiro myGyt.java que esta no meu repositorio myrep terei de fazer
+		// java myGit maria 127.0.0.1:23456 -p badpwd  -push myrep/myGit.java
+		// TODO: ainda nao esta comtemplado o caso de repositorios partilhados: maria/myrep/myGit.java
+		
+		Path path = Paths.get("CLIENT/" + repOrFileName);
 		boolean exists = Files.exists(path);
 		boolean isDirectory = Files.isDirectory(path);
 		boolean isFile = Files.isRegularFile(path);
 
-		// for now...if file exists and is a directory then...is a repo!
 		if (exists && isDirectory) {
 			this.setTypeSend("REPOSITORY");
 			this.repName = repOrFileName;
 		} else if (exists && isFile) {
 			this.setTypeSend("FILE");
-			this.fileName = repOrFileName;
+			
+			String[] repFile = this.repOrFileName.split("/");
+			this.repName = repFile[0];
+			this.fileName =repFile[1];
+
 			this.setFile(path);
 		} else {
 			return false;
@@ -356,15 +371,15 @@ public class MyGitClient {
 
 	private boolean valConnArgs(List<String> lArgs, int ind) {
 		if (ind == 2) {
-			this.localUser = lArgs.get(1);
-			this.serverAddress = lArgs.get(2);
+			this.localUser = lArgs.get(0);
+			this.serverAddress = lArgs.get(1);
 			String[] srvAdr = this.serverAddress.split(":");
 			this.host = srvAdr[0];
 			this.port = Integer.parseInt(srvAdr[1]);
 		} else if (ind == 4) {
-			this.localUser = lArgs.get(1);
-			this.serverAddress = lArgs.get(2);
-			this.password = lArgs.get(4);
+			this.localUser = lArgs.get(0);
+			this.serverAddress = lArgs.get(1);
+			this.password = lArgs.get(3);
 			String[] srvAdr = this.serverAddress.split(":");
 			this.host = srvAdr[0];
 			this.port = Integer.parseInt(srvAdr[1]);
