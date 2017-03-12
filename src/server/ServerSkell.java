@@ -110,7 +110,9 @@ public class ServerSkell {
 					case PUSH:
 						// -push repo_name
 						System.out.println("-PUSH REPOSITORY");
+						System.out.println(mp.getRepoName());
 						rr = catRepo.getRemRepository(mp.getRepoName());
+						System.out.println(rr== null);
 						if (rr == null) {
 							// repository does not exist
 							rr = catRepo.buildRepo(mp.getLocalUser(), mp.getRepoName());
@@ -180,6 +182,7 @@ public class ServerSkell {
 		} else {
 			out.writeObject((Object) "YOU DOT NOT HAVE PREMISSIONS TO KEEP GOING PLEASE CHECK PASSWORD");
 		}
+		System.out.println("end");
 	}
 
 	private boolean authentication(Message msg) {
