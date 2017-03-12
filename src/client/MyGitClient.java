@@ -286,6 +286,7 @@ public class MyGitClient {
 			if (lArgs.size() >= ind + 2) {
 				this.repName = lArgs.get(ind + 1);
 				this.userId = lArgs.get(ind + 2);
+				System.err.println("INDICE É O " + ind );
 				validated = true;
 			} else
 				validated = false;

@@ -65,7 +65,6 @@ public enum MessageFactory {
 	}
 
 	public static MessageFactory getInstance() {
-		// TODO Auto-generated method stub
 			return INSTANCE;
 	}
 	
