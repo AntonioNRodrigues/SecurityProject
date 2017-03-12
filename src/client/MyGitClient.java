@@ -50,24 +50,35 @@ public class MyGitClient {
 		// register new user ----DONE
 
 		Message auth2 = new Message(new User("manel"), HOST + ":" + PORT, "");
-		out.writeObject((Object) auth2);
+		// out.writeObject((Object) auth2);
 		String str = "newPass";
 		try {
-			str = (String) in.readObject();
+			// str = (String) in.readObject();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
-		Message m = new Message(new User("n", "p"), HOST + PORT, "p");
+		// Message m = new Message(new User("n", "p"), HOST + PORT, "p");
 		File folder = new File("CLIENT/REP01");
+		System.out.println(folder);
 		File[] listFolder = folder.listFiles();
-
-		MessageP mp = new MessageP(new User("n"), HOST + PORT, "p", TypeSend.REPOSITORY, folder.getAbsolutePath(),
+		System.out.println(listFolder[0]);
+		// send repo
+		MessageP mp = new MessageP(new User("antonio", "password"), HOST + PORT, "password", TypeSend.REPOSITORY, folder.getName(),
 				TypeOperation.PUSH, listFolder.length, folder.lastModified());
-
+		out.writeObject((Object) mp);
+		// send each file in repo
+		System.err.println("next");
+		for (File file : listFolder) {
+			MessageP p = new MessageP(new User("antonio","password"), HOST + ":" + PORT, "password", TypeSend.FILE, folder.getName(),
+					file.getAbsolutePath(), TypeOperation.PUSH, 1, file.lastModified());
+			System.out.println( file.getName());
+			out.writeObject((Object) p);
+		}
 		MessageP mp2 = new MessageP(new User("n"), HOST + PORT, "P", TypeSend.REPOSITORY, "REP01", TypeOperation.PUSH,
 				1, 0);
-		MessageP mp4 = new MessageP(new User("n"), HOST + PORT, "P", TypeSend.FILE, "REP01", TypeOperation.PUSH, 1, 0);
+		// MessageP mp4 = new MessageP(new User("n"), HOST + PORT, "P",
+		// TypeSend.FILE, "REP01", TypeOperation.PUSH, 1, 0);
 		MessageP mp1 = new MessageP(new User("n", "p"), HOST + PORT, "p", TypeSend.FILE, "REP01/1.txt",
 				TypeOperation.PUSH, 1, 0);
 
