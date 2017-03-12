@@ -12,32 +12,20 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import com.sun.glass.ui.TouchInputSupport;
 
 import client.repository.LocalRepository;
 import enums.TypeOperation;
-import enums.TypeSend;
-import message.Message;
-import message.MessageP;
-import message.MessageRS;
-import user.User;
-import utilities.ReadWriteUtil;
+
 
 public class MyGitClient2 {
-	private static final int VALUE = 1024;
-	private static final String HOST = "127.0.0.1";
-	private static final int PORT = 23456;
 	
-	private static String version;
 	private static File propertiesFile;
 	private String operation;
 	private String typeSend;
@@ -51,6 +39,7 @@ public class MyGitClient2 {
 	private Path file;
 	private String repName;
 	private String repOrFileName;
+	private LocalRepository lRepo;
 	
 	
 	public MyGitClient2(String[] args) {
@@ -131,21 +120,36 @@ public class MyGitClient2 {
 			
 			if (op.toUpperCase().contentEquals("INIT")) {
 				
-				createRep(myGitClient.repName);
+				/* Neste caso não é necessário criar objecto repositório local
+				 * O programa limitar-se-á a criar a directoria correspondente 
+				 * ao repositório, se ainda não existir...
+				 */
 				
+				createLocalRepo(myGitClient.repName);
 			}
-			
-			
-
 		}
 	}
 		
+	
+	private static void createLocalRepo(String repName) {
 		
-	private static void createRep(String repName) {
-		// TODO Auto-generated method stub
+		Path path = Paths.get("CLIENT/"+repName);
+		boolean exists = Files.exists(path);
+		boolean isDirectory = Files.isDirectory(path);
 		
-		LocalRepository lRep = new client.repository.LocalRepository(repName);
-		
+		if (exists) {
+			if (isDirectory)
+				System.out.println("ERRO: Um repositório com esse nome já existe.");
+			else
+				System.out.println("ERRO: Já existe um ficheiro com o mesmo nome dado ao repositório.");
+		}
+		else
+			try {
+				Files.createDirectory(path);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 	}
 
 	public String getOperation() {
