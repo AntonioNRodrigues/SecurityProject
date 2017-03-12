@@ -154,7 +154,7 @@ public class MyGitClient {
 		} else
 			try {
 				Files.createDirectory(path);
-				System.out.println("Diretório criado com o nome: " + repName);
+				System.out.println("Diretório local criado com o nome: " + repName);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
