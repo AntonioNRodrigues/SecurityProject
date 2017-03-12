@@ -1,7 +1,12 @@
 package client;
 
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+
+import enums.TypeOperation;
+import message.MessageRS;
+import user.User;
 
 public class MessageRSHandler extends MessageHandler {
 
@@ -14,6 +19,50 @@ public class MessageRSHandler extends MessageHandler {
 	public String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient2 params) {
 		// TODO Auto-generated method stub
 		return "MessageRSHHandler:sendMessage:"+params.getLocalUser()+" "+params.getServerAddress()+" "+(params.getPassword()==null?"":"-p "+params.getPassword())+" -"+params.getOperation()+" "+params.getRepOrFileName();
+	}
+
+	public String sendShareMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient2 params) {
+
+		MessageRS mrs = new MessageRS(new User(params.getLocalUser()), params.getServerAddress(), params.getPassword(),
+				params.getRepName(), params.getUserId(), TypeOperation.SHARE);
+		try {
+			out.writeObject((Object)mrs);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
+
+		try {
+			out.writeObject((Object)mrs);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}				
+
+
+		return "MessageRSHandler:sendShareMessage";
+	}
+
+
+	public String sendRemoveMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient2 params) {
+
+		MessageRS mrs = new MessageRS(new User(params.getLocalUser()), params.getServerAddress(), params.getPassword(),
+				params.getRepName(), params.getUserId(), TypeOperation.REMOVE);
+		try {
+			out.writeObject((Object)mrs);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
+
+		try {
+			out.writeObject((Object)mrs);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}				
+
+		return "MessageRSHandler:sendRemoveMessage";	
 	}
 
 }

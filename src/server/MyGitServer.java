@@ -78,7 +78,6 @@ public class MyGitServer {
 
 				// receive message
 				try {
-					System.out.println("Running:");
 					sk.receiveMsg((Message) inStream.readObject());
 				} catch (ClassNotFoundException e) {
 					e.printStackTrace();
@@ -88,7 +87,7 @@ public class MyGitServer {
 				// see a better way to get the number of files that have to be
 				// send
 				
-			/*	RemoteRepository rr = null;
+				RemoteRepository rr = null;
 
 				int sizeList = 0;// (Integer) inStream.readObject();
 				for (int i = 0; i < sizeList; i++) {
@@ -100,7 +99,7 @@ public class MyGitServer {
 					// do timestamp check and reject or accept the file;
 				}
 
-*/				outStream.close();
+				outStream.close();
 				inStream.close();
 				socket.close();
 
