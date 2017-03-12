@@ -65,10 +65,12 @@ public class MyGitClient2 {
 
 		MyGitClient2 myGitClient = new MyGitClient2(args);
 		String op = myGitClient.getOperation();
-		System.out.println("op: "+op);
+		System.out.println("op: "+ op);
+		
+		TypeOperation.contains("SHARE");
 
 		if (TypeOperation.contains(op)) {
-
+			
 			Socket socket = new Socket(myGitClient.getHost(), myGitClient.getPort());
 			ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
 			ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
@@ -142,8 +144,7 @@ public class MyGitClient2 {
 	private static void createRep(String repName) {
 		// TODO Auto-generated method stub
 		
-		//LocalRepository lRep = new LocalRepository(repName, "INIT");
-		
+		LocalRepository lRep = new client.repository.LocalRepository(repName);
 	}
 
 	public String getOperation() {
