@@ -62,7 +62,6 @@ public class MessageRSHandler extends MessageHandler {
 			e.printStackTrace();
 		}				
 
-
 		return "MessageRSHandler:sendRemoveMessage";	
 	}
 
