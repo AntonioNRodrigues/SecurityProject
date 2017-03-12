@@ -21,10 +21,6 @@ import java.util.Properties;
 import client.repository.LocalRepository;
 import enums.TypeOperation;
 
-/**
- * @author pedrocandido
- *
- */
 public class MyGitClient {
 
 	private static File propertiesFile;
@@ -44,7 +40,6 @@ public class MyGitClient {
 
 	public MyGitClient(String[] args) {
 
-		// TODO Auto-generated constructor stub
 		if (!validateArgs(args))
 			printUsage();
 
@@ -56,8 +51,6 @@ public class MyGitClient {
 		MyGitClient myGitClient = new MyGitClient(args);
 		String op = myGitClient.getOperation();
 		System.out.println("op: " + op);
-
-		TypeOperation.contains("SHARE");
 
 		if (TypeOperation.contains(op)) {
 
@@ -133,7 +126,6 @@ public class MyGitClient {
 				 * local O programa limitar-se-Ã¡ a criar a directoria
 				 * correspondente ao repositÃ³rio, se ainda nÃ£o existir...
 				 */
-
 				createLocalRepo(myGitClient.repName);
 			}
 		}
@@ -156,58 +148,47 @@ public class MyGitClient {
 			try {
 				Files.createDirectory(path);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 	}
 
 	public String getOperation() {
-		// TODO Auto-generated method stub
 		return this.operation;
 	}
 
 	public String getServerAddress() {
-		// TODO Auto-generated method stub
 		return serverAddress;
 	}
 
 	public int getPort() {
-		// TODO Auto-generated method stub
 		return port;
 	}
 
 	public String getHost() {
-		// TODO Auto-generated method stub
 		return host;
 	}
 
 	public String getLocalUser() {
-		// TODO Auto-generated method stub
 		return localUser;
 	}
 
 	public String getPassword() {
-		// TODO Auto-generated method stub
 		return password;
 	}
 
 	public String getUserId() {
-		// TODO Auto-generated method stub
 		return userId;
 	}
 
 	public String getRepName() {
-		// TODO Auto-generated method stub
 		return repName;
 	}
 
 	public String getFileName() {
-		// TODO Auto-generated method stub
 		return fileName;
 	}
 
 	public String getRepOrFileName() {
-		// TODO Auto-generated method stub
 		return repOrFileName;
 	}
 
@@ -234,14 +215,14 @@ public class MyGitClient {
 		System.exit(-1);
 	}
 
-	//TODO: A alterar no futuro assim que estiver tudo a funcionar
+	// TODO: A alterar no futuro assim que estiver tudo a funcionar
 	private boolean validateArgs(String[] args) {
-		
-		//Variável para não haver return e permitir imprimir a lista final
+
+		// Variável para não haver return e permitir imprimir a lista final
 		boolean validated = false;
-		
+
 		System.out.println("args.length: " + args.length);
-		
+
 		for (String a : args) {
 			System.out.println(a);
 		}
@@ -257,36 +238,35 @@ public class MyGitClient {
 			if (lArgs.size() >= ind + 1)
 				this.repName = lArgs.get(ind + 1);
 			System.out.println();
+			return true;
+			
 		} else if (lArgs.contains("-push")) {
 			ind = lArgs.indexOf("-push");
 			System.out.println("ind: " + ind);
 
 			this.operation = "PUSH";
 
-			if (lArgs.size() >= ind + 1){
+			if (lArgs.size() >= ind + 1) {
 				this.repOrFileName = lArgs.get(ind + 1);
 				validated = true;
-			}
-			else
-				validated =  false;
+			} else
+				validated = false;
 
-			if (!valConnArgs(lArgs, 2)){
+			if (!valConnArgs(lArgs, 2)) {
 				validated = false;
 			}
 
 			if (!valTypeSend(this.repOrFileName))
-				System.err.println("Entrou aqui no tipo de envio");
 				validated = false;
 
 		} else if (lArgs.contains("-pull")) {
 			ind = lArgs.indexOf("-pull");
 			this.operation = "PULL";
 
-			if (lArgs.size() >= ind + 1){
+			if (lArgs.size() >= ind + 1) {
 				this.repOrFileName = lArgs.get(ind + 1);
 				validated = true;
-			}
-			else
+			} else
 				validated = false;
 
 			if (!valConnArgs(lArgs, 2))
@@ -330,9 +310,10 @@ public class MyGitClient {
 				validated = false;
 		}
 
-		//Apenas para testar (não estava a ser imprimido)
-		System.out.println("-------------------------DEPOIS DE VALIDAR OS ARGUMENTOS ---------------------");
-		System.out.println("validated: " + validated);
+		// Apenas para testar (não estava a ser imprimido)
+		System.out.println(
+				"-------------------------DEPOIS DE VALIDAR OS ARGUMENTOS ---------------------");
+		System.err.println("validated: " + validated);
 		System.out.println("localUser: " + this.localUser);
 		System.out.println("serverAddress: " + this.serverAddress);
 		System.out.println("host: " + this.host);
@@ -343,15 +324,14 @@ public class MyGitClient {
 		System.out.println("fileName: " + this.fileName);
 		System.out.println("repOrFileName: " + this.repOrFileName);
 		System.out.println("userId: " + this.userId);
-		System.out.println("---------------------------------------------------------------------------");
+		System.out.println(
+				"---------------------------------------------------------------------------");
 
 		return validated;
 	}
 
-
-	// para ser usado apenas no push, ver como adaptar para pull...
+	// TODO: para ser usado apenas no push, ver como adaptar para pull...
 	private boolean valTypeSend(String repOrFileName) {
-		// TODO Auto-generated method stub
 
 		Path path = Paths.get("CLIENT/myrep/" + repOrFileName);
 		boolean exists = Files.exists(path);
@@ -372,7 +352,7 @@ public class MyGitClient {
 		return true;
 	}
 
-		private boolean valConnArgs(List<String> lArgs, int ind) {
+	private boolean valConnArgs(List<String> lArgs, int ind) {
 		if (ind == 2) {
 			this.localUser = lArgs.get(1);
 			this.serverAddress = lArgs.get(2);
@@ -406,10 +386,8 @@ public class MyGitClient {
 				output = new FileOutputStream(propertiesFile);
 				output.close();
 			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
