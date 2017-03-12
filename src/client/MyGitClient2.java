@@ -142,7 +142,7 @@ public class MyGitClient2 {
 	private static void createRep(String repName) {
 		// TODO Auto-generated method stub
 		
-		LocalRepository lRep = new LocalRepository(repName, "INIT");
+		//LocalRepository lRep = new LocalRepository(repName, "INIT");
 		
 	}
 
