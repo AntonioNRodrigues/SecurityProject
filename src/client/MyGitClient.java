@@ -135,7 +135,7 @@ public class MyGitClient {
 
 	private static void createLocalRepo(String repName) {
 
-		Path path = Paths.get("CLIENT/" + repName);
+		Path path = Paths.get("CLIENT" + File.separator+repName);
 		boolean exists = Files.exists(path);
 		boolean isDirectory = Files.isDirectory(path);
 
@@ -358,7 +358,7 @@ public class MyGitClient {
 		} else if (exists && isFile) {
 			this.setTypeSend("FILE");
 			
-			String[] repFile = this.repOrFileName.split("/");
+			String[] repFile = this.repOrFileName.split(File.separator);
 			this.repName = repFile[0];
 			this.fileName =repFile[1];
 

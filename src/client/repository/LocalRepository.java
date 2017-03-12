@@ -1,5 +1,6 @@
 package client.repository;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,7 +31,7 @@ public class LocalRepository {
 	 */
 	private void loadLocalRepo() {
 		
-		try(Stream<Path> paths = Files.walk(Paths.get("CLIENT/"+this.nameRepo))) {
+		try(Stream<Path> paths = Files.walk(Paths.get("CLIENT"+ File.separator+this.nameRepo))) {
 		    paths.forEach(filePath -> {
 		        if (Files.isRegularFile(filePath)) {		            
 		            listFiles.add(filePath);
