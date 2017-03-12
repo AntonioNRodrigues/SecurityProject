@@ -64,7 +64,15 @@ public class MyGitClient {
 
 		MessageP mp = new MessageP(new User("n"), HOST + PORT, "p", TypeSend.REPOSITORY, folder.getAbsolutePath(),
 				TypeOperation.PUSH, listFolder.length, folder.lastModified());
-
+		out.writeObject((Object) mp);
+		// send each file in repo
+		System.err.println("next");
+		for (File file : listFolder) {
+			MessageP pp = new MessageP(new User("antonio","password"), HOST + ":" + PORT, "password", TypeSend.FILE, folder.getName(),
+					file.getName(), TypeOperation.PUSH, 1, file.lastModified());
+			System.out.println( file.getName());
+			out.writeObject((Object) pp);
+		}
 		MessageP mp2 = new MessageP(new User("n"), HOST + PORT, "P", TypeSend.REPOSITORY, "REP01", TypeOperation.PUSH,
 				1, 0);
 		MessageP mp4 = new MessageP(new User("n"), HOST + PORT, "P", TypeSend.FILE, "REP01", TypeOperation.PUSH, 1, 0);

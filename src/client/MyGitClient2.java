@@ -24,6 +24,10 @@ import client.repository.LocalRepository;
 import enums.TypeOperation;
 
 
+/**
+ * @author pedrocandido
+ *
+ */
 public class MyGitClient2 {
 	
 	private static File propertiesFile;
