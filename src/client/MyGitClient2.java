@@ -234,6 +234,7 @@ public class MyGitClient2 {
 		System.exit(-1);
 	}
 
+	//TODO: A alterar no futuro assim que estiver tudo a funcionar
 	private boolean validateArgs(String[] args) {
 		
 		//Variável para não haver return e permitir imprimir a lista final
@@ -270,8 +271,6 @@ public class MyGitClient2 {
 				validated =  false;
 
 			if (!valConnArgs(lArgs, 2)){
-				System.err.println("Erro na validação dos argumentos de conexão.");
-				System.err.println("Indice, passado como argumento:" + ind + " não é o de conexão");
 				validated = false;
 			}
 
@@ -303,7 +302,7 @@ public class MyGitClient2 {
 			} else
 				validated = false;
 
-			if (!valConnArgs(lArgs, ind))
+			if (!valConnArgs(lArgs, 2))
 				validated = false;
 
 		} else if (lArgs.contains("-remove")) {
@@ -317,12 +316,12 @@ public class MyGitClient2 {
 			} else
 				validated = false;
 
-			if (!valConnArgs(lArgs, ind))
+			if (!valConnArgs(lArgs, 2))
 				validated = false;
 		} else {
 
 			if (lArgs.size() == 2 || lArgs.size() == 4) {
-				if (!valConnArgs(lArgs, lArgs.size()))
+				if (!valConnArgs(lArgs, 2))
 					validated = false;
 				this.operation = "AUTH";
 				validated = true;
