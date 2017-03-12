@@ -134,7 +134,7 @@ public class MyGitClient {
 				 * correspondente ao repositÃ³rio, se ainda nÃ£o existir...
 				 */
 
-				createLocalRepo(myGitClient.repName);
+				createLocalRepo(myGitClient.getRepName());
 			}
 		}
 	}
@@ -237,7 +237,7 @@ public class MyGitClient {
 	//TODO: A alterar no futuro assim que estiver tudo a funcionar
 	private boolean validateArgs(String[] args) {
 		
-		//Variável para não haver return e permitir imprimir a lista final
+		//Variï¿½vel para nï¿½o haver return e permitir imprimir a lista final
 		boolean validated = false;
 		
 		System.out.println("args.length: " + args.length);
@@ -275,7 +275,6 @@ public class MyGitClient {
 			}
 
 			if (!valTypeSend(this.repOrFileName))
-				System.err.println("Entrou aqui no tipo de envio");
 				validated = false;
 
 		} else if (lArgs.contains("-pull")) {
@@ -330,7 +329,7 @@ public class MyGitClient {
 				validated = false;
 		}
 
-		//Apenas para testar (não estava a ser imprimido)
+		//Apenas para testar (nï¿½o estava a ser imprimido)
 		System.out.println("-------------------------DEPOIS DE VALIDAR OS ARGUMENTOS ---------------------");
 		System.out.println("validated: " + validated);
 		System.out.println("localUser: " + this.localUser);
