@@ -129,9 +129,7 @@ public class MyGitClient2 {
 				 */
 				
 				createLocalRepo(myGitClient.repName);
-
 			}
-
 		}
 	}
 		
