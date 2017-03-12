@@ -53,7 +53,7 @@ public class MyGitClient2 {
 	public static void main(String[] args)
 			throws UnknownHostException, IOException {
 
-		MyGitClient2 myGitClient = new MyGitClient2(args);
+		MyGitClient myGitClient = new MyGitClient(args);
 		String op = myGitClient.getOperation();
 		System.out.println("op: " + op);
 

@@ -33,7 +33,7 @@ public abstract class MessageHandler implements IMessageTypes {
 	}
 	
 	
-	public String sendAuthMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient2 params) {
+	public String sendAuthMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
 
 		//host e port não serão necessários, já estão presentes na criação do socket...	
 

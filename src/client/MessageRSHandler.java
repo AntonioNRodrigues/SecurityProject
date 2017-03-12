@@ -16,12 +16,12 @@ public class MessageRSHandler extends MessageHandler {
 	}	
 
 	@Override
-	public String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient2 params) {
+	public String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
 		// TODO Auto-generated method stub
 		return "MessageRSHHandler:sendMessage:"+params.getLocalUser()+" "+params.getServerAddress()+" "+(params.getPassword()==null?"":"-p "+params.getPassword())+" -"+params.getOperation()+" "+params.getRepOrFileName();
 	}
 
-	public String sendShareMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient2 params) {
+	public String sendShareMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
 
 		MessageRS mrs = new MessageRS(new User(params.getLocalUser()), params.getServerAddress(), params.getPassword(),
 				params.getRepName(), params.getUserId(), TypeOperation.SHARE);
@@ -44,7 +44,7 @@ public class MessageRSHandler extends MessageHandler {
 	}
 
 
-	public String sendRemoveMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient2 params) {
+	public String sendRemoveMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
 
 		MessageRS mrs = new MessageRS(new User(params.getLocalUser()), params.getServerAddress(), params.getPassword(),
 				params.getRepName(), params.getUserId(), TypeOperation.REMOVE);

@@ -17,7 +17,7 @@ public class MessagePHandler extends MessageHandler {
 	}	
 
 	@Override
-	public String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient2 params) {
+	public String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
 		// TODO Auto-generated method stub	
 	
 		sendAuthMessage(in, out, params);
@@ -35,7 +35,7 @@ public class MessagePHandler extends MessageHandler {
 	}
 			
 			
-	public String sendPushFileMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient2 params) {
+	public String sendPushFileMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
 				
 		//o tipo do timestamp é FileTime que é timezone independent!
 		//LocalDateTime timestamp = LocalDateTime.now();
@@ -64,7 +64,7 @@ public class MessagePHandler extends MessageHandler {
 		return "MessagePHandler:sendPushFileMessage";
 	}
 
-	public String sendPushRepMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient2 params) {
+	public String sendPushRepMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
 		
         // Message to use when we want to send or receive a file. Used in PULL fileName and PUSH fileName
 		//serverAddress não será necessário, já está presente na criação do socket...
@@ -101,7 +101,7 @@ public class MessagePHandler extends MessageHandler {
 	}
 	
 	
-	public String sendPullFileMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient2 params) {
+	public String sendPullFileMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
 		
         BasicFileAttributes attributes = getFileAttributes(params.getFile());
 
@@ -128,7 +128,7 @@ public class MessagePHandler extends MessageHandler {
 	}
 
 	
-	public String sendPullRepMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient2 params) {
+	public String sendPullRepMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
 		
         // Message to use when we want to send or receive a file. Used in PULL fileName and PUSH fileName
 		//serverAddress não será necessário, já está presente na criação do socket...
