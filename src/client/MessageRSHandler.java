@@ -16,11 +16,18 @@ public class MessageRSHandler extends MessageHandler {
 	}	
 
 	@Override
-	public String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
+	public String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params, TypeOperation op) {
 		
 		sendAuthMessage(in, out, params);
 		
-		sendShareMessage(in, out, params);
+		if(op.equals(TypeOperation.SHARE))
+			sendShareMessage(in, out, params);
+		else if(op.equals(TypeOperation.REMOVE))
+			sendRemoveMessage(in, out, params);
+		else{
+			System.err.println("O tipo do comando não corresponde a um comando válido.");
+			System.exit(-1);
+		}
 		
 		return "MessageRSHHandler:sendMessage:"+params.getLocalUser()+" "+params.getServerAddress()+" "+(params.getPassword()==null?"":"-p "+params.getPassword())+" -"+params.getOperation()+" "+(params.getRepOrFileName() == null? (params.getFileName()==null?params.getRepName():params.getFileName()) :params.getRepOrFileName())+(params.getUserId()==null?" ":" " + params.getUserId());
 	}

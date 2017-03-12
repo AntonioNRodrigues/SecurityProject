@@ -17,7 +17,7 @@ public class MessagePHandler extends MessageHandler {
 	}	
 
 	@Override
-	public String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
+	public String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params, TypeOperation op) {
 		// TODO Auto-generated method stub	
 	
 		sendAuthMessage(in, out, params);

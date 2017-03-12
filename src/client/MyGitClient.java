@@ -79,8 +79,10 @@ public class MyGitClient {
 			// Create the message handler
 			IMessageTypes mTypes = MessageFactory.INSTANCE.getmsgType(op);
 			if (mTypes != null) {
-				String str = mTypes.sendMessage(in, out, myGitClient);
-				System.out.println(str);
+				
+					String str = mTypes.sendMessage(in, out, myGitClient, TypeOperation.valueOf(op));
+					System.out.println(str);
+				
 			}
 
 			// if (str!=null) {
