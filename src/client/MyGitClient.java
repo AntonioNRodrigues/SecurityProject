@@ -254,9 +254,8 @@ public class MyGitClient {
 			} else
 				validated = false;
 
-			if (!valConnArgs(lArgs, 2)) {
+			if (!valConnArgs(lArgs, ind)) 
 				validated = false;
-			}
 
 			if (!valTypeSend(this.repOrFileName))
 				validated = false;
@@ -271,7 +270,7 @@ public class MyGitClient {
 			} else
 				validated = false;
 
-			if (!valConnArgs(lArgs, 2))
+			if (!valConnArgs(lArgs, ind))
 				validated = false;
 
 		} else if (lArgs.contains("-share")) {
@@ -285,7 +284,7 @@ public class MyGitClient {
 			} else
 				validated = false;
 
-			if (!valConnArgs(lArgs, 2))
+			if (!valConnArgs(lArgs, ind))
 				validated = false;
 
 		} else if (lArgs.contains("-remove")) {
@@ -299,8 +298,9 @@ public class MyGitClient {
 			} else
 				validated = false;
 
-			if (!valConnArgs(lArgs, 2))
+			if (!valConnArgs(lArgs, ind))
 				validated = false;
+			
 		} else {
 
 			if (lArgs.size() == 2 || lArgs.size() == 4) {
@@ -347,7 +347,7 @@ public class MyGitClient {
 		// java myGit maria 127.0.0.1:23456 -p badpwd  -push myrep/myGit.java
 		// TODO: ainda nao esta comtemplado o caso de repositorios partilhados: maria/myrep/myGit.java
 		
-		Path path = Paths.get("CLIENT/" + repOrFileName);
+		Path path = Paths.get("CLIENT"+ File.separator + repOrFileName);
 		boolean exists = Files.exists(path);
 		boolean isDirectory = Files.isDirectory(path);
 		boolean isFile = Files.isRegularFile(path);
