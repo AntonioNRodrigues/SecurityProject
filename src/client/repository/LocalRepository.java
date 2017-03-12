@@ -24,7 +24,6 @@ public class LocalRepository {
 		loadLocalRepo();
 	}
 		
-	
 	/*
 	 * To be used in push/pull repo operations...a local repository object will
 	 * be created, listFiles will contain the list of the folder files...
