@@ -18,7 +18,7 @@ public class MessageRSHandler extends MessageHandler {
 	@Override
 	public String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params, TypeOperation op) {
 		
-		sendAuthMessage(in, out, params);
+		//sendAuthMessage(in, out, params);
 		
 		if(op.equals(TypeOperation.SHARE))
 			sendShareMessage(in, out, params);
