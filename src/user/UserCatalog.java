@@ -75,7 +75,7 @@ public class UserCatalog {
 
 	public boolean registerUser(String name, String password) {
 		System.out.println("REGISTER USER");
-		User u = mapUsers.put(name, new User(name, password));
+		mapUsers.put(name, new User(name, password));
 		persisteUser(name, password);
 		System.out.println(mapUsers);
 		return true;
