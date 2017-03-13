@@ -6,7 +6,6 @@ import java.util.Set;
 
 import client.MessagePHandler;
 import client.MessageRSHandler;
-import enums.TypeOperation;
 
 public enum MessageFactory {
 	

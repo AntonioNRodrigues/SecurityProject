@@ -17,8 +17,6 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-
-import client.repository.LocalRepository;
 import enums.TypeOperation;
 
 public class MyGitClient {
@@ -36,7 +34,7 @@ public class MyGitClient {
 	private Path file;
 	private String repName;
 	private String repOrFileName;
-	private LocalRepository lRepo;
+	//private LocalRepository lRepo;
 
 	public MyGitClient(String[] args) {
 
@@ -59,13 +57,8 @@ public class MyGitClient {
 			 * local O programa limitar-se-á a criar a directoria
 			 * correspondente ao repositório, se ainda não existir...
 			 */
-			
-			File client = new File("CLIENT");
-			if (!client.exists())
-				client.mkdir();
-				//se não existir, cria o diretorio CLIENT
-			else
-				createLocalRepo(myGitClient.getRepName());
+
+			createLocalRepo(myGitClient.getRepName());
 			
 		} else if (TypeOperation.contains(op)) {
 
@@ -79,10 +72,8 @@ public class MyGitClient {
 			// Create the message handler
 			IMessageTypes mTypes = MessageFactory.INSTANCE.getmsgType(op);
 			if (mTypes != null) {
-				
-					String str = mTypes.sendMessage(in, out, myGitClient, TypeOperation.valueOf(op));
-					System.out.println(str);
-				
+				String str = mTypes.sendMessage(in, out, myGitClient);
+				System.out.println(str);
 			}
 
 			// if (str!=null) {
@@ -142,24 +133,25 @@ public class MyGitClient {
 
 	private static void createLocalRepo(String repName) {
 
-		Path path = Paths.get("CLIENT" + File.separator +repName);
+		Path path = Paths.get("CLIENT" + File.separator + repName);
 		boolean exists = Files.exists(path);
 		boolean isDirectory = Files.isDirectory(path);
+		boolean isFile = Files.isRegularFile(path);
 
-		if (exists) {
-			if (isDirectory)
-				System.out.println(
-						"ERRO: Um repositório com esse nome já existe.");
-			else
-				System.out.println(
-						"ERRO: Já existe um ficheiro com o mesmo nome dado ao repositório.");
-		} else
+		if (exists && isDirectory) {
+			System.out.println(
+					"ERRO: Um repositório com esse nome já existe.");
+		} else if (exists && isFile) {
+			System.out.println(
+					"ERRO: Já existe um ficheiro com o mesmo nome dado ao repositório.");
+		}
+		else {
 			try {
 				Files.createDirectory(path);
-				System.out.println("Diretório local criado com o nome: " + repName);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		}
 	}
 
 	public String getOperation() {
@@ -288,19 +280,12 @@ public class MyGitClient {
 			if (lArgs.size() >= ind + 2) {
 				this.repName = lArgs.get(ind + 1);
 				this.userId = lArgs.get(ind + 2);
-				System.err.println("INDICE É O " + ind );
 				validated = true;
 			} else
 				validated = false;
 
 			if (!valConnArgs(lArgs, ind))
 				validated = false;
-			
-			if (!valTypeSend(this.repName)){
-				System.err.println("Só pode partilhar repositórios que também sejam locais");
-				validated = false;
-			}
-				
 
 		} else if (lArgs.contains("-remove")) {
 			ind = lArgs.indexOf("-remove");
@@ -315,11 +300,6 @@ public class MyGitClient {
 
 			if (!valConnArgs(lArgs, ind))
 				validated = false;
-			
-			if (!valTypeSend(this.repName)) {
-				System.err.println("Só pode remover utilizadores de repositórios que também sejam locais");
-				validated = false;
-			}
 			
 		} else {
 
@@ -351,7 +331,6 @@ public class MyGitClient {
 
 		return validated;
 	}
- 
 
 	
 	@SuppressWarnings("unused")
