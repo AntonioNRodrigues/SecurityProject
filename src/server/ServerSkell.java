@@ -55,7 +55,7 @@ public class ServerSkell {
 	public void receiveMsg(Message msg) throws ClassNotFoundException, IOException {
 		RemoteRepository rr = null;
 		if (authentication(msg)) {
-			out.writeObject((Object) "THE USER IS AUTHENTICATED");
+			// out.writeObject((Object) "THE USER IS AUTHENTICATED");
 			if (msg instanceof MessageRS) {
 				System.out.println(msg);
 				MessageRS mrs = (MessageRS) msg;
@@ -99,8 +99,7 @@ public class ServerSkell {
 						/*
 						 * TO DO iterate over the set and send each file check a
 						 * better place to do so i dont think this works inside
-						 * this method
-						 * WAITING FOR CLIENT TO DEAL WITH IT
+						 * this method WAITING FOR CLIENT TO DEAL WITH IT
 						 */
 						for (File f : set) {
 							ReadWriteUtil.sendFile(f.getName(), in, out);
@@ -112,7 +111,7 @@ public class ServerSkell {
 						System.out.println("-PUSH REPOSITORY");
 						System.out.println(mp.getRepoName());
 						rr = catRepo.getRemRepository(mp.getRepoName());
-						System.out.println(rr== null);
+						System.out.println(rr == null);
 						if (rr == null) {
 							// repository does not exist
 							rr = catRepo.buildRepo(mp.getLocalUser(), mp.getRepoName());
@@ -182,7 +181,6 @@ public class ServerSkell {
 		} else {
 			out.writeObject((Object) "YOU DOT NOT HAVE PREMISSIONS TO KEEP GOING PLEASE CHECK PASSWORD");
 		}
-		System.out.println("end");
 	}
 
 	private boolean authentication(Message msg) {
@@ -191,7 +189,7 @@ public class ServerSkell {
 		if (u == null) {
 			System.out.println("THE USER WAS NOT FOUND:: REGISTERING USER");
 			catUsers.registerUser(msg.getLocalUser().getName(), msg.getPassword());
-			
+
 			return true;
 		}
 		// user exists check permissions

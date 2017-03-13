@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import message.Message;
+import message.MessageP;
 import server.repository.RemoteRepository;
 import utilities.ReadWriteUtil;
 
@@ -75,39 +76,50 @@ public class MyGitServer {
 				ObjectInputStream inStream = new ObjectInputStream(socket.getInputStream());
 				sk.setIn(inStream);
 				sk.setOut(outStream);
-
+				RemoteRepository rr = null;
+				boolean runCode = false;
+				Message m = null;
 				// receive message
 				try {
-					sk.receiveMsg((Message) inStream.readObject());
+					m = ((Message) inStream.readObject());
+					sk.receiveMsg(m);
 				} catch (ClassNotFoundException e) {
-					e.printStackTrace();
+					// e.printStackTrace();
+				} finally {
+					if (m instanceof MessageP) {
+						MessageP mp = (MessageP) m;
+						if (mp.getNumberFiles() > 1) {
+							runCode = false;
+						}
+					}
 				}
-				
-				
+
 				// its not a message is list of files when we do a push
 				// repository
 				// see a better way to get the number of files that have to be
 				// send
-				
-				RemoteRepository rr = null;
-				
-				int sizeList = 0;
-				try {
-					sizeList = (Integer) inStream.readObject();
-					System.out.println("sizelist: "+sizeList);
-				} catch (ClassNotFoundException e1) {
-					e1.printStackTrace();
-				}
-				
-				for (int i = 0; i < sizeList; i++) {
-					try {
-						File received = ReadWriteUtil.receiveFile(inStream, outStream);
-					} catch (ClassNotFoundException e) {
-						e.printStackTrace();
-					}
-					// do timestamp check and reject or accept the file;
-				}
+				// trying this in the code, probably this not work... see effect
+				// with multiple threads
+				if (runCode) {
 
+					int sizeList = 0;
+					try {
+						sizeList = (Integer) inStream.readObject();
+						System.out.println("sizelist: " + sizeList);
+					} catch (ClassNotFoundException e1) {
+						// e1.printStackTrace();
+					}
+
+					for (int i = 0; i < sizeList; i++) {
+						try {
+							File received = ReadWriteUtil.receiveFile(inStream, outStream);
+						} catch (ClassNotFoundException e) {
+							e.printStackTrace();
+						}
+						// do timestamp check and reject or accept the file;
+					}
+					runCode = false;
+				}
 				outStream.close();
 				inStream.close();
 				socket.close();
