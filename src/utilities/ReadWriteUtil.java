@@ -8,10 +8,34 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.file.Path;
 
 public class ReadWriteUtil {
 	private static final int VALUE = 1024;
 
+	public static void sendFile(Path path, ObjectInputStream inStream, ObjectOutputStream outStream)
+			throws IOException {
+		System.out.println("SENDING FILE");
+		File f = path.toFile();
+
+		BufferedInputStream inputFileStream = new BufferedInputStream(new FileInputStream(f));
+		Long sizeFile = f.length();
+		// send size of file
+		outStream.writeObject((Object) sizeFile);
+		System.out.println(f.getName());
+		// send the filename
+		outStream.writeObject((Object) f.getName());
+
+		byte buffer[] = new byte[VALUE];
+		int n = 0;
+
+		while ((n = inputFileStream.read(buffer, 0, VALUE)) != -1) {
+			outStream.write(buffer, 0, n);
+		}
+
+		inputFileStream.close();
+	}
+		
 	public static void sendFile(String filename, ObjectInputStream inStream, ObjectOutputStream outStream)
 			throws IOException {
 		System.out.println("SENDING FILE");
@@ -41,8 +65,7 @@ public class ReadWriteUtil {
 
 		Long sizeFile = (Long) inStream.readObject();
 		String filename = (String) inStream.readObject();
-		File fileReceived = new File(filename);
-
+		File fileReceived = new File(filename);		
 		BufferedOutputStream bf = new BufferedOutputStream(new FileOutputStream(fileReceived));
 		int len = 0;
 		byte[] buffer = new byte[VALUE];

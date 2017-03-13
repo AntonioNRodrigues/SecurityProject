@@ -16,13 +16,13 @@ public class MessageRSHandler extends MessageHandler {
 	}	
 
 	@Override
-	public String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params, TypeOperation op) {
+	public String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
 		
 		//sendAuthMessage(in, out, params);
 		
-		if(op.equals(TypeOperation.SHARE))
+		if (params.getOperation().contentEquals("SHARE"))
 			sendShareMessage(in, out, params);
-		else if(op.equals(TypeOperation.REMOVE))
+		else if (params.getOperation().contentEquals("REMOVE"))		
 			sendRemoveMessage(in, out, params);
 		else{
 			System.err.println("O tipo do comando não corresponde a um comando válido.");

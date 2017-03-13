@@ -90,8 +90,15 @@ public class MyGitServer {
 				// send
 				
 				RemoteRepository rr = null;
-
-				int sizeList = 0;// (Integer) inStream.readObject();
+				
+				int sizeList = 0;
+				try {
+					sizeList = (Integer) inStream.readObject();
+					System.out.println("sizelist: "+sizeList);
+				} catch (ClassNotFoundException e1) {
+					e1.printStackTrace();
+				}
+				
 				for (int i = 0; i < sizeList; i++) {
 					try {
 						File received = ReadWriteUtil.receiveFile(inStream, outStream);

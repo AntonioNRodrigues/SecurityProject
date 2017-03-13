@@ -15,6 +15,6 @@ public interface IMessageTypes {
 	 * @param operation
 	 * @return 
 	 */
-	String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params, TypeOperation op);	
+	String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params);	
 	
 }
