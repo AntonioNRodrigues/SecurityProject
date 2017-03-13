@@ -14,7 +14,6 @@ public class UserCatalog {
 	private Map<String, User> mapUsers;
 	private static final String SERVER = "SERVER";
 	private static final String USERS = "users.txt";
-
 	public UserCatalog() {
 		super();
 		this.mapUsers = new ConcurrentHashMap<>();
