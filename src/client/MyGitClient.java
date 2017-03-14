@@ -44,7 +44,7 @@ public class MyGitClient {
 	}
 
 	public static void main(String[] args)
-			throws UnknownHostException, IOException {
+			throws UnknownHostException, IOException, ClassNotFoundException {
 
 		MyGitClient myGitClient = new MyGitClient(args);
 		String op = myGitClient.getOperation();
@@ -74,6 +74,11 @@ public class MyGitClient {
 			if (mTypes != null) {
 				String str = mTypes.sendMessage(in, out, myGitClient);
 				System.out.println(str);
+				
+				//OK or NOT OK?!
+				String resultado = (String) in.readObject();
+				System.out.println(resultado);
+				
 			}
 
 			out.close();
@@ -237,7 +242,7 @@ public class MyGitClient {
 
 			this.operation = "PUSH";
 
-			if (lArgs.size() >= ind + 1)? {
+			if (lArgs.size() >= ind + 1) {
 				this.repOrFileName = lArgs.get(ind + 1);
 				validated = true;
 			} else
