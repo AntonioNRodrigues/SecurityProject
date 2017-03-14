@@ -58,7 +58,9 @@ public class MyGitClient {
 			 * repositório, se ainda não existir...
 			 */
 
-			createLocalRepo(myGitClient.getRepName());
+			if (createLocalRepo(myGitClient.getRepName()) != null)
+				System.out.println("REPOSITORIO LOCAL \""
+						+ myGitClient.getRepName() + "\" CRIADO COM SUCESSO.");
 
 		} else if (TypeOperation.contains(op)) {
 
@@ -90,7 +92,7 @@ public class MyGitClient {
 		}
 	}
 
-	private static void createLocalRepo(String repName) {
+	private static Path createLocalRepo(String repName) {
 
 		Path path = Paths.get("CLIENT" + File.separator + repName);
 		boolean exists = Files.exists(path);
@@ -99,17 +101,20 @@ public class MyGitClient {
 
 		if (exists && isDirectory) {
 			System.out.println(
-					"ERRO: Um repositório com esse nome já existe.");
+					"ERRO: Um repositorio com esse nome ja existe.");
+			return null;
 		} else if (exists && isFile) {
 			System.out.println(
-					"ERRO: Já existe um ficheiro com o mesmo nome dado ao repositório.");
+					"ERRO: Ja existe um ficheiro com o mesmo nome dado ao repositorio.");
+			return null;
 		} else {
 			try {
-				Files.createDirectories(path);
+				path = Files.createDirectories(path);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
+		return path;
 	}
 
 	public String getOperation() {
