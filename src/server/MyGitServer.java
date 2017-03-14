@@ -115,7 +115,7 @@ public class MyGitServer {
 						}
 						// do timestamp check and reject or accept the file;
 					}
-					runCode = false;
+					multipleFiles = false;
 				}
 				outStream.close();
 				inStream.close();
