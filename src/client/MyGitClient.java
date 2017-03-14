@@ -237,7 +237,7 @@ public class MyGitClient {
 			break;
 
 		case "-push":
-			ind = lArgs.indexOf("-push");
+			ind = lArgs.indexOf(command);
 			System.out.println("ind: " + ind);
 
 			this.operation = "PUSH";
@@ -257,7 +257,7 @@ public class MyGitClient {
 			break;
 
 		case "-pull":
-			ind = lArgs.indexOf("-pull");
+			ind = lArgs.indexOf(command);
 			this.operation = "PULL";
 
 			if (lArgs.size() >= ind + 1) {
@@ -271,7 +271,7 @@ public class MyGitClient {
 
 			break;
 		case "-share":
-			ind = lArgs.indexOf("-share");
+			ind = lArgs.indexOf(command);
 			this.operation = "SHARE";
 
 			if (lArgs.size() >= ind + 2) {
@@ -287,7 +287,7 @@ public class MyGitClient {
 			break;
 
 		case "-remove":
-			ind = lArgs.indexOf("-remove");
+			ind = lArgs.indexOf(command);
 			this.operation = "REMOVE";
 
 			if (lArgs.size() >= ind + 2) {
