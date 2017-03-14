@@ -189,9 +189,18 @@ public class MyGitClient {
 
 
 		// Opção para enviar a password
-		if (lArgs.get(2).equals("-p"))
-			this.password = lArgs.get(3);
-		
+		if (lArgs.get(2).equals("-p")){
+			try {
+				if(lArgs.get(3).startsWith("-")){
+					System.out.println("ERRO: Escreva uma password sem começar com o caracter '-'");
+					System.exit(-1);
+				}
+				this.password = lArgs.get(3);
+			} catch (ArrayIndexOutOfBoundsException e) {
+				System.out.println("ERRO: Por favor escreva uma password a seguir à flag -p.");
+				System.exit(-1);
+			}
+		}
 		if (lArgs.contains("-init")) {
 			ind = lArgs.indexOf("-init");
 			this.operation = "INIT";
