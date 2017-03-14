@@ -147,7 +147,7 @@ public class MyGitClient {
 		}
 		else {
 			try {
-				Files.createDirectory(path);
+				Files.createDirectories(path);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
