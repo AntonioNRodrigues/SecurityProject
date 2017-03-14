@@ -188,6 +188,10 @@ public class MyGitClient {
 		System.out.println("lArgs.size(): " + lArgs.size());
 
 
+		// Opção para enviar a password
+		if (lArgs.get(2).equals("-p"))
+			this.password = lArgs.get(3);
+		
 		if (lArgs.contains("-init")) {
 			ind = lArgs.indexOf("-init");
 			this.operation = "INIT";
@@ -260,13 +264,13 @@ public class MyGitClient {
 
 			switch (lArgs.size()) {
 			// TODO: Repensar se vale a pena fazer AUTH se não houver password
-			case 2: //não existe password
+			case 2: // não existe password
 				if (!valConnArgs(lArgs, 2))
 					validated = false;
 				this.operation = "AUTH";
 				validated = true;
 				break;
-			case 4: //existe password
+			case 4: // existe password
 				if (!valConnArgs(lArgs, 2))
 					validated = false;
 				this.operation = "AUTH";
