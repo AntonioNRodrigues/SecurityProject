@@ -28,7 +28,7 @@ public class MessagePHandler extends MessageHandler {
 	}	
 
 	@Override
-	public String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
+	public String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) throws IOException {
 	
 		//sendAuthMessage(in, out, params);
 		
@@ -90,7 +90,7 @@ public class MessagePHandler extends MessageHandler {
 	private String sendPushRepMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
 		
 		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(), params.getPassword(), TypeSend.REPOSITORY, params.getRepName(),
-				TypeOperation.PUSH, 1,  0);
+				TypeOperation.PUSH, filesList.size(),  0);
 		
 		try {
 			out.writeObject((Object)mp);
