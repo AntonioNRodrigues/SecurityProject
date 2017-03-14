@@ -35,8 +35,6 @@ public abstract class MessageHandler implements IMessageTypes {
 	
 	public String sendAuthMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
 
-		//host e port não serão necessários, já estão presentes na criação do socket...	
-
 		// Mensagem de autenticação
 		Message m = new Message(new User(params.getLocalUser(), params.getPassword()), params.getHost() + params.getPort(), params.getPassword());
 

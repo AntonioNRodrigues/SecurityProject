@@ -68,6 +68,20 @@ public class MessagePHandler extends MessageHandler {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}				
+
+		// Enviar o numero de ficheiros
+		try {
+			out.writeObject((Integer) 1);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+
+		// Enviar o ficheiro
+			try {
+				ReadWriteUtil.sendFile( params.getFile(), in, out);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		
 		return "MessagePHandler:sendPushFileMessage";
 	}
@@ -90,7 +104,6 @@ public class MessagePHandler extends MessageHandler {
 		try {
 			out.writeObject((Integer) filesList.size());
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 
