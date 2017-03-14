@@ -28,7 +28,7 @@ public class MessagePHandler extends MessageHandler {
 	}	
 
 	@Override
-	public String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) throws IOException {
+	public String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params){
 	
 		//sendAuthMessage(in, out, params);
 		
