@@ -118,6 +118,7 @@ public class ServerSkell {
 							rr = catRepo.buildRepo(mp.getLocalUser(),
 									mp.getRepoName());
 						}
+						out.writeObject("DONE");
 						break;
 					default:
 						break;

@@ -80,6 +80,7 @@ public class MyGitClient {
 				//OK or NOT OK?!
 				String resultado = (String) in.readObject();
 				System.out.println(resultado);
+				
 			out.close();
 			socket.close();
 			}
