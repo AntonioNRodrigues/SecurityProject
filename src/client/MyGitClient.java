@@ -187,6 +187,7 @@ public class MyGitClient {
 		List<String> lArgs = Arrays.asList(args);
 		System.out.println("lArgs.size(): " + lArgs.size());
 
+
 		if (lArgs.contains("-init")) {
 			ind = lArgs.indexOf("-init");
 			this.operation = "INIT";
@@ -274,6 +275,7 @@ public class MyGitClient {
 				break;
 			default:
 				printUsage();
+				break;
 			}
 
 		}
