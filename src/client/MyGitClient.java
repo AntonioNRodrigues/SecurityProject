@@ -263,7 +263,7 @@ public class MyGitClient {
 		} else {
 
 			switch (lArgs.size()) {
-			// TODO: Repensar se vale a pena fazer AUTH se não houver password
+			// TODO: Repensar se vale a pena fazer AUTH se não houver password (ISTO NÂO DEIXA DE SER REDUNDANTE)
 			case 2: // não existe password
 				if (!valConnArgs(lArgs, 2))
 					validated = false;

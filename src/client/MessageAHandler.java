@@ -15,7 +15,6 @@ public class MessageAHandler extends MessageHandler {
 		// TODO Auto-generated method stub
 		
 		sendAuthMessage(in, out, params);
-		System.err.println("A PASSWORD A ENVIAR NO AuthMessage é: " + params.getPassword());
 
 		return "MessageAHandler:sendMessage:"+params.getLocalUser()+" "+params.getServerAddress()+" "+(params.getPassword()==null?"":"-p "+params.getPassword());
 	}
