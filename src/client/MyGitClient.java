@@ -189,6 +189,7 @@ public class MyGitClient {
 		// Variável aux para o comando
 		String command = "";
 
+		/// PASSWORD && COMMAND
 		// Caso do INIT que nao tem password
 		if (lArgs.get(0).equals("-init"))
 			command = lArgs.get(0);
@@ -215,6 +216,8 @@ public class MyGitClient {
 				command = lArgs.get(2);
 			}
 
+		/// END OF PASSWORD && COMMAND
+		
 		// Depende do comando que é enviado! command = "-init", "-push",
 		// "-share".....
 		switch (command) {
