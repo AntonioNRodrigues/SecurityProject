@@ -59,8 +59,8 @@ public class MyGitClient {
 			 */
 
 			if (createLocalRepo(myGitClient.getRepName()) != null)
-				System.out.println("REPOSITORIO LOCAL \""
-						+ myGitClient.getRepName() + "\" CRIADO COM SUCESSO.");
+				System.out.println("O repositorio "
+						+ myGitClient.getRepName() + "foi criado localmente.");
 
 		} else if (TypeOperation.contains(op)) {
 

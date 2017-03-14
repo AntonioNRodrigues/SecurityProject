@@ -52,7 +52,8 @@ public class ServerSkell {
 		this.in = in;
 	}
 
-	public void receiveMsg(Message msg) throws ClassNotFoundException, IOException {
+	public void receiveMsg(Message msg)
+			throws ClassNotFoundException, IOException {
 		RemoteRepository rr = null;
 		if (authentication(msg)) {
 			// out.writeObject((Object) "THE USER IS AUTHENTICATED");
@@ -114,7 +115,8 @@ public class ServerSkell {
 						System.out.println(rr == null);
 						if (rr == null) {
 							// repository does not exist
-							rr = catRepo.buildRepo(mp.getLocalUser(), mp.getRepoName());
+							rr = catRepo.buildRepo(mp.getLocalUser(),
+									mp.getRepoName());
 						}
 						break;
 					default:
@@ -128,16 +130,19 @@ public class ServerSkell {
 						rr = catRepo.getRemRepository(mp.getRepoName());
 						long lastModifiedDate = mp.getTimestamp();
 						if (rr != null) {
-							File inRepo = rr.getMostRecentFile(mp.getFileName());
+							File inRepo = rr.getMostRecentFile(
+									mp.getFileName());
 							// client does not have the recent file so send it
 							if (lastModifiedDate < inRepo.lastModified()) {
 								try {
-									ReadWriteUtil.sendFile(mp.getFileName(), in, out);
+									ReadWriteUtil.sendFile(mp.getFileName(), in,
+											out);
 								} catch (IOException e) {
 									e.printStackTrace();
 								}
 							} else {
-								out.writeObject((Object) "THE SERVER HAS NOT A RECENT VERSION FOR U");
+								out.writeObject(
+										(Object) "THE SERVER HAS NOT A RECENT VERSION FOR U");
 							}
 						}
 						break;
@@ -148,15 +153,20 @@ public class ServerSkell {
 						if (rr != null) {
 							// the repo exists them proceed with push file
 							try {
-								File received = ReadWriteUtil.receiveFile(in, out);
-								System.out.println(received.getName() + received.lastModified());
-								File inRepo = rr.getMostRecentFile(received.getName());
-								System.out.println(inRepo.getName() + inRepo.lastModified());
+								File received = ReadWriteUtil.receiveFile(in,
+										out);
+								System.out.println(received.getName()
+										+ received.lastModified());
+								File inRepo = rr.getMostRecentFile(
+										received.getName());
+								System.out.println(inRepo.getName()
+										+ inRepo.lastModified());
 								// if received file has lastmodified > than the
 								// one that exists in the repo
 								if (received.lastModified() > inRepo.lastModified()) {
 									// added to the list
-									rr.getVersionList(received.getName()).add(received);
+									rr.getVersionList(received.getName()).add(
+											received);
 								} else {
 									// delete file the repo has a recent file
 									Files.deleteIfExists(received.toPath());
@@ -167,7 +177,8 @@ public class ServerSkell {
 								e.printStackTrace();
 							}
 						} else {
-							out.writeObject((Object) "THE REPOSITORY DOES NOT EXIST");
+							out.writeObject(
+									(Object) "THE REPOSITORY DOES NOT EXIST");
 						}
 
 						break;
@@ -179,7 +190,8 @@ public class ServerSkell {
 				}
 			}
 		} else {
-			out.writeObject((Object) "YOU DOT NOT HAVE PREMISSIONS TO KEEP GOING PLEASE CHECK PASSWORD");
+			out.writeObject(
+					(Object) "YOU DOT NOT HAVE PREMISSIONS TO KEEP GOING PLEASE CHECK PASSWORD");
 		}
 	}
 
@@ -188,14 +200,15 @@ public class ServerSkell {
 		// user does not exist, register user
 		if (u == null) {
 			System.out.println("THE USER WAS NOT FOUND:: REGISTERING USER");
-			catUsers.registerUser(msg.getLocalUser().getName(), msg.getPassword());
+			catUsers.registerUser(msg.getLocalUser().getName(),
+					msg.getPassword());
 
 			return true;
 		}
 		// user exists check permissions
 		if (u != null) {
 			// user exists but does not have the password filled
-			if (u.getPassword().equals("")) {
+			if (u.getPassword() == "") {
 				try {
 					out.writeObject((Object) "Please fill your password");
 					String password = (String) in.readObject();
@@ -210,12 +223,14 @@ public class ServerSkell {
 					e.printStackTrace();
 				}
 			}
-			// user has password filled and its the same
-			if (u.getPassword().equals(msg.getLocalUser().getPassword())) {
-				return true;
-			}
+		
+		// user has password filled and its the same
+		if (u.getPassword().equals(msg.getPassword())) {
+			return true;
+		}
 		}
 		return false;
+	
 	}
 
 }

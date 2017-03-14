@@ -7,11 +7,11 @@ public class User implements Serializable {
 	private String name;
 	private String password;
 
-	public User(String name) {
-		super();
-		this.name = name;
-		this.password = "";
-	}
+	 public User(String name) {
+	 super();
+	 this.name = name;
+	 this.password = "";
+	 }
 
 	public User(String name, String password) {
 		super();
@@ -37,7 +37,7 @@ public class User implements Serializable {
 
 	@Override
 	public String toString() {
-		return "User [name=" + name + ", password=" + password + "]";
+		return "User [name=" + getName() + ", password=" + getPassword() + "]";
 	}
 
 }

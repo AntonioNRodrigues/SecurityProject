@@ -41,6 +41,7 @@ public class RemoteRepository {
 		File f = new File("SERVER/" + this.nameRepo);
 		if (!f.exists()) {
 			f.mkdirs();
+			System.err.println("Entrou aqui para registar o owner");
 			File ff = new File(f.getAbsolutePath() + "/owner.txt");
 			try (BufferedWriter fi = new BufferedWriter(new FileWriter(ff))) {
 				fi.write(this.owner);

@@ -89,7 +89,7 @@ public class MessagePHandler extends MessageHandler {
 	
 	private String sendPushRepMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
 		
-		MessageP mp = new MessageP(new User(params.getLocalUser()), params.getServerAddress(), params.getPassword(), TypeSend.REPOSITORY, params.getRepName(),
+		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(), params.getPassword(), TypeSend.REPOSITORY, params.getRepName(),
 				TypeOperation.PUSH, 1,  0);
 		
 		try {

@@ -14,6 +14,7 @@ public class MessageP extends Message implements Serializable {
 	private String fileName;
 	private int numberFiles;
 	private long timestamp;
+	private String password;
 
 	/**
 	 * Constructor to use when we dont want to send a file name. Using in PULL
@@ -29,6 +30,7 @@ public class MessageP extends Message implements Serializable {
 		this.typeSend = typeSend;
 		this.setNumberFiles(numberFiles);
 		this.timestamp = ts;
+		this.password = password;
 	}
 
 	/**
@@ -45,6 +47,7 @@ public class MessageP extends Message implements Serializable {
 		this.typeSend = typeSend;
 		this.setNumberFiles(numberFiles);
 		this.timestamp = ts;
+		this.password = password;
 	}
 
 	public TypeSend getTypeSend() {
