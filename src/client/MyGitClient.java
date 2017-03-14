@@ -34,7 +34,7 @@ public class MyGitClient {
 	private Path file;
 	private String repName;
 	private String repOrFileName;
-	//private LocalRepository lRepo;
+	// private LocalRepository lRepo;
 
 	public MyGitClient(String[] args) {
 
@@ -53,13 +53,13 @@ public class MyGitClient {
 		if (op.toUpperCase().contentEquals("INIT")) {
 
 			/*
-			 * Neste caso n√£o √© necess√°rio criar objecto reposit√≥rio
-			 * local O programa limitar-se-√° a criar a directoria
-			 * correspondente ao reposit√≥rio, se ainda n√£o existir...
+			 * Neste caso n√£o √© necess√°rio criar objecto reposit√≥rio local O
+			 * programa limitar-se-√° a criar a directoria correspondente ao
+			 * reposit√≥rio, se ainda n√£o existir...
 			 */
 
 			createLocalRepo(myGitClient.getRepName());
-			
+
 		} else if (TypeOperation.contains(op)) {
 
 			Socket socket = new Socket(myGitClient.getHost(),
@@ -98,8 +98,7 @@ public class MyGitClient {
 		} else if (exists && isFile) {
 			System.out.println(
 					"ERRO: J√° existe um ficheiro com o mesmo nome dado ao reposit√≥rio.");
-		}
-		else {
+		} else {
 			try {
 				Files.createDirectories(path);
 			} catch (IOException e) {
@@ -187,48 +186,69 @@ public class MyGitClient {
 		List<String> lArgs = Arrays.asList(args);
 		System.out.println("lArgs.size(): " + lArgs.size());
 
+		// Vari·vel aux para o comando
+		String command = "";
+
+		// Caso do INIT que nao tem password
+		if (lArgs.get(0).equals("-init"))
+			command = lArgs.get(0);
 
 		// OpÁ„o para enviar a password
-		if (lArgs.get(2).equals("-p")){
-			try {
-				if(lArgs.get(3).startsWith("-")){
-					System.out.println("ERRO: Escreva uma password sem comeÁar com o caracter '-'");
+		else if (lArgs.size() > 2)
+			if (lArgs.get(2).equals("-p")) {
+				try {
+					if (lArgs.get(3).startsWith("-")) {
+						System.out.println(
+								"ERRO: Escreva uma password sem comeÁar com o caracter '-'");
+						System.exit(-1);
+					}
+					this.password = lArgs.get(3);
+					//caso haja um commando adicional (push, pull, share or remove)
+					if (lArgs.size() > 5)
+						command = lArgs.get(4);
+				} catch (ArrayIndexOutOfBoundsException e) {
+					System.out.println(
+							"ERRO: Por favor escreva uma password a seguir ‡ flag -p.");
 					System.exit(-1);
 				}
-				this.password = lArgs.get(3);
-			} catch (ArrayIndexOutOfBoundsException e) {
-				System.out.println("ERRO: Por favor escreva uma password a seguir ‡ flag -p.");
-				System.exit(-1);
+			} else {
+				command = lArgs.get(2);
 			}
-		}
-		if (lArgs.contains("-init")) {
-			ind = lArgs.indexOf("-init");
+
+		// Depende do comando que È enviado! command = "-init", "-push",
+		// "-share".....
+		switch (command) {
+		case "-init":
+			ind = lArgs.indexOf(command);
 			this.operation = "INIT";
 
 			if (lArgs.size() >= ind + 1)
 				this.repName = lArgs.get(ind + 1);
 			System.out.println();
-			return true;
-			
-		} else if (lArgs.contains("-push")) {
+			validated = true;
+			break;
+
+		case "-push":
 			ind = lArgs.indexOf("-push");
 			System.out.println("ind: " + ind);
 
 			this.operation = "PUSH";
 
-			if (lArgs.size() >= ind + 1) {
+			if (lArgs.size() >= ind + 1)? {
 				this.repOrFileName = lArgs.get(ind + 1);
 				validated = true;
 			} else
 				validated = false;
 
-			if (!valConnArgs(lArgs, ind)) 
+			if (!valConnArgs(lArgs, ind))
 				validated = false;
 
 			if (!valTypeSend(this.repOrFileName))
 				validated = false;
 
-		} else if (lArgs.contains("-pull")) {
+			break;
+
+		case "-pull":
 			ind = lArgs.indexOf("-pull");
 			this.operation = "PULL";
 
@@ -241,7 +261,8 @@ public class MyGitClient {
 			if (!valConnArgs(lArgs, ind))
 				validated = false;
 
-		} else if (lArgs.contains("-share")) {
+			break;
+		case "-share":
 			ind = lArgs.indexOf("-share");
 			this.operation = "SHARE";
 
@@ -255,7 +276,9 @@ public class MyGitClient {
 			if (!valConnArgs(lArgs, ind))
 				validated = false;
 
-		} else if (lArgs.contains("-remove")) {
+			break;
+
+		case "-remove":
 			ind = lArgs.indexOf("-remove");
 			this.operation = "REMOVE";
 
@@ -268,11 +291,12 @@ public class MyGitClient {
 
 			if (!valConnArgs(lArgs, ind))
 				validated = false;
-			
-		} else {
+			break;
 
+		default:
 			switch (lArgs.size()) {
-			// TODO: Repensar se vale a pena fazer AUTH se n„o houver password (ISTO N¬O DEIXA DE SER REDUNDANTE)
+			// TODO: Repensar se vale a pena fazer AUTH se n„o houver password
+			// (ISTO N¬O DEIXA DE SER REDUNDANTE)
 			case 2: // n„o existe password
 				if (!valConnArgs(lArgs, 2))
 					validated = false;
@@ -313,22 +337,25 @@ public class MyGitClient {
 		return validated;
 	}
 
-	
 	@SuppressWarnings("unused")
 	private boolean valTypeSend(String repOrFileName) {
 
 		// TODO: working on it now...confusing specs...see
-		// java myGit maria 127.0.0.1:23456 -p badpwd  -push myrep
+		// java myGit maria 127.0.0.1:23456 -p badpwd -push myrep
 		// java myGit pedro 127.0.0.1:23456 -p badpwd1 -pull maria/myrep
-		// java myGit pedro 127.0.0.1:23456 -p badpwd1 -push maria/myrep/myGit.java
-		// java myGit maria 127.0.0.1:23456 -p badpwd  -pull myrep/myGit.java
+		// java myGit pedro 127.0.0.1:23456 -p badpwd1 -push
+		// maria/myrep/myGit.java
+		// java myGit maria 127.0.0.1:23456 -p badpwd -pull myrep/myGit.java
 		// java myGit pedro 127.0.0.1:23456 -p badpwd1 -pull maria/myrep
-		// Obrigo que se escreva sempre o rep no caminho do ficheiro como nos exemplos do trabalho?
-		// Se quiser fazer push do ficheiro myGyt.java que esta no meu repositorio myrep terei de fazer
-		// java myGit maria 127.0.0.1:23456 -p badpwd  -push myrep/myGit.java
-		// TODO: ainda nao esta comtemplado o caso de repositorios partilhados: maria/myrep/myGit.java
-		
-		Path path = Paths.get("CLIENT"+ File.separator + repOrFileName);
+		// Obrigo que se escreva sempre o rep no caminho do ficheiro como nos
+		// exemplos do trabalho?
+		// Se quiser fazer push do ficheiro myGyt.java que esta no meu
+		// repositorio myrep terei de fazer
+		// java myGit maria 127.0.0.1:23456 -p badpwd -push myrep/myGit.java
+		// TODO: ainda nao esta comtemplado o caso de repositorios partilhados:
+		// maria/myrep/myGit.java
+
+		Path path = Paths.get("CLIENT" + File.separator + repOrFileName);
 		boolean exists = Files.exists(path);
 		boolean isDirectory = Files.isDirectory(path);
 		boolean isFile = Files.isRegularFile(path);
@@ -338,10 +365,10 @@ public class MyGitClient {
 			this.repName = repOrFileName;
 		} else if (exists && isFile) {
 			this.setTypeSend("FILE");
-			
+
 			String[] repFile = this.repOrFileName.split(File.separator);
 			this.repName = repFile[0];
-			this.fileName =repFile[1];
+			this.fileName = repFile[1];
 
 			this.setFile(path);
 		} else {
