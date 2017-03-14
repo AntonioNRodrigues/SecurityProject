@@ -76,52 +76,6 @@ public class MyGitClient {
 				System.out.println(str);
 			}
 
-			// if (str!=null) {
-
-			/*
-			 * Message m = null; Scanner sc = new Scanner(System.in); String str
-			 * = null; do { System.out.println("COMMAND?"); str = sc.nextLine();
-			 * // do validation of params String[] array = str.split(" ");
-			 * System.out.println(array.length); if(array.length == 6){ String[]
-			 * a = array[4].split(":"); socket = new Socket(HOST, PORT); in =
-			 * new ObjectInputStream(socket.getInputStream()); out = new
-			 * ObjectOutputStream(socket.getOutputStream()); m = new Message(new
-			 * User(array[2], array[3]), array[4], array[2]);
-			 * System.out.println(m); out.writeObject((Object)m);
-			 * }if(array.length == 7){ String[] a = array[4].split(":"); socket
-			 * = new Socket(HOST, PORT); in = new
-			 * ObjectInputStream(socket.getInputStream()); out = new
-			 * ObjectOutputStream(socket.getOutputStream()); m = new Message(new
-			 * User(array[2], array[3]), array[4], array[2]);
-			 * System.out.println(m); out.writeObject((Object)m); }
-			 * 
-			 * } while (!(str.equalsIgnoreCase("QUIT")));
-			 */
-
-			/*
-			 * Message m = new Message(new User("n", "p"), HOST + PORT, "p");
-			 * File folder = new File("CLIENT/REP01"); File[] listFolder =
-			 * folder.listFiles();
-			 * 
-			 * MessageP mp = new MessageP(new User("n"), HOST + PORT, "p",
-			 * TypeSend.REPOSITORY, folder.getAbsolutePath(),
-			 * TypeOperation.PUSH, listFolder.length, folder.lastModified());
-			 * 
-			 * MessageP mp2 = new MessageP(new User("n"), HOST + PORT, "P",
-			 * TypeSend.REPOSITORY, "REP01", TypeOperation.PUSH, 1, 0); MessageP
-			 * mp4 = new MessageP(new User("n"), HOST + PORT, "P",
-			 * TypeSend.FILE, "REP01", TypeOperation.PUSH, 1, 0); MessageP mp1 =
-			 * new MessageP(new User("n", "p"), HOST + PORT, "P", TypeSend.FILE,
-			 * "REP01", TypeOperation.PUSH, 1, 0);
-			 * 
-			 * out.writeObject((Object) m);
-			 * out.writeObject((Object)listFolder.length); for (File file :
-			 * listFolder) { ReadWriteUtil.sendFile(file.getAbsolutePath(), in,
-			 * out); }
-			 */
-
-			// }
-
 			out.close();
 			in.close();
 			socket.close();
@@ -303,13 +257,25 @@ public class MyGitClient {
 			
 		} else {
 
-			if (lArgs.size() == 2 || lArgs.size() == 4) {
+			switch (lArgs.size()) {
+			// TODO: Repensar se vale a pena fazer AUTH se não houver password
+			case 2: //não existe password
 				if (!valConnArgs(lArgs, 2))
 					validated = false;
 				this.operation = "AUTH";
 				validated = true;
-			} else
-				validated = false;
+				break;
+			case 4: //existe password
+				if (!valConnArgs(lArgs, 2))
+					validated = false;
+				this.operation = "AUTH";
+				this.password = lArgs.get(3);
+				validated = true;
+				break;
+			default:
+				printUsage();
+			}
+
 		}
 
 		// Apenas para testar (nao estava a ser imprimido)

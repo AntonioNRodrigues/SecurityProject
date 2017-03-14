@@ -15,7 +15,6 @@ import server.repository.RemoteRepository;
 import utilities.ReadWriteUtil;
 
 public class MyGitServer {
-	private static final int MAX_THREADS = 5;
 	private static ServerSkell sk;
 
 	private static boolean checkParams(String[] args) {
