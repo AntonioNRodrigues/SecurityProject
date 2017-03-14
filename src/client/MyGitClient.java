@@ -60,7 +60,7 @@ public class MyGitClient {
 
 			if (createLocalRepo(myGitClient.getRepName()) != null)
 				System.out.println("O repositorio "
-						+ myGitClient.getRepName() + "foi criado localmente.");
+						+ myGitClient.getRepName() + " foi criado localmente.");
 
 		} else if (TypeOperation.contains(op)) {
 
@@ -80,15 +80,17 @@ public class MyGitClient {
 				//OK or NOT OK?!
 				String resultado = (String) in.readObject();
 				System.out.println(resultado);
-				
+			out.close();
+			socket.close();
 			}
 
-			out.close();
-			in.close();
-			socket.close();
+//			//out.close();
+//			in.close();
+//			socket.close();
 		} else {
 
 			System.out.println("ERRO");
+			System.exit(-1);
 		}
 	}
 
