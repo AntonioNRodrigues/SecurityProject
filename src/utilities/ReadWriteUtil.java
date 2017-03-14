@@ -21,10 +21,10 @@ public class ReadWriteUtil {
 		BufferedInputStream inputFileStream = new BufferedInputStream(new FileInputStream(f));
 		Long sizeFile = f.length();
 		// send size of file
-		outStream.writeObject((Object) sizeFile);
+		outStream.writeObject(sizeFile);
 		System.out.println(f.getName());
 		// send the filename
-		outStream.writeObject((Object) f.getName());
+		outStream.writeObject(f.getName());
 
 		byte buffer[] = new byte[VALUE];
 		int n = 0;

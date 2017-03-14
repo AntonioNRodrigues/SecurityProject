@@ -34,7 +34,7 @@ public class MessageRSHandler extends MessageHandler {
 
 	public String sendShareMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
 
-		MessageRS mrs = new MessageRS(new User(params.getLocalUser()), params.getServerAddress(), params.getPassword(),
+		MessageRS mrs = new MessageRS(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(), params.getPassword(),
 				params.getRepName(), params.getUserId(), TypeOperation.SHARE);
 		try {
 			out.writeObject((Object)mrs);

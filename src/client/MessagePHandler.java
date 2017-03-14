@@ -60,7 +60,7 @@ public class MessagePHandler extends MessageHandler {
 
 		// Message to use when we want to send or receive a file. Used in PULL fileName and PUSH fileName
 		// serverAddress não será necessário, já está presente na criação do socket...
-		MessageP mp = new MessageP(new User(params.getLocalUser()), params.getServerAddress(), params.getPassword(), TypeSend.FILE, params.getRepName(),
+		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(), params.getPassword(), TypeSend.FILE, params.getRepName(),
 				params.getFileName(), TypeOperation.PUSH, 1,  attributes.lastModifiedTime().toMillis());
 		
 		try {
@@ -100,12 +100,12 @@ public class MessagePHandler extends MessageHandler {
 		
 		loadRepoFiles(params.getRepName());
 		
-		// Enviar o numero de ficheiros
-		try {
-			out.writeObject((Integer) filesList.size());
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
+//		// Enviar o numero de ficheiros
+//		try {
+//			out.writeObject((Integer) filesList.size());
+//		} catch (IOException e1) {
+//			e1.printStackTrace();
+//		}
 
 		// Enviar os ficheiros
 		for (Path path: filesList){
@@ -126,7 +126,7 @@ public class MessagePHandler extends MessageHandler {
 
 		// Message to use when we want to send or receive a file. Used in PULL fileName and PUSH fileName
 		// serverAddress não será necessário, já está presente na criação do socket...
-		MessageP mp = new MessageP(new User(params.getLocalUser()), params.getServerAddress(), params.getPassword(), TypeSend.FILE, params.getRepName(),
+		MessageP mp = new MessageP(new User(params.getLocalUser(),params.getPassword()), params.getServerAddress(), params.getPassword(), TypeSend.FILE, params.getRepName(),
 				params.getFileName(), TypeOperation.PULL, 1,  attributes.lastModifiedTime().toMillis());
 		
 		try {
@@ -143,7 +143,7 @@ public class MessagePHandler extends MessageHandler {
 		
         // Message to use when we want to send or receive a file. Used in PULL fileName and PUSH fileName
 		// serverAddress não será necessário, já está presente na criação do socket...
-		MessageP mp = new MessageP(new User(params.getLocalUser()), params.getServerAddress(), params.getPassword(), TypeSend.REPOSITORY, params.getRepName(),
+		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(), params.getPassword(), TypeSend.REPOSITORY, params.getRepName(),
 				TypeOperation.PULL, 1,  0);
 		
 		try {

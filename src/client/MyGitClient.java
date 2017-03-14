@@ -1,5 +1,6 @@
 package client;
 
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -77,10 +78,13 @@ public class MyGitClient {
 				String str = mTypes.sendMessage(in, out, myGitClient);
 				System.out.println(str);
 				
-				//OK or NOT OK?!
-				String resultado = (String) in.readObject();
-				System.out.println(resultado);
-				
+//				try{
+//				//If NOT OK?!
+//				String resultado = (String) in.readObject();
+//				System.out.println(resultado);
+//				} catch (EOFException e){
+//					System.out.println("OK");
+//				} 
 			out.close();
 			socket.close();
 			}
@@ -199,7 +203,7 @@ public class MyGitClient {
 		List<String> lArgs = Arrays.asList(args);
 		System.out.println("lArgs.size(): " + lArgs.size());
 
-		// Variável aux para o comando
+		// Variï¿½vel aux para o comando
 		String command = "";
 
 		/// PASSWORD && COMMAND
@@ -207,13 +211,13 @@ public class MyGitClient {
 		if (lArgs.get(0).equals("-init"))
 			command = lArgs.get(0);
 
-		// Opção para enviar a password
+		// Opï¿½ï¿½o para enviar a password
 		else if (lArgs.size() > 2)
 			if (lArgs.get(2).equals("-p")) {
 				try {
 					if (lArgs.get(3).startsWith("-")) {
 						System.out.println(
-								"ERRO: Escreva uma password sem começar com o caracter '-'");
+								"ERRO: Escreva uma password sem comecar com o caracter '-'");
 						System.exit(-1);
 					}
 					this.password = lArgs.get(3);
@@ -222,7 +226,7 @@ public class MyGitClient {
 						command = lArgs.get(4);
 				} catch (ArrayIndexOutOfBoundsException e) {
 					System.out.println(
-							"ERRO: Por favor escreva uma password a seguir à flag -p.");
+							"ERRO: Por favor escreva uma password a seguir a flag -p.");
 					System.exit(-1);
 				}
 			} else {
@@ -231,7 +235,7 @@ public class MyGitClient {
 
 		/// END OF PASSWORD && COMMAND
 		
-		// Depende do comando que é enviado! command = "-init", "-push",
+		// Depende do comando que ï¿½ enviado! command = "-init", "-push",
 		// "-share".....
 		switch (command) {
 		case "-init":
@@ -311,9 +315,9 @@ public class MyGitClient {
 
 		default:
 			switch (lArgs.size()) {
-			// TODO: Repensar se vale a pena fazer AUTH se não houver password
-			// (ISTO NÂO DEIXA DE SER REDUNDANTE)
-			case 2: // não existe password
+			// TODO: Repensar se vale a pena fazer AUTH se nï¿½o houver password
+			// (ISTO Nï¿½O DEIXA DE SER REDUNDANTE)
+			case 2: // nï¿½o existe password
 				if (!valConnArgs(lArgs, 2))
 					validated = false;
 				this.operation = "AUTH";

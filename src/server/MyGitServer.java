@@ -76,6 +76,8 @@ public class MyGitServer {
 				RemoteRepository rr = null;
 				boolean multipleFiles = false;
 				Message m = null;
+				int sizeList = -1;
+				
 				// receive message
 				try {
 					m = ((Message) inStream.readObject());
@@ -87,6 +89,7 @@ public class MyGitServer {
 						MessageP mp = (MessageP) m;
 						if (mp.getNumberFiles() > 1) {
 							multipleFiles = true;
+							sizeList = mp.getNumberFiles();
 						}
 					}
 				}
@@ -99,13 +102,12 @@ public class MyGitServer {
 				// with multiple threads
 				if (multipleFiles) {
 
-					int sizeList = 0;
-					try {
-						sizeList = (Integer) inStream.readObject();
-						System.out.println("sizelist: " + sizeList);
-					} catch (ClassNotFoundException e1) {
-						// e1.printStackTrace();
-					}
+//					try {
+//						sizeList = (Integer) inStream.readObject();
+//						System.out.println("sizelist: " + sizeList);
+//					} catch (ClassNotFoundException e1) {
+//						// e1.printStackTrace();
+//					}
 
 					for (int i = 0; i < sizeList; i++) {
 						try {
@@ -114,6 +116,12 @@ public class MyGitServer {
 							e.printStackTrace();
 						}
 						// do timestamp check and reject or accept the file;
+						
+						
+						
+						
+						//Mensagem de OK
+						outStream.writeObject("OK");
 					}
 					multipleFiles = false;
 				}
