@@ -6,8 +6,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import message.Message;
 import message.MessageP;
@@ -76,7 +74,7 @@ public class MyGitServer {
 				sk.setIn(inStream);
 				sk.setOut(outStream);
 				RemoteRepository rr = null;
-				boolean runCode = false;
+				boolean multipleFiles = false;
 				Message m = null;
 				// receive message
 				try {
@@ -88,7 +86,7 @@ public class MyGitServer {
 					if (m instanceof MessageP) {
 						MessageP mp = (MessageP) m;
 						if (mp.getNumberFiles() > 1) {
-							runCode = false;
+							multipleFiles = true;
 						}
 					}
 				}
@@ -99,7 +97,7 @@ public class MyGitServer {
 				// send
 				// trying this in the code, probably this not work... see effect
 				// with multiple threads
-				if (runCode) {
+				if (multipleFiles) {
 
 					int sizeList = 0;
 					try {
