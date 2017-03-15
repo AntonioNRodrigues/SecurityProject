@@ -97,7 +97,7 @@ public class MyGitServer {
 									//COMPARAR TIMESTAMPS
 									//if(received.lastModified()...)	
 									
-									//Guardar ficheiros caso seja necessário
+									//Guardar ficheiros caso seja necessário (persistir)
 									
 								} catch (ClassNotFoundException e) {
 									e.printStackTrace();
