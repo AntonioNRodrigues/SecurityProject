@@ -59,7 +59,7 @@ public class MyGitClient {
 			 * repositório, se ainda não existir...
 			 */
 
-			if (createLocalRepo(myGitClient.getRepName()) != null)
+			if(createLocalRepo(myGitClient.getRepName()) != null)
 				System.out.println("O repositorio "
 						+ myGitClient.getRepName() + " foi criado localmente.");
 
@@ -264,7 +264,6 @@ public class MyGitClient {
 
 			if (!valTypeSend(this.repOrFileName))
 				validated = false;
-
 			break;
 
 		case "-pull":
