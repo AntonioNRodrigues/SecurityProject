@@ -68,13 +68,13 @@ public class MessagePHandler extends MessageHandler {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}				
-
-		// Enviar o numero de ficheiros
-		try {
-			out.writeObject((Integer) 1);
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
+//
+//		// Enviar o numero de ficheiros
+//		try {
+//			out.writeObject((Integer) 1);
+//		} catch (IOException e1) {
+//			e1.printStackTrace();
+//		}
 
 		// Enviar o ficheiro
 			try {

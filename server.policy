@@ -1,7 +1,7 @@
 grant codeBase "file:bin/*"{
 	permission java.net.SocketPermission "*:23456", "listen, resolve";
 	permission java.net.SocketPermission "*:1024-", "accept";
-    permission java.net.FilePermission "*", "write";
+    permission java.io.FilePermission "*", "write";
     permission java.io.FilePermission "SERVER", "read, write";
     permission java.io.FilePermission "SERVER/-", "read, write";
     permission java.util.PropertyPermission "user.dir", "read";
