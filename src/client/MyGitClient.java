@@ -60,8 +60,8 @@ public class MyGitClient {
 			 */
 
 			if(createLocalRepo(myGitClient.getRepName()) != null)
-				System.out.println("O repositorio "
-						+ myGitClient.getRepName() + " foi criado localmente.");
+				System.out.println("O repositorio \""
+						+ myGitClient.getRepName() + "\" foi criado localmente.");
 
 		} else if (TypeOperation.contains(op)) {
 
@@ -179,21 +179,21 @@ public class MyGitClient {
 
 		System.out.println("Invalid command, available options are: ");
 		System.out.println("");
-		System.out.println("Usage: myGit -init <rep_name>");
+		System.out.println("Usage: -init <rep_name>");
 		System.out.println(
-				"Usage: myGit <localUser> <serverAddress> [ -p <password> ]");
+				"Usage: <localUser> <serverAddress> [ -p <password> ]");
 		System.out.println(
-				"Usage: myGit <localUser> <serverAddress> [ -p <password> ] -push <rep_name>");
+				"Usage: <localUser> <serverAddress> [ -p <password> ] -push <rep_name>");
 		System.out.println(
-				"Usage: myGit <localUser> <serverAddress> [ -p <password> ] -push <file_name>");
+				"Usage: <localUser> <serverAddress> [ -p <password> ] -push <file_name>");
 		System.out.println(
-				"Usage: myGit <localUser> <serverAddress> [ -p <password> ] -pull <file_name>");
+				"Usage: <localUser> <serverAddress> [ -p <password> ] -pull <file_name>");
 		System.out.println(
-				"Usage: myGit <localUser> <serverAddress> [ -p <password> ] -pull <rep_name>");
+				"Usage: <localUser> <serverAddress> [ -p <password> ] -pull <rep_name>");
 		System.out.println(
-				"Usage: myGit <localUser> <serverAddress> [ -p <password> ] -share <rep_name> <userId>");
+				"Usage: <localUser> <serverAddress> [ -p <password> ] -share <rep_name> <userId>");
 		System.out.println(
-				"Usage: myGit <localUser> <serverAddress> [ -p <password> ] -remove <rep_name> <userId>");
+				"Usage: <localUser> <serverAddress> [ -p <password> ] -remove <rep_name> <userId>");
 
 		System.exit(-1);
 	}

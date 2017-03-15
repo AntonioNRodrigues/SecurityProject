@@ -77,67 +77,35 @@ public class MyGitServer {
 				boolean multipleFiles = false;
 				Message m = null;
 				int sizeList = 1;
-				
+
 				// receive message
 				try {
 					m = ((Message) inStream.readObject());
 					sk.receiveMsg(m);
 				} catch (ClassNotFoundException e) {
 					// e.printStackTrace();
-					
+
 				} finally {
 					if (m instanceof MessageP) {
 						MessageP mp = (MessageP) m;
-						if (mp.getNumberFiles() > 1) {
-							multipleFiles = true;
-							sizeList = mp.getNumberFiles();
-							for (int i = 0; i < sizeList; i++) {
-								try {
-									File received = ReadWriteUtil.receiveFile(inStream, outStream);
+						sizeList = mp.getNumberFiles();
+						for (int i = 0; i < sizeList; i++) {
+							try {
+								File received = ReadWriteUtil.receiveFile(inStream, outStream);
 
-									//COMPARAR TIMESTAMPS
-									//if(received.lastModified()...)	
-									
-									//Guardar ficheiros caso seja necessário (persistir)
-									
-								} catch (ClassNotFoundException e) {
-									e.printStackTrace();
-								}
+								// COMPARAR TIMESTAMPS
+								// if(received.lastModified()...)
+
+								// Guardar ficheiros caso seja necessário
+								// (persistir)
+
+							} catch (ClassNotFoundException e) {
+								e.printStackTrace();
+							}
 						}
 					}
 				}
 
-				// its not a message is list of files when we do a push
-				// repository
-				// see a better way to get the number of files that have to be
-				// send
-				// trying this in the code, probably this not work... see effect
-				// with multiple threads
-				if (multipleFiles) {
-
-//					try {
-//						sizeList = (Integer) inStream.readObject();
-//						System.out.println("sizelist: " + sizeList);
-//					} catch (ClassNotFoundException e1) {
-//						// e1.printStackTrace();
-//					}
-
-//					for (int i = 0; i < sizeList; i++) {
-//						try {
-//							File received = ReadWriteUtil.receiveFile(inStream, outStream);
-//						} catch (ClassNotFoundException e) {
-//							e.printStackTrace();
-//						}
-						// do timestamp check and reject or accept the file;
-						
-						
-						
-						
-//						//Mensagem de OK
-//						outStream.writeObject("OK");
-					}
-//					multipleFiles = false;
-				}
 				outStream.close();
 				inStream.close();
 				socket.close();
