@@ -90,6 +90,18 @@ public class MyGitServer {
 						if (mp.getNumberFiles() > 1) {
 							multipleFiles = true;
 							sizeList = mp.getNumberFiles();
+							for (int i = 0; i < sizeList; i++) {
+								try {
+									File received = ReadWriteUtil.receiveFile(inStream, outStream);
+
+									//COMPARAR TIMESTAMPS
+									//if(received.lastModified()...)	
+									
+									//Guardar ficheiros caso seja necessário
+									
+								} catch (ClassNotFoundException e) {
+									e.printStackTrace();
+								}
 						}
 					}
 				}
@@ -109,12 +121,12 @@ public class MyGitServer {
 //						// e1.printStackTrace();
 //					}
 
-					for (int i = 0; i < sizeList; i++) {
-						try {
-							File received = ReadWriteUtil.receiveFile(inStream, outStream);
-						} catch (ClassNotFoundException e) {
-							e.printStackTrace();
-						}
+//					for (int i = 0; i < sizeList; i++) {
+//						try {
+//							File received = ReadWriteUtil.receiveFile(inStream, outStream);
+//						} catch (ClassNotFoundException e) {
+//							e.printStackTrace();
+//						}
 						// do timestamp check and reject or accept the file;
 						
 						
