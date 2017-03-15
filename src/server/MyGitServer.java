@@ -6,10 +6,13 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 import message.Message;
 import message.MessageP;
 import server.repository.RemoteRepository;
+import server.repository.RepositoryCatalog;
 import utilities.ReadWriteUtil;
 
 public class MyGitServer {
@@ -73,6 +76,7 @@ public class MyGitServer {
 				ObjectInputStream inStream = new ObjectInputStream(socket.getInputStream());
 				sk.setIn(inStream);
 				sk.setOut(outStream);
+				RepositoryCatalog catRepo = null;
 				RemoteRepository rr = null;
 				boolean multipleFiles = false;
 				Message m = null;
@@ -84,27 +88,35 @@ public class MyGitServer {
 					sk.receiveMsg(m);
 				} catch (ClassNotFoundException e) {
 					// e.printStackTrace();
-
-				} finally {
-					if (m instanceof MessageP) {
-						MessageP mp = (MessageP) m;
-						sizeList = mp.getNumberFiles();
-						for (int i = 0; i < sizeList; i++) {
-							try {
-								File received = ReadWriteUtil.receiveFile(inStream, outStream);
-
-								// COMPARAR TIMESTAMPS
-								// if(received.lastModified()...)
-
-								// Guardar ficheiros caso seja necessário
-								// (persistir)
-
-							} catch (ClassNotFoundException e) {
-								e.printStackTrace();
-							}
-						}
-					}
 				}
+//				} finally {
+//					if (m instanceof MessageP) {
+//						MessageP mp = (MessageP) m;
+//						
+//						rr = catRepo.getRemRepository(((MessageP) m).getRepoName());
+//						sizeList = mp.getNumberFiles();
+//						List<File> praAtualizar = new ArrayList<File>();
+//						for (int i = 0; i < sizeList; i++) {
+//							try {
+//								File received = ReadWriteUtil.receiveFile(inStream, outStream);
+//								
+//								
+//								// COMPARAR TIMESTAMPS
+//
+//								Long timeMsgFile = ((MessageP) m).getTimestamp();
+//								if(rr.getMostRecentFile(received.getName()).lastModified() < received.lastModified())
+//									praAtualizar.add(received);
+//													
+//							} catch (ClassNotFoundException e) {
+//								e.printStackTrace();
+//							}
+//						}
+//						
+//						// Guardar ficheiros caso seja necessário
+//						// (persistir)
+//						rr.addFilesToRepo(rr.getNameRepo(), praAtualizar);
+//					}
+//				}
 
 				outStream.close();
 				inStream.close();
