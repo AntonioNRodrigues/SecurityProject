@@ -84,6 +84,7 @@ public class MyGitServer {
 					sk.receiveMsg(m);
 				} catch (ClassNotFoundException e) {
 					// e.printStackTrace();
+					
 				} finally {
 					if (m instanceof MessageP) {
 						MessageP mp = (MessageP) m;
