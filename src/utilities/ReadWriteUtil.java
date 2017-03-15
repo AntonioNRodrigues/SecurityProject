@@ -68,7 +68,7 @@ public class ReadWriteUtil {
 		System.out.println("Recebeu tamanho do ficheiro..." + sizeFile);
 		String filename = (String) inStream.readObject();
 		System.out.println("Recebeu nome do ficheiro..." + filename);
-		System.err.println("Entrou aqui no receiveFile!!!!!!");
+
 		File fileReceived = new File(filename);		
 		BufferedOutputStream bf = new BufferedOutputStream(new FileOutputStream(fileReceived));
 		int len = 0;
