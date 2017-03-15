@@ -85,13 +85,12 @@ public class MyGitClient {
 //				} catch (EOFException e){
 //					System.out.println("OK");
 //				} 
-			out.close();
-			socket.close();
+
 			}
 
-//			//out.close();
-//			in.close();
-//			socket.close();
+			out.close();
+			in.close();
+			socket.close();
 		} else {
 
 			System.out.println("ERRO");

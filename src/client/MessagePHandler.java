@@ -89,16 +89,19 @@ public class MessagePHandler extends MessageHandler {
 	
 	private String sendPushRepMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
 		
+		loadRepoFiles(params.getRepName());
+		
 		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(), params.getPassword(), TypeSend.REPOSITORY, params.getRepName(),
 				TypeOperation.PUSH, filesList.size(),  0);
 		
 		try {
+			System.out.println("O filesList.size() é " + filesList.size());
 			out.writeObject((Object)mp);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
-		loadRepoFiles(params.getRepName());
+		
 		
 //		// Enviar o numero de ficheiros
 //		try {
@@ -110,6 +113,7 @@ public class MessagePHandler extends MessageHandler {
 		// Enviar os ficheiros
 		for (Path path: filesList){
 			try {
+				System.out.println("Enviando o ficheiro: " + path);
 				ReadWriteUtil.sendFile(path, in, out);
 			} catch (IOException e) {
 				e.printStackTrace();

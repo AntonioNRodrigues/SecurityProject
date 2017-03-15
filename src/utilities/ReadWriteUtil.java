@@ -19,6 +19,7 @@ public class ReadWriteUtil {
 		File f = path.toFile();
 
 		BufferedInputStream inputFileStream = new BufferedInputStream(new FileInputStream(f));
+		System.out.println("A enviar tamanho do ficheiro...");
 		Long sizeFile = f.length();
 		// send size of file
 		outStream.writeObject(sizeFile);
@@ -44,10 +45,10 @@ public class ReadWriteUtil {
 		BufferedInputStream inputFileStream = new BufferedInputStream(new FileInputStream(f));
 		Long sizeFile = f.length();
 		// send size of file
-		outStream.writeObject((Object) sizeFile);
+		outStream.writeObject(sizeFile);
 		System.out.println(f.getName());
 		// send the filename
-		outStream.writeObject((Object) f.getName());
+		outStream.writeObject(f.getName());
 
 		byte buffer[] = new byte[VALUE];
 		int n = 0;
@@ -64,7 +65,10 @@ public class ReadWriteUtil {
 		System.out.println("RECEIVING FILE");
 
 		Long sizeFile = (Long) inStream.readObject();
+		System.out.println("Recebeu tamanho do ficheiro..." + sizeFile);
 		String filename = (String) inStream.readObject();
+		System.out.println("Recebeu nome do ficheiro..." + filename);
+		System.err.println("Entrou aqui no receiveFile!!!!!!");
 		File fileReceived = new File(filename);		
 		BufferedOutputStream bf = new BufferedOutputStream(new FileOutputStream(fileReceived));
 		int len = 0;

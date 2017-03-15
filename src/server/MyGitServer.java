@@ -76,7 +76,7 @@ public class MyGitServer {
 				RemoteRepository rr = null;
 				boolean multipleFiles = false;
 				Message m = null;
-				int sizeList = -1;
+				int sizeList = 1;
 				
 				// receive message
 				try {
@@ -120,10 +120,10 @@ public class MyGitServer {
 						
 						
 						
-						//Mensagem de OK
-						outStream.writeObject("OK");
+//						//Mensagem de OK
+//						outStream.writeObject("OK");
 					}
-					multipleFiles = false;
+//					multipleFiles = false;
 				}
 				outStream.close();
 				inStream.close();

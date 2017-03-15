@@ -110,9 +110,9 @@ public class ServerSkell {
 					case PUSH:
 						// -push repo_name
 						System.out.println("-PUSH REPOSITORY");
-						System.out.println(mp.getRepoName());
+						System.out.println("Repositorio da Mensagem é: " + mp.getRepoName());
 						rr = catRepo.getRemRepository(mp.getRepoName());
-						System.out.println(rr == null);
+						System.out.println("O repositorio remoto é: " + rr);
 						if (rr == null) {
 							// repository does not exist
 							rr = catRepo.buildRepo(mp.getLocalUser(),
