@@ -100,6 +100,16 @@ public class MyGitClient {
 
 	private static Path createLocalRepo(String repName) {
 
+		//Caso não haja a pasta CLIENT no início.
+		try{
+		Path path = Paths.get("CLIENT");
+		if (!Files.exists(path))
+			Files.createDirectory(path);
+		} catch (IOException e) {
+			System.out.println("Não foi possível criar a directoria local \"CLIENT\"");
+		}
+		
+		
 		Path path = Paths.get("CLIENT" + File.separator + repName);
 		boolean exists = Files.exists(path);
 		boolean isDirectory = Files.isDirectory(path);
@@ -115,12 +125,14 @@ public class MyGitClient {
 			return null;
 		} else {
 			try {
-				path = Files.createDirectories(path);
+				Files.createDirectories(path);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			
 		}
 		return path;
+		
 	}
 
 	public String getOperation() {
