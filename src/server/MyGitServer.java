@@ -1,22 +1,23 @@
 package server;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 
 import message.Message;
-import message.MessageP;
-import server.repository.RemoteRepository;
-import server.repository.RepositoryCatalog;
-import utilities.ReadWriteUtil;
 
 public class MyGitServer {
-	private static ServerSkell sk;
+	private ServerSkell sk;
+	private static ObjectOutputStream outStream;
+	private static ObjectInputStream inStream;
+
+
+	public MyGitServer() {
+		System.out.println("MyGitServer init");
+		this.sk = new ServerSkell();
+	}
 
 	private static boolean checkParams(String[] args) {
 		return (args.length == 1) ? true : false;
@@ -30,7 +31,6 @@ public class MyGitServer {
 		}
 		System.out.println("MyGitServer is Running:");
 		MyGitServer myGitServer = new MyGitServer();
-		sk = new ServerSkell();
 		myGitServer.startServer(args);
 	}
 
@@ -68,55 +68,21 @@ public class MyGitServer {
 		ServerThread(Socket inSoc) throws IOException {
 			socket = inSoc;
 			System.out.println("server thread to each client");
+			
 		}
 
 		public void run() {
 			try {
-				ObjectOutputStream outStream = new ObjectOutputStream(socket.getOutputStream());
-				ObjectInputStream inStream = new ObjectInputStream(socket.getInputStream());
-				sk.setIn(inStream);
-				sk.setOut(outStream);
-				RepositoryCatalog catRepo = null;
-				RemoteRepository rr = null;
-				boolean multipleFiles = false;
+				outStream = new ObjectOutputStream(socket.getOutputStream());
+				inStream = new ObjectInputStream(socket.getInputStream());
 				Message m = null;
-				int sizeList = 1;
 
-				// receive message
 				try {
 					m = ((Message) inStream.readObject());
-					sk.receiveMsg(m);
+					sk.receiveMsg(m, inStream, outStream);
 				} catch (ClassNotFoundException e) {
-					// e.printStackTrace();
+					e.printStackTrace();
 				}
-//				} finally {
-//					if (m instanceof MessageP) {
-//						MessageP mp = (MessageP) m;
-//						
-//						rr = catRepo.getRemRepository(((MessageP) m).getRepoName());
-//						sizeList = mp.getNumberFiles();
-//						List<File> praAtualizar = new ArrayList<File>();
-//						for (int i = 0; i < sizeList; i++) {
-//							try {
-//								File received = ReadWriteUtil.receiveFile(inStream, outStream);
-//								
-//								
-//								// COMPARAR TIMESTAMPS
-//
-//								Long timeMsgFile = ((MessageP) m).getTimestamp();
-//								if(rr.getMostRecentFile(received.getName()).lastModified() < received.lastModified())
-//									praAtualizar.add(received);
-//													
-//							} catch (ClassNotFoundException e) {
-//								e.printStackTrace();
-//							}
-//						}
-//						
-//						// Guardar ficheiros caso seja necessário
-//						// (persistir)
-//						rr.addFilesToRepo(rr.getNameRepo(), praAtualizar);
-//					}
-//				}
 
 				outStream.close();
 				inStream.close();

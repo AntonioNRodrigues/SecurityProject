@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,7 @@ public class ServerSkell {
 	private ObjectInputStream in;
 	private RepositoryCatalog catRepo;
 	private UserCatalog catUsers;
+	private static final String SERVER = "SERVER";
 
 	public ServerSkell() {
 		this.catRepo = new RepositoryCatalog();
@@ -54,13 +56,16 @@ public class ServerSkell {
 		this.in = in;
 	}
 
-	public void receiveMsg(Message msg) throws ClassNotFoundException, IOException {
+	public void receiveMsg(Message msg, ObjectInputStream in, ObjectOutputStream out)
+			throws ClassNotFoundException, IOException {
+		this.in = in;
+		this.out = out;
 		RemoteRepository rr = null;
 		if (authentication(msg)) {
-			// out.writeObject((Object) "THE USER IS AUTHENTICATED");
+			out.writeObject((Object) "THE USER IS AUTHENTICATED");
 			if (msg instanceof MessageRS) {
-				System.out.println(msg);
 				MessageRS mrs = (MessageRS) msg;
+				System.out.println(mrs);
 				TypeOperation op = mrs.getTypeOperation();
 				switch (op) {
 				case REMOVE:
@@ -84,11 +89,10 @@ public class ServerSkell {
 				}
 
 			} else if (msg instanceof MessageP) {
-				System.out.println(msg);
 				MessageP mp = ((MessageP) msg);
+				System.out.println(mp);
 				TypeSend ts = mp.getTypeSend();
 				TypeOperation op = mp.getOperation();
-
 				switch (ts) {
 				case REPOSITORY:
 					switch (op) {
@@ -109,7 +113,6 @@ public class ServerSkell {
 
 						break;
 					case PUSH:
-						// -push repo_name
 						System.out.println("-PUSH REPOSITORY");
 						System.out.println("Repositorio da Mensagem é: " + mp.getRepoName());
 						rr = catRepo.getRemRepository(mp.getRepoName());
@@ -151,6 +154,7 @@ public class ServerSkell {
 					case PULL:
 						System.out.println("-PULL FILE");
 						rr = catRepo.getRemRepository(mp.getRepoName());
+						System.out.println(rr);
 						long lastModifiedDate = mp.getTimestamp();
 						if (rr != null) {
 							File inRepo = rr.getMostRecentFile(mp.getFileName());
@@ -167,24 +171,32 @@ public class ServerSkell {
 						}
 						break;
 					case PUSH:
-						// -push file_name
 						System.out.println("-PUSH FILE");
 						rr = catRepo.getRemRepository(mp.getRepoName());
 						if (rr != null) {
 							// the repo exists them proceed with push file
 							try {
-								File received = ReadWriteUtil.receiveFile(in, out);
+								File received = ReadWriteUtil.receiveFile(in, out,
+										SERVER + File.separator + mp.getRepoName() + File.separator);
 								System.out.println(received.getName() + received.lastModified());
-								File inRepo = rr.getMostRecentFile(received.getName());
-								System.out.println(inRepo.getName() + inRepo.lastModified());
-								// if received file has lastmodified > than the
-								// one that exists in the repo
-								if (received.lastModified() > inRepo.lastModified()) {
-									// added to the list
-									rr.getVersionList(received.getName()).add(received);
-								} else {
-									// delete file the repo has a recent file
-									Files.deleteIfExists(received.toPath());
+								File inRepo = null;
+								// if list is empty check the most recent add
+								// file
+								if (rr.getVersionList(received.getName()) == null) {
+									List<File> c = new ArrayList<File>();
+									c.add(received);
+									rr.addFilesToRepo(received.getName(), c);
+									rr.getVersionList(received.getName());
+								} else if (!rr.getVersionList(received.getName()).isEmpty()) {
+									inRepo = rr.getMostRecentFile(received.getName());
+									if (received.lastModified() > inRepo.lastModified()) {
+										// added to the list
+										rr.getVersionList(received.getName()).add(received);
+									} else {
+										// delete file the repo has a recent
+										// file
+										Files.deleteIfExists(received.toPath());
+									}
 								}
 							} catch (ClassNotFoundException e) {
 								e.printStackTrace();

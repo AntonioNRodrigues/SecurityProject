@@ -44,8 +44,7 @@ public class MyGitClient {
 
 	}
 
-	public static void main(String[] args)
-			throws UnknownHostException, IOException, ClassNotFoundException {
+	public static void main(String[] args) throws UnknownHostException, IOException, ClassNotFoundException {
 
 		MyGitClient myGitClient = new MyGitClient(args);
 		String op = myGitClient.getOperation();
@@ -59,32 +58,28 @@ public class MyGitClient {
 			 * repositório, se ainda não existir...
 			 */
 
-			if(createLocalRepo(myGitClient.getRepName()) != null)
-				System.out.println("O repositorio \""
-						+ myGitClient.getRepName() + "\" foi criado localmente.");
+			if (createLocalRepo(myGitClient.getRepName()) != null)
+				System.out.println("O repositorio \"" + myGitClient.getRepName() + "\" foi criado localmente.");
 
 		} else if (TypeOperation.contains(op)) {
 
-			Socket socket = new Socket(myGitClient.getHost(),
-					myGitClient.getPort());
-			ObjectInputStream in = new ObjectInputStream(
-					socket.getInputStream());
-			ObjectOutputStream out = new ObjectOutputStream(
-					socket.getOutputStream());
+			Socket socket = new Socket(myGitClient.getHost(), myGitClient.getPort());
+			ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+			ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
 
 			// Create the message handler
 			IMessageTypes mTypes = MessageFactory.INSTANCE.getmsgType(op);
 			if (mTypes != null) {
 				String str = mTypes.sendMessage(in, out, myGitClient);
 				System.out.println(str);
-				
-//				try{
-//				//If NOT OK?!
-//				String resultado = (String) in.readObject();
-//				System.out.println(resultado);
-//				} catch (EOFException e){
-//					System.out.println("OK");
-//				} 
+
+				// try{
+				// //If NOT OK?!
+				// String resultado = (String) in.readObject();
+				// System.out.println(resultado);
+				// } catch (EOFException e){
+				// System.out.println("OK");
+				// }
 
 			}
 
@@ -100,28 +95,25 @@ public class MyGitClient {
 
 	private static Path createLocalRepo(String repName) {
 
-		//Caso não haja a pasta CLIENT no início.
-		try{
-		Path path = Paths.get("CLIENT");
-		if (!Files.exists(path))
-			Files.createDirectory(path);
+		// Caso não haja a pasta CLIENT no início.
+		try {
+			Path path = Paths.get("CLIENT");
+			if (!Files.exists(path))
+				Files.createDirectory(path);
 		} catch (IOException e) {
 			System.out.println("Não foi possível criar a directoria local \"CLIENT\"");
 		}
-		
-		
+
 		Path path = Paths.get("CLIENT" + File.separator + repName);
 		boolean exists = Files.exists(path);
 		boolean isDirectory = Files.isDirectory(path);
 		boolean isFile = Files.isRegularFile(path);
 
 		if (exists && isDirectory) {
-			System.out.println(
-					"ERRO: Um repositorio com esse nome ja existe.");
+			System.out.println("ERRO: Um repositorio com esse nome ja existe.");
 			return null;
 		} else if (exists && isFile) {
-			System.out.println(
-					"ERRO: Ja existe um ficheiro com o mesmo nome dado ao repositorio.");
+			System.out.println("ERRO: Ja existe um ficheiro com o mesmo nome dado ao repositorio.");
 			return null;
 		} else {
 			try {
@@ -129,10 +121,10 @@ public class MyGitClient {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			
+
 		}
 		return path;
-		
+
 	}
 
 	public String getOperation() {
@@ -180,20 +172,13 @@ public class MyGitClient {
 		System.out.println("Invalid command, available options are: ");
 		System.out.println("");
 		System.out.println("Usage: -init <rep_name>");
-		System.out.println(
-				"Usage: <localUser> <serverAddress> [ -p <password> ]");
-		System.out.println(
-				"Usage: <localUser> <serverAddress> [ -p <password> ] -push <rep_name>");
-		System.out.println(
-				"Usage: <localUser> <serverAddress> [ -p <password> ] -push <file_name>");
-		System.out.println(
-				"Usage: <localUser> <serverAddress> [ -p <password> ] -pull <file_name>");
-		System.out.println(
-				"Usage: <localUser> <serverAddress> [ -p <password> ] -pull <rep_name>");
-		System.out.println(
-				"Usage: <localUser> <serverAddress> [ -p <password> ] -share <rep_name> <userId>");
-		System.out.println(
-				"Usage: <localUser> <serverAddress> [ -p <password> ] -remove <rep_name> <userId>");
+		System.out.println("Usage: <localUser> <serverAddress> [ -p <password> ]");
+		System.out.println("Usage: <localUser> <serverAddress> [ -p <password> ] -push <rep_name>");
+		System.out.println("Usage: <localUser> <serverAddress> [ -p <password> ] -push <file_name>");
+		System.out.println("Usage: <localUser> <serverAddress> [ -p <password> ] -pull <file_name>");
+		System.out.println("Usage: <localUser> <serverAddress> [ -p <password> ] -pull <rep_name>");
+		System.out.println("Usage: <localUser> <serverAddress> [ -p <password> ] -share <rep_name> <userId>");
+		System.out.println("Usage: <localUser> <serverAddress> [ -p <password> ] -remove <rep_name> <userId>");
 
 		System.exit(-1);
 	}
@@ -227,17 +212,16 @@ public class MyGitClient {
 			if (lArgs.get(2).equals("-p")) {
 				try {
 					if (lArgs.get(3).startsWith("-")) {
-						System.out.println(
-								"ERRO: Escreva uma password sem comecar com o caracter '-'");
+						System.out.println("ERRO: Escreva uma password sem comecar com o caracter '-'");
 						System.exit(-1);
 					}
 					this.password = lArgs.get(3);
-					//caso haja um commando adicional (push, pull, share or remove)
+					// caso haja um commando adicional (push, pull, share or
+					// remove)
 					if (lArgs.size() > 5)
 						command = lArgs.get(4);
 				} catch (ArrayIndexOutOfBoundsException e) {
-					System.out.println(
-							"ERRO: Por favor escreva uma password a seguir a flag -p.");
+					System.out.println("ERRO: Por favor escreva uma password a seguir a flag -p.");
 					System.exit(-1);
 				}
 			} else {
@@ -245,7 +229,7 @@ public class MyGitClient {
 			}
 
 		/// END OF PASSWORD && COMMAND
-		
+
 		// Depende do comando que � enviado! command = "-init", "-push",
 		// "-share".....
 		switch (command) {
@@ -348,8 +332,7 @@ public class MyGitClient {
 		}
 
 		// Apenas para testar (nao estava a ser imprimido)
-		System.out.println(
-				"-------------------------DEPOIS DE VALIDAR OS ARGUMENTOS ---------------------");
+		System.out.println("-------------------------DEPOIS DE VALIDAR OS ARGUMENTOS ---------------------");
 		System.err.println("validated: " + validated);
 		System.out.println("localUser: " + this.localUser);
 		System.out.println("serverAddress: " + this.serverAddress);
@@ -361,8 +344,7 @@ public class MyGitClient {
 		System.out.println("fileName: " + this.fileName);
 		System.out.println("repOrFileName: " + this.repOrFileName);
 		System.out.println("userId: " + this.userId);
-		System.out.println(
-				"---------------------------------------------------------------------------");
+		System.out.println("---------------------------------------------------------------------------");
 
 		return validated;
 	}
@@ -490,8 +472,7 @@ public class MyGitClient {
 			String currentPropertyValues = null;
 			currentPropertyValues = getProperty(propertyName);
 			if (currentPropertyValues != null)
-				prop.setProperty(propertyName,
-						currentPropertyValues + "," + propertyValue);
+				prop.setProperty(propertyName, currentPropertyValues + "," + propertyValue);
 			else
 				prop.setProperty(propertyName, propertyValue);
 
