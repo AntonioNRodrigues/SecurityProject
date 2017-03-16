@@ -9,7 +9,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+
+import com.sun.org.apache.bcel.internal.generic.RETURN;
 
 public class ReadWriteUtil {
 	private static final int VALUE = 1024;
@@ -20,13 +21,12 @@ public class ReadWriteUtil {
 		File f = path.toFile();
 
 		BufferedInputStream inputFileStream = new BufferedInputStream(new FileInputStream(f));
-		System.out.println("A enviar tamanho do ficheiro...");
 		Long sizeFile = f.length();
 		// send size of file
-		outStream.writeObject(sizeFile);
+		outStream.writeObject((Object) sizeFile);
 		System.out.println(f.getName());
 		// send the filename
-		outStream.writeObject(f.getName());
+		outStream.writeObject((Object) f.getName());
 
 		byte buffer[] = new byte[VALUE];
 		int n = 0;
@@ -37,7 +37,7 @@ public class ReadWriteUtil {
 
 		inputFileStream.close();
 	}
-
+		
 	public static void sendFile(String filename, ObjectInputStream inStream, ObjectOutputStream outStream)
 			throws IOException {
 		System.out.println("SENDING FILE");
@@ -46,10 +46,10 @@ public class ReadWriteUtil {
 		BufferedInputStream inputFileStream = new BufferedInputStream(new FileInputStream(f));
 		Long sizeFile = f.length();
 		// send size of file
-		outStream.writeObject(sizeFile);
+		outStream.writeObject((Object) sizeFile);
 		System.out.println(f.getName());
 		// send the filename
-		outStream.writeObject(f.getName());
+		outStream.writeObject((Object) f.getName());
 
 		byte buffer[] = new byte[VALUE];
 		int n = 0;
@@ -66,11 +66,8 @@ public class ReadWriteUtil {
 		System.out.println("RECEIVING FILE");
 
 		Long sizeFile = (Long) inStream.readObject();
-		System.out.println("Recebeu tamanho do ficheiro..." + sizeFile);
 		String filename = (String) inStream.readObject();
-		System.out.println("Recebeu nome do ficheiro..." + filename);
-
-		File fileReceived = new File("SERVER/Rep20/" + filename);
+		File fileReceived = new File(filename);		
 		BufferedOutputStream bf = new BufferedOutputStream(new FileOutputStream(fileReceived));
 		int len = 0;
 		byte[] buffer = new byte[VALUE];
@@ -87,23 +84,20 @@ public class ReadWriteUtil {
 
 			bf.write(buffer, 0, n);
 			len += lido;
+			System.out.println(".......");
 		}
 		bf.close();
 		return fileReceived;
 	}
 
-	public static File receiveFile(ObjectInputStream inStream, ObjectOutputStream outStream, String path)
+	public static File receiveFile(String path, ObjectInputStream inStream, ObjectOutputStream outStream)
 			throws ClassNotFoundException, IOException {
 		System.out.println("RECEIVING FILE");
 
 		Long sizeFile = (Long) inStream.readObject();
-		System.out.println("Recebeu tamanho do ficheiro..." + sizeFile);
 		String filename = (String) inStream.readObject();
-		System.out.println("PATH TO FILE..." + path);
-		System.out.println("Recebeu nome do ficheiro..." + filename);
-		
-
-		File fileReceived = new File(path + filename);
+				
+		File fileReceived = new File(path+filename);		
 		BufferedOutputStream bf = new BufferedOutputStream(new FileOutputStream(fileReceived));
 		int len = 0;
 		byte[] buffer = new byte[VALUE];
@@ -120,9 +114,11 @@ public class ReadWriteUtil {
 
 			bf.write(buffer, 0, n);
 			len += lido;
+			System.out.println(".......");
 		}
 		bf.close();
+		
 		return fileReceived;
 	}
-
+	
 }

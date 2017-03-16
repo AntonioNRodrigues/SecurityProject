@@ -7,7 +7,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
+
+import com.sun.activation.registries.MailcapParseException;
 
 import user.User;
 
@@ -20,6 +21,7 @@ public class RepositoryCatalog {
 		super();
 		System.out.println("REPOSITORY CATALOG IS ON");
 		buildMap();
+		listRepos();
 	}
 
 	private void buildMap() {
@@ -42,11 +44,18 @@ public class RepositoryCatalog {
 		// list of files inside Server
 		for (String strFolder : new File(SERVER).list()) {
 			// repositories folders
-			File f = new File(SERVER + "/" + strFolder);
+			
+			System.out.println("Repository folder: "+strFolder);
+			
+			File f = new File(SERVER + File.separator + strFolder);
 			if (f.isDirectory()) {
 				// build a repository
+				
+				System.out.println("Repository files: "+ Arrays.asList(f.listFiles()));
+				
 				rr = new RemoteRepository(f.getName());
 				rr.addFilesToRepo(rr.getNameRepo(), Arrays.asList(f.listFiles()));
+				
 				// inside each folder/repositoriy exists a owner.txt file
 				String owner = null;
 				try {
@@ -76,15 +85,22 @@ public class RepositoryCatalog {
 		System.out.println("GET OWNER FOLDER");
 		String str = null;
 
-		File repFolder = new File(f.getCanonicalPath() + "/");
-
+		System.out.println("f.getCanonicalPath(): "+f.getCanonicalPath());
+		
+		File repFolder = new File(f.getCanonicalPath() + File.separator);
+		
+		System.out.println("repFolder.isDirectory(): "+repFolder.isDirectory());
+		
 		if (repFolder.isDirectory()) {
 			// list all its files
 			for (String s : repFolder.list()) {
 				// get owner.txt and read it
 				if (s.equals(OWNER)) {
+					
+					System.out.println("OWNER: "+s);
+
 					File g = new File(repFolder.getCanonicalPath() + "/" + OWNER);
-					try (BufferedReader br = new BufferedReader(new FileReader(g))) {
+					try (BufferedReader br = new BufferedReader(new FileReader(g))){
 						str = br.readLine();
 					} catch (IOException e) {
 						e.printStackTrace();
@@ -118,6 +134,18 @@ public class RepositoryCatalog {
 		return create;
 
 	}
+	
+	public void listRepos() {
+		System.out.println("Available repositories:");
+		mapRemRepos.forEach((key, value) -> {
+		    System.out.println("Key : " + key + " Value : " + value);
+		});		
+	}
+	
+	public boolean repoExists(String repoName) {
+		return mapRemRepos.containsKey(repoName);	
+	}
+	
 
 	public Map<String, RemoteRepository> getMapRemRepos() {
 		return mapRemRepos;

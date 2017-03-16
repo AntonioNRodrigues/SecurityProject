@@ -12,8 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import com.sun.org.apache.bcel.internal.generic.I2F;
+
 import enums.TypeOperation;
 import enums.TypeSend;
+import message.Message;
 import message.MessageP;
 import user.User;
 import utilities.ReadWriteUtil;
@@ -28,7 +31,7 @@ public class MessagePHandler extends MessageHandler {
 	}	
 
 	@Override
-	public String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params){
+	public String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
 	
 		//sendAuthMessage(in, out, params);
 		
@@ -68,14 +71,14 @@ public class MessagePHandler extends MessageHandler {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}				
-//
-//		// Enviar o numero de ficheiros
-//		try {
-//			out.writeObject((Integer) 1);
-//		} catch (IOException e1) {
-//			e1.printStackTrace();
-//		}
 
+		// Enviar o numero de ficheiros
+		//try {
+		//	out.writeObject((Integer) 1);
+		//} catch (IOException e1) {
+		//	e1.printStackTrace();
+		//}
+		
 		// Enviar o ficheiro
 			try {
 				ReadWriteUtil.sendFile( params.getFile(), in, out);
@@ -90,31 +93,28 @@ public class MessagePHandler extends MessageHandler {
 	private String sendPushRepMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
 		
 		loadRepoFiles(params.getRepName());
-		
+
 		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(), params.getPassword(), TypeSend.REPOSITORY, params.getRepName(),
 				TypeOperation.PUSH, filesList.size(),  0);
 		
 		try {
-			System.out.println("O filesList.size() é " + filesList.size());
 			out.writeObject((Object)mp);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
 		
-		
-//		// Enviar o numero de ficheiros
-//		try {
-//			out.writeObject((Integer) filesList.size());
-//		} catch (IOException e1) {
-//			e1.printStackTrace();
-//		}
+		// Enviar o numero de ficheiros
+		//try {
+		//	out.writeObject((Integer) filesList.size());
+		//} catch (IOException e1) {
+		//	e1.printStackTrace();
+		//}
 
 		// Enviar os ficheiros
 		for (Path path: filesList){
 			try {
-				System.out.println("Enviando o ficheiro: " + path);
-				ReadWriteUtil.sendFile(path, in, out);
+				ReadWriteUtil.sendFile( path, in, out);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -126,18 +126,33 @@ public class MessagePHandler extends MessageHandler {
 	
 	private String sendPullFileMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
 		
-        BasicFileAttributes attributes = getFileAttributes(params.getFile());
-
+		// Se o ficheiro a que se está a fazer pull já existe então armazenar e
+		// enviar a data da última modificação
+		Path path = Paths.get("CLIENT"+ File.separator + params.getRepOrFileName());
+		boolean exists = Files.exists(path);
+		//boolean isDirectory = Files.isDirectory(path);
+		boolean isFile = Files.isRegularFile(path);
+		
+		long lastModifiedTime = 0;
+		BasicFileAttributes attributes = null; 
+		if (exists&&isFile) {
+			attributes = getFileAttributes(params.getFile());
+			lastModifiedTime = attributes.lastModifiedTime().toMillis();
+		}
+		
 		// Message to use when we want to send or receive a file. Used in PULL fileName and PUSH fileName
 		// serverAddress não será necessário, já está presente na criação do socket...
-		MessageP mp = new MessageP(new User(params.getLocalUser(),params.getPassword()), params.getServerAddress(), params.getPassword(), TypeSend.FILE, params.getRepName(),
-				params.getFileName(), TypeOperation.PULL, 1,  attributes.lastModifiedTime().toMillis());
+		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(), params.getPassword(), TypeSend.FILE, params.getRepName(),
+				params.getFileName(), TypeOperation.PULL, 1,  lastModifiedTime);
 		
 		try {
 			out.writeObject((Object)mp);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}				
+		
+		// receive the files
+		receiveFiles(params.getRepName(), in, out);		
 		
 		return "MessagePHandler:sendPullFileMessage";
 	}
@@ -148,7 +163,7 @@ public class MessagePHandler extends MessageHandler {
         // Message to use when we want to send or receive a file. Used in PULL fileName and PUSH fileName
 		// serverAddress não será necessário, já está presente na criação do socket...
 		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(), params.getPassword(), TypeSend.REPOSITORY, params.getRepName(),
-				TypeOperation.PULL, 1,  0);
+				TypeOperation.PULL, 0,  0);
 		
 		try {
 			out.writeObject((Object)mp);
@@ -156,7 +171,37 @@ public class MessagePHandler extends MessageHandler {
 			e.printStackTrace();
 		}	
 		
+		// receive the file
+		receiveFiles(params.getRepName(), in, out);		
+
+		
 		return "MessagePHandler:sendPullRepMessage";
+	}
+	
+
+	private void receiveFiles (String repoName, ObjectInputStream in, ObjectOutputStream out) {
+		
+		// mesmmo protocolo do servidor, receber primeiro o numero de ficheiros,
+		// ler depois os ficheiros
+		int sizeList = 0;
+		try {
+			sizeList = (Integer) in.readObject();
+			System.out.println("sizelist: " + sizeList);
+		} catch (ClassNotFoundException | IOException e) {
+			e.printStackTrace();
+		}
+
+		for (int i = 0; i < sizeList; i++) {
+			try {
+				String path = "CLIENT" + File.separator + repoName + File.separator;									
+
+				File received = ReadWriteUtil.receiveFile(path, in, out);
+			} catch (ClassNotFoundException | IOException e) {
+				e.printStackTrace();
+			}
+			// do timestamp check and reject or accept the file;
+		}
+		
 	}
 	
 	

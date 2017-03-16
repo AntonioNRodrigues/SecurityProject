@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -12,6 +13,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import javax.swing.plaf.basic.BasicBorders.FieldBorder;
 
 public class RemoteRepository {
 	private String owner;
@@ -41,7 +44,7 @@ public class RemoteRepository {
 		File f = new File("SERVER/" + this.nameRepo);
 		if (!f.exists()) {
 			f.mkdirs();
-			File ff = new File(f.getPath() + "/owner.txt");
+			File ff = new File(f.getAbsolutePath() + "/owner.txt");
 			try (BufferedWriter fi = new BufferedWriter(new FileWriter(ff))) {
 				fi.write(this.owner);
 			} catch (IOException e) {
@@ -59,10 +62,15 @@ public class RemoteRepository {
 	 * @return
 	 */
 	public File getMostRecentFile(String nameFile) {
+		
+		System.out.println("nameFile: "+nameFile);
+		
+		mapFiles.forEach((key, value) -> {
+		    System.out.println(" : " + key + " Value : " + value);
+		});				    
+		
+		
 		List<File> temp = getMapFiles().get(nameFile);
-		if (temp.isEmpty()) {
-			return null;
-		}
 		System.out.println("BEFORE SORT " + temp);
 		Collections.sort(temp, new Comparator<File>() {
 
@@ -87,6 +95,41 @@ public class RemoteRepository {
 		return temp.get(0);
 	}
 
+	
+	public File getFile(String nameRepo, String nameFile) {
+		
+		System.out.println("nameFile: "+nameFile);
+		
+		mapFiles.forEach((key, value) -> {
+		    System.out.println("key : " + key + " Value : " + value);
+		});				    
+		
+		System.out.println("SERVER" + File.separator + nameRepo + File.separator + nameFile);
+		
+		List<File> repoFiles = getMapFiles().get(nameRepo);
+		
+		System.out.println("repoFiles.size(): "+repoFiles.size());
+		
+	    for(File f : repoFiles) 
+	    	System.out.println(f .getName());
+	
+	    for(File f : repoFiles) {
+	        if(f != null && f.getName().equals(nameFile)) {
+	        	return f;
+	        }
+	    }
+	    return null;
+	}
+
+	
+	public List<File> getFiles(String nameRepo) {
+		
+		if (!getMapFiles().get(nameRepo).isEmpty())
+			return getMapFiles().get(nameRepo);
+
+	    return null;
+	}
+	
 	/**
 	 * method to give a set of the most recent file that are in the map
 	 * 
@@ -146,8 +189,8 @@ public class RemoteRepository {
 		this.mapFiles = mapFiles;
 	}
 
-	public void addFilesToRepo(String filename, List<File> listFiles) {
-		this.mapFiles.put(filename, listFiles);
+	public void addFilesToRepo(String repoName, List<File> listFiles) {
+		this.mapFiles.put(repoName, listFiles);
 	}
 
 	public void addUserToRepo(String userName) {

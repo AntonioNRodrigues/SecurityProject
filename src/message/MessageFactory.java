@@ -7,7 +7,6 @@ import user.User;
 public class MessageFactory {
 
 	public Message getMessage(User localUser, String serverAdress, String password) {
-		System.err.println("Dentro do Message factory a password é: " + password);
 		return new Message(localUser, serverAdress, password);
 	}
 

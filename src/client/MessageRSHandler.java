@@ -43,12 +43,12 @@ public class MessageRSHandler extends MessageHandler {
 			e.printStackTrace();
 		}	
 
-		try {
+		/*try {
 			out.writeObject((Object)mrs);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}				
+		}*/				
 
 
 		return "MessageRSHandler:sendShareMessage";
@@ -57,7 +57,7 @@ public class MessageRSHandler extends MessageHandler {
 
 	public String sendRemoveMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
 
-		MessageRS mrs = new MessageRS(new User(params.getLocalUser()), params.getServerAddress(), params.getPassword(),
+		MessageRS mrs = new MessageRS(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(), params.getPassword(),
 				params.getRepName(), params.getUserId(), TypeOperation.REMOVE);
 		try {
 			out.writeObject((Object)mrs);
@@ -66,12 +66,12 @@ public class MessageRSHandler extends MessageHandler {
 			e.printStackTrace();
 		}	
 
-		try {
+		/*try {
 			out.writeObject((Object)mrs);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}				
+		}*/				
 
 		return "MessageRSHandler:sendRemoveMessage";	
 	}
