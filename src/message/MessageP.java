@@ -98,4 +98,12 @@ public class MessageP extends Message implements Serializable {
 		this.fileName = fileName;
 	}
 
+	@Override
+	public String toString() {
+		return "MessageP [operation=" + operation + ", typeSend=" + typeSend + ", repoName=" + repoName + ", fileName="
+				+ fileName + ", numberFiles=" + numberFiles + ", timestamp=" + timestamp + ", password=" + password
+				+ "]";
+	}
+	
+
 }

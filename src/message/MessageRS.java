@@ -46,7 +46,12 @@ public class MessageRS extends Message implements Serializable {
 
 	@Override
 	public String toString() {
-		return "MessageRS [typeOperation=" + operation + ", repoName=" + repoName + ", userId=" + userId + "]";
+		return "MessageRS [operation=" + operation + ", repoName=" + repoName + ", userId=" + userId
+				+ ", getLocalUser()=" + getLocalUser() + ", getServerAdress()=" + getServerAdress() + ", getPassword()="
+				+ getPassword() + ", toString()=" + super.toString() + ", getClass()=" + getClass() + ", hashCode()="
+				+ hashCode() + "]";
 	}
+
+	
 	
 }
