@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class ReadWriteUtil {
 	private static final int VALUE = 1024;
@@ -36,7 +37,7 @@ public class ReadWriteUtil {
 
 		inputFileStream.close();
 	}
-		
+
 	public static void sendFile(String filename, ObjectInputStream inStream, ObjectOutputStream outStream)
 			throws IOException {
 		System.out.println("SENDING FILE");
@@ -69,7 +70,7 @@ public class ReadWriteUtil {
 		String filename = (String) inStream.readObject();
 		System.out.println("Recebeu nome do ficheiro..." + filename);
 
-		File fileReceived = new File(filename);		
+		File fileReceived = new File("SERVER/Rep20/" + filename);
 		BufferedOutputStream bf = new BufferedOutputStream(new FileOutputStream(fileReceived));
 		int len = 0;
 		byte[] buffer = new byte[VALUE];
@@ -86,7 +87,39 @@ public class ReadWriteUtil {
 
 			bf.write(buffer, 0, n);
 			len += lido;
-			System.out.println(".......");
+		}
+		bf.close();
+		return fileReceived;
+	}
+
+	public static File receiveFile(ObjectInputStream inStream, ObjectOutputStream outStream, String path)
+			throws ClassNotFoundException, IOException {
+		System.out.println("RECEIVING FILE");
+
+		Long sizeFile = (Long) inStream.readObject();
+		System.out.println("Recebeu tamanho do ficheiro..." + sizeFile);
+		String filename = (String) inStream.readObject();
+		System.out.println("PATH TO FILE..." + path);
+		System.out.println("Recebeu nome do ficheiro..." + filename);
+		
+
+		File fileReceived = new File(path + filename);
+		BufferedOutputStream bf = new BufferedOutputStream(new FileOutputStream(fileReceived));
+		int len = 0;
+		byte[] buffer = new byte[VALUE];
+		int lido;
+
+		while (len < sizeFile) {
+			int resto = (int) (sizeFile - len);
+			int n = (resto < VALUE) ? resto : buffer.length;
+			lido = inStream.read(buffer, 0, n);
+
+			if (lido == -1) {
+				break;
+			}
+
+			bf.write(buffer, 0, n);
+			len += lido;
 		}
 		bf.close();
 		return fileReceived;
