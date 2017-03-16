@@ -60,6 +60,9 @@ public class RemoteRepository {
 	 */
 	public File getMostRecentFile(String nameFile) {
 		List<File> temp = getMapFiles().get(nameFile);
+		if (temp.isEmpty()) {
+			return null;
+		}
 		System.out.println("BEFORE SORT " + temp);
 		Collections.sort(temp, new Comparator<File>() {
 
@@ -143,8 +146,8 @@ public class RemoteRepository {
 		this.mapFiles = mapFiles;
 	}
 
-	public void addFilesToRepo(String repoName, List<File> listFiles) {
-		this.mapFiles.put(repoName, listFiles);
+	public void addFilesToRepo(String filename, List<File> listFiles) {
+		this.mapFiles.put(filename, listFiles);
 	}
 
 	public void addUserToRepo(String userName) {

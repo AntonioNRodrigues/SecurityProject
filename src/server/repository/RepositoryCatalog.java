@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import user.User;
 
@@ -76,14 +77,14 @@ public class RepositoryCatalog {
 		String str = null;
 
 		File repFolder = new File(f.getCanonicalPath() + "/");
-		
+
 		if (repFolder.isDirectory()) {
 			// list all its files
 			for (String s : repFolder.list()) {
 				// get owner.txt and read it
 				if (s.equals(OWNER)) {
 					File g = new File(repFolder.getCanonicalPath() + "/" + OWNER);
-					try (BufferedReader br = new BufferedReader(new FileReader(g))){
+					try (BufferedReader br = new BufferedReader(new FileReader(g))) {
 						str = br.readLine();
 					} catch (IOException e) {
 						e.printStackTrace();
