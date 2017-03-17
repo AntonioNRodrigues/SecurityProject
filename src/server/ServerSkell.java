@@ -6,7 +6,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.util.List;
-import java.util.Set;
 
 import enums.TypeOperation;
 import enums.TypeSend;
@@ -69,8 +68,8 @@ public class ServerSkell {
 			System.out.println("THE USER IS AUTHENTICATED");
 
 			if (msg instanceof MessageRS) {
-				System.out.println(msg);
 				MessageRS mrs = (MessageRS) msg;
+				System.out.println(mrs);
 				TypeOperation op = mrs.getTypeOperation();
 				switch (op) {
 				case REMOVE:
@@ -95,9 +94,9 @@ public class ServerSkell {
 					System.out.println(mrs.getUserId());
 					rr = catRepo.getRemRepository(mrs.getRepoName());
 					System.out.println(rr == null);
-
+					
 					if (mrs.getLocalUser().getName().equals(rr.getOwner())) {
-						rr.addUserToRepo(mrs.getUserId());
+						rr.addShareUserToRepo(mrs.getUserId());
 					}
 					System.out.println(rr);
 					break;

@@ -1,10 +1,17 @@
 package server.repository;
 
+import static utilities.ReadWriteUtil.OWNER;
+import static utilities.ReadWriteUtil.SERVER;
+import static utilities.ReadWriteUtil.SHARED;
+import static utilities.ReadWriteUtil.USERS;
+
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
+import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -14,14 +21,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import javax.swing.plaf.basic.BasicBorders.FieldBorder;
-
 public class RemoteRepository {
 	private String owner;
 	private Long timestamp;
 	private String nameRepo;
 	private Map<String, List<File>> mapFiles;
-	private List<String> sharedUsers; // other users have access to repo
+	private List<String> sharedUsers;
 
 	public RemoteRepository(String nameRepo) {
 		super();
@@ -41,12 +46,15 @@ public class RemoteRepository {
 	}
 
 	private void persisteRemRepo() {
-		File f = new File("SERVER/" + this.nameRepo);
+		File f = new File(SERVER + File.separator + this.nameRepo);
 		if (!f.exists()) {
 			f.mkdirs();
-			File ff = new File(f.getAbsolutePath() + "/owner.txt");
-			try (BufferedWriter fi = new BufferedWriter(new FileWriter(ff))) {
+			try (BufferedWriter fi = new BufferedWriter(
+					new FileWriter(new File(f.getAbsolutePath() + File.separator + OWNER)))) {
+				// write in the file the owner
 				fi.write(this.owner);
+				// create a file shared.txt
+				File shared = new File(SHARED);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -62,14 +70,13 @@ public class RemoteRepository {
 	 * @return
 	 */
 	public File getMostRecentFile(String nameFile) {
-		
-		System.out.println("nameFile: "+nameFile);
-		
+
+		System.out.println("nameFile: " + nameFile);
+
 		mapFiles.forEach((key, value) -> {
-		    System.out.println(" : " + key + " Value : " + value);
-		});				    
-		
-		
+			System.out.println(" : " + key + " Value : " + value);
+		});
+
 		List<File> temp = getMapFiles().get(nameFile);
 		System.out.println("BEFORE SORT " + temp);
 		Collections.sort(temp, new Comparator<File>() {
@@ -95,41 +102,39 @@ public class RemoteRepository {
 		return temp.get(0);
 	}
 
-	
 	public File getFile(String nameRepo, String nameFile) {
-		
-		System.out.println("nameFile: "+nameFile);
-		
+
+		System.out.println("nameFile: " + nameFile);
+
 		mapFiles.forEach((key, value) -> {
-		    System.out.println("key : " + key + " Value : " + value);
-		});				    
-		
-		System.out.println("SERVER" + File.separator + nameRepo + File.separator + nameFile);
-		
+			System.out.println("key : " + key + " Value : " + value);
+		});
+
+		System.out.println(SERVER + File.separator + nameRepo + File.separator + nameFile);
+
 		List<File> repoFiles = getMapFiles().get(nameRepo);
-		
-		System.out.println("repoFiles.size(): "+repoFiles.size());
-		
-	    for(File f : repoFiles) 
-	    	System.out.println(f .getName());
-	
-	    for(File f : repoFiles) {
-	        if(f != null && f.getName().equals(nameFile)) {
-	        	return f;
-	        }
-	    }
-	    return null;
+
+		System.out.println("repoFiles.size(): " + repoFiles.size());
+
+		for (File f : repoFiles)
+			System.out.println(f.getName());
+
+		for (File f : repoFiles) {
+			if (f != null && f.getName().equals(nameFile)) {
+				return f;
+			}
+		}
+		return null;
 	}
 
-	
 	public List<File> getFiles(String nameRepo) {
-		
+
 		if (!getMapFiles().get(nameRepo).isEmpty())
 			return getMapFiles().get(nameRepo);
 
-	    return null;
+		return null;
 	}
-	
+
 	/**
 	 * method to give a set of the most recent file that are in the map
 	 * 
@@ -193,12 +198,44 @@ public class RemoteRepository {
 		this.mapFiles.put(repoName, listFiles);
 	}
 
-	public void addUserToRepo(String userName) {
+	public void addShareUserToRepo(String userName) {
 		sharedUsers.add(userName);
+		persisteSharedUser(userName, this);
+	}
+
+	/**
+	 * method to write the name of the shared user.
+	 * 
+	 * @param userName
+	 * @param remoteRepository
+	 */
+	private void persisteSharedUser(String userName, RemoteRepository remoteRepository) {
+		try (BufferedWriter bf = new BufferedWriter(
+				new FileWriter(new File(SERVER + File.separator + this.nameRepo + File.separator + SHARED), true));
+				PrintWriter out = new PrintWriter(bf)) {
+			out.println(userName);
+		} catch (IOException e) {
+			System.err.println("PROBLEM ADDING THE USER TO THE SHARED FILE");
+		}
 	}
 
 	public void removeUserFromRepo(String userId) {
 		sharedUsers.remove(userId);
+		removeUserFromSharedRepo(userId);
+	}
+
+	private void removeUserFromSharedRepo(String userId) {
+		try (BufferedReader br = new BufferedReader(
+				new FileReader(new File(SERVER + File.separator + this.nameRepo + File.separator + SHARED)))) {
+			for (String line = br.readLine(); line != null; line = br.readLine()) {
+				if (line.equals(userId)) {
+					line.trim();
+					break;
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public List<String> getSharedUsers() {
