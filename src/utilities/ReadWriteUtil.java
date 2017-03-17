@@ -14,6 +14,10 @@ import com.sun.org.apache.bcel.internal.generic.RETURN;
 
 public class ReadWriteUtil {
 	private static final int VALUE = 1024;
+	public static final String SERVER = "SERVER";
+	public static final String OWNER = "owner.txt";
+	public static final String SHARED = "shared.txt";
+	public static final String USERS = "users.txt";
 
 	public static void sendFile(Path path, ObjectInputStream inStream, ObjectOutputStream outStream)
 			throws IOException {
@@ -37,7 +41,7 @@ public class ReadWriteUtil {
 
 		inputFileStream.close();
 	}
-		
+
 	public static void sendFile(String filename, ObjectInputStream inStream, ObjectOutputStream outStream)
 			throws IOException {
 		System.out.println("SENDING FILE");
@@ -67,7 +71,7 @@ public class ReadWriteUtil {
 
 		Long sizeFile = (Long) inStream.readObject();
 		String filename = (String) inStream.readObject();
-		File fileReceived = new File(filename);		
+		File fileReceived = new File(filename);
 		BufferedOutputStream bf = new BufferedOutputStream(new FileOutputStream(fileReceived));
 		int len = 0;
 		byte[] buffer = new byte[VALUE];
@@ -84,7 +88,6 @@ public class ReadWriteUtil {
 
 			bf.write(buffer, 0, n);
 			len += lido;
-			System.out.println(".......");
 		}
 		bf.close();
 		return fileReceived;
@@ -96,8 +99,8 @@ public class ReadWriteUtil {
 
 		Long sizeFile = (Long) inStream.readObject();
 		String filename = (String) inStream.readObject();
-				
-		File fileReceived = new File(path+filename);		
+
+		File fileReceived = new File(path + filename);
 		BufferedOutputStream bf = new BufferedOutputStream(new FileOutputStream(fileReceived));
 		int len = 0;
 		byte[] buffer = new byte[VALUE];
@@ -114,11 +117,10 @@ public class ReadWriteUtil {
 
 			bf.write(buffer, 0, n);
 			len += lido;
-			System.out.println(".......");
 		}
 		bf.close();
-		
+
 		return fileReceived;
 	}
-	
+
 }
