@@ -11,7 +11,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -25,13 +25,14 @@ public class RemoteRepository {
 	private String owner;
 	private Long timestamp;
 	private String nameRepo;
-	private Map<String, List<File>> mapFiles;
+	//private Map<String, List<File>> mapFiles;
+	private List<File> listFiles;
 	private List<String> sharedUsers;
 
 	public RemoteRepository(String nameRepo) {
 		super();
 		this.nameRepo = nameRepo;
-		this.mapFiles = new ConcurrentHashMap<>();
+		this.listFiles = new CopyOnWriteArrayList<File>();
 		this.sharedUsers = new CopyOnWriteArrayList<String>();
 		persisteRemRepo();
 	}
@@ -40,7 +41,7 @@ public class RemoteRepository {
 		super();
 		this.owner = onwer;
 		this.nameRepo = nameRepo;
-		this.mapFiles = new ConcurrentHashMap<>();
+		this.listFiles = new CopyOnWriteArrayList<File>();
 		this.sharedUsers = new CopyOnWriteArrayList<String>();
 		persisteRemRepo();
 	}
@@ -62,57 +63,15 @@ public class RemoteRepository {
 		setTimestamp(f.lastModified());
 		System.out.println(this);
 	}
-
-	/**
-	 * Get the recent version of a file, NOT TESTED-------------------
-	 * 
-	 * @param nameFile
-	 * @return
-	 */
-	public File getMostRecentFile(String nameFile) {
-
-		System.out.println("nameFile: " + nameFile);
-
-		mapFiles.forEach((key, value) -> {
-			System.out.println(" : " + key + " Value : " + value);
-		});
-
-		List<File> temp = getMapFiles().get(nameFile);
-		System.out.println("BEFORE SORT " + temp);
-		Collections.sort(temp, new Comparator<File>() {
-
-			@Override
-			public int compare(File file1, File file2) {
-				int value = 0;
-				if (file1.lastModified() < file2.lastModified()) {
-					value = 1;
-				}
-				if (file1.lastModified() > file2.lastModified()) {
-					value = -1;
-				}
-				if (file1.lastModified() == file2.lastModified()) {
-					value = 0;
-				}
-				return value;
-			}
-		});
-
-		System.out.println("AFTER SORT " + temp);
-		// Collections.sort(temp, Collections.reverseOrder());
-		return temp.get(0);
-	}
+	
 
 	public File getFile(String nameRepo, String nameFile) {
 
 		System.out.println("nameFile: " + nameFile);
 
-		mapFiles.forEach((key, value) -> {
-			System.out.println("key : " + key + " Value : " + value);
-		});
-
 		System.out.println(SERVER + File.separator + nameRepo + File.separator + nameFile);
 
-		List<File> repoFiles = getMapFiles().get(nameRepo);
+		List<File> repoFiles = getListFiles();
 
 		System.out.println("repoFiles.size(): " + repoFiles.size());
 
@@ -129,24 +88,33 @@ public class RemoteRepository {
 
 	public List<File> getFiles(String nameRepo) {
 
-		if (!(getMapFiles().get(nameRepo).isEmpty()))
-			return getMapFiles().get(nameRepo);
+			return getListFiles();
 
-		return null;
 	}
+	
+	
+	// Ver porque um mapa com apenas uma entrada e uma lista de ficheiros...
+	public boolean fileExists(String repoName, String fileName) {	
+		System.out.println(fileName+" exists?");
+			
+		    for(File f : listFiles) { 
+		    	System.out.println(f .getName());	
 
-	/**
-	 * method to give a set of the most recent file that are in the map
-	 * 
-	 * @return set with unique files and each file is the recent version
-	 */
-	public Set<File> getListMostRecentFiles() {
-		Set<File> set = new ConcurrentSkipListSet<>();
-		for (String name : mapFiles.keySet()) {
-			set.add(getMostRecentFile(name));
-		}
-		return set;
+		    	if (f.getName().equals(fileName)) {
+					System.out.println("YES");
+					return true;
+		    	}
+		    }
+
+		return false;
 	}
+	
+	//
+	public void addFile(String repoName, File received) {
+			
+			listFiles.add(received);
+	}
+	
 
 	/**
 	 * method to give the size of the unique values present in the map This
@@ -154,9 +122,6 @@ public class RemoteRepository {
 	 * 
 	 * @return size of set
 	 */
-	public int sizeUniqueFilesInMap() {
-		return getListMostRecentFiles().size();
-	}
 
 	public String getOwner() {
 		return owner;
@@ -181,10 +146,20 @@ public class RemoteRepository {
 	public void setNameRepo(String nameRepo) {
 		this.nameRepo = nameRepo;
 	}
-
-	public List<File> getVersionList(String nameFile) {
-		return mapFiles.get(nameFile);
+	
+	public List<File> getListFiles() {
+		return listFiles;
 	}
+
+	public void setListFiles(List<File> listFiles) {
+		this.listFiles = listFiles;
+	}
+	
+	/*
+	public Map<String, List<File>> getListFiles() {
+		return mapFiles;
+	}
+	
 
 	public Map<String, List<File>> getMapFiles() {
 		return mapFiles;
@@ -197,20 +172,11 @@ public class RemoteRepository {
 	public void addFilesToRepo(String repoName, List<File> listFiles) {
 		this.mapFiles.put(repoName, listFiles);
 	}
-
-	/**
-	 * method to split the filename by the . and adds the number of versions in
-	 * the file
-	 * 
-	 * @param nameFile
-	 * @return nameFile in version mode
-	 */
-	public String getNextNameFile(String nameFile) {
-		int i = getMapFiles().get(nameFile).size();
-		String[] a = nameFile.split(".");
-		return a[0] + "(" + i + ")." + a[1];
+*/
+	public void addFilesToRepo(String repoName, List<File> listFiles) {
+		this.listFiles=listFiles;
 	}
-
+	
 	/**
 	 * method to get the single name without the version
 	 * 

@@ -1,10 +1,5 @@
 package user;
 
-import static utilities.ReadWriteUtil.OWNER;
-import static utilities.ReadWriteUtil.SERVER;
-import static utilities.ReadWriteUtil.SHARED;
-import static utilities.ReadWriteUtil.USERS;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -15,9 +10,12 @@ import java.io.PrintWriter;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.print.DocFlavor.STRING;
+
 public class UserCatalog {
 	private Map<String, User> mapUsers;
-	
+	private static final String SERVER = "SERVER";
+	private static final String USERS = "users.txt";
 	public UserCatalog() {
 		super();
 		this.mapUsers = new ConcurrentHashMap<>();
@@ -28,7 +26,7 @@ public class UserCatalog {
 	}
 
 	private void readFile() {
-		File f = new File(SERVER + File.separator + USERS);
+		File f = new File(SERVER + "/" + USERS);
 
 		try {
 			BufferedReader b = new BufferedReader(new FileReader(f));
@@ -56,7 +54,7 @@ public class UserCatalog {
 	}
 
 	private boolean buildUsers() {
-		File userFile = new File((SERVER + File.separator + USERS));
+		File userFile = new File(SERVER + "/" + USERS);
 		boolean create = false;
 		if (!userFile.exists()) {
 			try {
@@ -87,7 +85,7 @@ public class UserCatalog {
 
 	public void persisteUser(String name, String password) {
 		System.out.println("PERSISTING USER");
-		try (FileWriter fw = new FileWriter(new File((SERVER + File.separator + USERS)), true);
+		try (FileWriter fw = new FileWriter(new File(SERVER + "/" + USERS), true);
 				BufferedWriter bf = new BufferedWriter(fw);
 				PrintWriter out = new PrintWriter(bf)) {
 			out.println(name + ":" + password);
@@ -96,5 +94,11 @@ public class UserCatalog {
 		}
 		System.out.println(mapUsers);
 	}
+	
+	
+	public boolean userExists(String user) {
+		return mapUsers.containsKey(user);
+	}
+
 
 }

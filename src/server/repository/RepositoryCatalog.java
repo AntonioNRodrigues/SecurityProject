@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,11 +16,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import user.User;
 
 public class RepositoryCatalog {
+
 	private Map<String, RemoteRepository> mapRemRepos;
 
 	public RepositoryCatalog() {
 		super();
-		System.out.println("REPOSITORY CATALOG IS ON");
+		//System.out.println("REPOSITORY CATALOG IS ON");
 		buildMap();
 		listRepos();
 	}
@@ -45,21 +47,19 @@ public class RepositoryCatalog {
 		for (String strFolder : new File(SERVER).list()) {
 			// repositories folders
 
-			System.out.println("Repository folder: " + strFolder);
+			System.out.println("Repository folder: "+strFolder);
 
 			File f = new File(SERVER + File.separator + strFolder);
 			if (f.isDirectory()) {
 				// build a repository
 
-				System.out.println("Repository files: " + Arrays.asList(f.listFiles()));
-
 				rr = new RemoteRepository(f.getName());
-				rr.addFilesToRepo(rr.getNameRepo(), Arrays.asList(f.listFiles()));
+				rr.addFilesToRepo(rr.getNameRepo(), new ArrayList(Arrays.asList(f.listFiles())));
 
-				// inside each folder/repositoriy exists a owner.txt file
+				// inside each folder/repository exists a owner.txt file
 				String owner = null;
 				try {
-					owner = getOwnerFolder(f, rr);
+					owner = getOwner(f);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -67,10 +67,18 @@ public class RepositoryCatalog {
 					rr.setOwner(owner);
 				}
 				mapRemRepos.put(rr.getNameRepo(), rr);
-				System.out.println(rr);
-				System.out.println(mapRemRepos);
+
+				// inside each folder/repository may exists a shared.txt file
+				try {
+					owner = getSharedWith(f, rr);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
 			}
+
 		}
+
 	}
 
 	/**
@@ -81,15 +89,15 @@ public class RepositoryCatalog {
 	 * @return the owner of the REpository
 	 * @throws IOException
 	 */
-	private String getOwnerFolder(File f, RemoteRepository rr) throws IOException {
+	private String getOwner(File f) throws IOException {
 		System.out.println("GET OWNER FOLDER");
 		String str = null;
 
-		System.out.println("f.getCanonicalPath(): " + f.getCanonicalPath());
+		System.out.println("f.getCanonicalPath(): "+f.getCanonicalPath());
 
 		File repFolder = new File(f.getCanonicalPath() + File.separator);
 
-		System.out.println("repFolder.isDirectory(): " + repFolder.isDirectory());
+		System.out.println("repFolder.isDirectory(): "+repFolder.isDirectory());
 
 		if (repFolder.isDirectory()) {
 			// list all its files
@@ -97,15 +105,44 @@ public class RepositoryCatalog {
 				// get owner.txt and read it
 				if (fileInFolder.equals(OWNER)) {
 					str = readOwnerFile(repFolder.getCanonicalPath(), OWNER);
-				} else if (fileInFolder.equals(SHARED)) {
-					iterateSharedFile(repFolder.getCanonicalPath(), SHARED, rr);
 				}
 			}
 		}
 		return str;
 	}
 
-	private void iterateSharedFile(String repFolderName, String shared, RemoteRepository rr) {
+
+	/**
+	 * method to iterate over a Repository folder and to read its owner.
+	 * 
+	 * @param f
+	 *            File Server
+	 * @return the owner of the REpository
+	 * @throws IOException
+	 */
+	private String getSharedWith(File f, RemoteRepository rr) throws IOException {
+		System.out.println("GET SHARED WITH INFO");
+		String str = null;
+
+		System.out.println("f.getCanonicalPath(): "+f.getCanonicalPath());
+
+		File repFolder = new File(f.getCanonicalPath() + File.separator);
+
+		System.out.println("repFolder.isDirectory(): "+repFolder.isDirectory());
+
+		if (repFolder.isDirectory()) {
+			// list all its files
+			for (String fileInFolder : repFolder.list()) {
+				// get owner.txt and read it
+				if (fileInFolder.equals(SHARED)) {
+					iterateSharedWithFile(repFolder.getCanonicalPath(), SHARED, rr);
+				}
+			}
+		}
+		return str;
+	}
+
+	private void iterateSharedWithFile(String repFolderName, String shared, RemoteRepository rr) {
 
 		try (BufferedReader br = new BufferedReader(new FileReader(new File(repFolderName + File.separator + OWNER)))) {
 			for (String line = br.readLine(); line != null; line = br.readLine()) {
@@ -127,6 +164,7 @@ public class RepositoryCatalog {
 		}
 		return str;
 	}
+
 
 	/**
 	 * Method to create a folder to keep all the repositories if does not exists
@@ -152,15 +190,17 @@ public class RepositoryCatalog {
 	}
 
 	public void listRepos() {
+		System.out.println("mapRemRepos.size(): "+mapRemRepos.size());
 		System.out.println("Available repositories:");
 		mapRemRepos.forEach((key, value) -> {
 			System.out.println("Key : " + key + " Value : " + value);
-		});
+		});		
 	}
 
 	public boolean repoExists(String repoName) {
-		return mapRemRepos.containsKey(repoName);
+		return mapRemRepos.containsKey(repoName);	
 	}
+
 
 	public Map<String, RemoteRepository> getMapRemRepos() {
 		return mapRemRepos;
@@ -175,7 +215,14 @@ public class RepositoryCatalog {
 	}
 
 	public RemoteRepository buildRepo(User localUser, String repoFileName) {
-		return new RemoteRepository(localUser.getName(), repoFileName);
+
+		// para alem de retornar um novo repositorio tb e necessessario
+		// adiciona-lo ao catalogo de repositorios mapRemRepos
+
+		RemoteRepository rr = new RemoteRepository(localUser.getName(), repoFileName);
+		mapRemRepos.put(rr.getNameRepo(), rr);
+
+		return rr;
 	}
 
 }

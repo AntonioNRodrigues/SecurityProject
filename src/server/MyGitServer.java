@@ -117,6 +117,7 @@ public class MyGitServer {
 						
 						System.out.println("MyGitServer: mp.getNumberFiles() :"+mp.getNumberFiles());
 
+						/*
 						if (mp.getNumberFiles() < -1) {
 
 							sizeList = mp.getNumberFiles();
@@ -136,6 +137,7 @@ public class MyGitServer {
 								}
 							}
 						}
+						*/
 					}
 				}
 

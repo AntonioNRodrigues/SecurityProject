@@ -43,12 +43,30 @@ public class MessageRSHandler extends MessageHandler {
 			e.printStackTrace();
 		}	
 
-		/*try {
-			out.writeObject((Object)mrs);
-		} catch (IOException e) {
+		String result="";
+		try {
+			result = (String) in.readObject();
+		} catch (ClassNotFoundException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}*/				
+		}
+
+		if (result.contentEquals("OK"))
+			// receive the files
+			System.out.println("O repositório "+params.getRepName()+" foi partilhado com o utilizador "+params.getUserId());
+		else if (result.contentEquals("NOK")) {
+			String error="";
+			try {
+				error = (String) in.readObject();
+			} catch (ClassNotFoundException | IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			System.out.println(error);
+		}
+		else 
+			System.out.println("Something happened...");
+			
 
 
 		return "MessageRSHandler:sendShareMessage";
@@ -66,12 +84,29 @@ public class MessageRSHandler extends MessageHandler {
 			e.printStackTrace();
 		}	
 
-		/*try {
-			out.writeObject((Object)mrs);
-		} catch (IOException e) {
+		String result="";
+		try {
+			result = (String) in.readObject();
+		} catch (ClassNotFoundException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}*/				
+		}
+
+		if (result.contentEquals("OK"))
+			// receive the files
+			System.out.println("O repositório "+params.getRepName()+" deixou de ser partilhado com o utilizador "+params.getUserId());
+		else if (result.contentEquals("NOK")) {
+			String error="";
+			try {
+				error = (String) in.readObject();
+			} catch (ClassNotFoundException | IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			System.out.println(error);
+		}
+		else 
+			System.out.println("Something happened...");		
 
 		return "MessageRSHandler:sendRemoveMessage";	
 	}

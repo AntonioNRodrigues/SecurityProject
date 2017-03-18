@@ -11,12 +11,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
-
-import com.sun.org.apache.bcel.internal.generic.I2F;
-
 import enums.TypeOperation;
 import enums.TypeSend;
-import message.Message;
 import message.MessageP;
 import user.User;
 import utilities.ReadWriteUtil;
@@ -72,19 +68,40 @@ public class MessagePHandler extends MessageHandler {
 			e.printStackTrace();
 		}				
 
-		// Enviar o numero de ficheiros
-		//try {
-		//	out.writeObject((Integer) 1);
-		//} catch (IOException e1) {
-		//	e1.printStackTrace();
-		//}
-		
-		// Enviar o ficheiro
+
+		// get status from server
+		String result="";
+		try {
+			result = (String) in.readObject();
+		} catch (ClassNotFoundException | IOException e) {
+			e.printStackTrace();
+		}
+
+		//System.out.println("result: "+result);
+
+		if (result.contentEquals("OK")) {
+			//System.out.println("OK");
+			// Enviar o ficheiro
+				try {
+					ReadWriteUtil.sendFile( params.getFile(), in, out);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				System.out.println("-- O  ficheiro "+params.getFileName()+" foi copiado  para o servidor");
+		}
+		else if (result.contentEquals("NOK")) {
+			System.out.println("OK");
+			String error="";
 			try {
-				ReadWriteUtil.sendFile( params.getFile(), in, out);
-			} catch (IOException e) {
+				error = (String) in.readObject();
+			} catch (ClassNotFoundException | IOException e) {
 				e.printStackTrace();
 			}
+			System.out.println(error);
+		}
+		else 
+			System.out.println("Something really bad happened...");
+		
 		
 		return "MessagePHandler:sendPushFileMessage";
 	}
@@ -102,23 +119,37 @@ public class MessagePHandler extends MessageHandler {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	
+		//get status from server
+		String result="";
+		try {
+			result = (String) in.readObject();
+		} catch (ClassNotFoundException | IOException e) {
+			e.printStackTrace();
+		}
+	
 		
-		
-		// Enviar o numero de ficheiros
-		//try {
-		//	out.writeObject((Integer) filesList.size());
-		//} catch (IOException e1) {
-		//	e1.printStackTrace();
-		//}
-
-		// Enviar os ficheiros
-		for (Path path: filesList){
+		if (result.contentEquals("OK"))
+			// Enviar os ficheiros
+			for (Path path: filesList){
+				try {
+					ReadWriteUtil.sendFile( path, in, out);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				System.out.println("-- O  repositório "+params.getRepName()+" foi copiado  para o  servidor");
+			}
+		else if (result.contentEquals("NOK")) {
+			String error="";
 			try {
-				ReadWriteUtil.sendFile( path, in, out);
-			} catch (IOException e) {
+				error = (String) in.readObject();
+			} catch (ClassNotFoundException | IOException e) {
 				e.printStackTrace();
 			}
+			System.out.println(error);
 		}
+		else 
+			System.out.println("Something really bad happened...");
 		
 		return "MessagePHandler:sendPushRepMessage";
 	}
@@ -149,10 +180,32 @@ public class MessagePHandler extends MessageHandler {
 			out.writeObject((Object)mp);
 		} catch (IOException e) {
 			e.printStackTrace();
-		}				
+		}		
 		
-		// receive the files
-		receiveFiles(params.getRepName(), in, out);		
+		String result="";
+		try {
+			result = (String) in.readObject();
+		} catch (ClassNotFoundException | IOException e) {
+			e.printStackTrace();
+		}
+
+		if (result.contentEquals("OK")) {
+			// receive the files
+			receiveFiles(params.getRepName(), in, out);
+			System.out.println("O  ficheiro "+params.getFileName()+" foi copiado do servidor");
+		}
+		else if (result.contentEquals("NOK")) {
+			String error="";
+			try {
+				error = (String) in.readObject();
+			} catch (ClassNotFoundException | IOException e) {
+				e.printStackTrace();
+			}
+			System.out.println(error);
+		}
+		else 
+			System.out.println("Something happened...");
+
 		
 		return "MessagePHandler:sendPullFileMessage";
 	}
@@ -169,10 +222,33 @@ public class MessagePHandler extends MessageHandler {
 			out.writeObject((Object)mp);
 		} catch (IOException e) {
 			e.printStackTrace();
-		}	
+		}		
 		
-		// receive the file
-		receiveFiles(params.getRepName(), in, out);		
+		String result="";
+		try {
+			result = (String) in.readObject();
+		} catch (ClassNotFoundException | IOException e) {
+			e.printStackTrace();
+		}
+
+		if (result.contentEquals("OK")) {
+			// receive the files
+			receiveFiles(params.getRepName(), in, out);	
+			System.out.println("O  repositorio "+params.getRepName()+" foi copiado do servidor");
+		}
+		else if (result.contentEquals("NOK")) {
+			String error="";
+			try {
+				error = (String) in.readObject();
+			} catch (ClassNotFoundException | IOException e) {
+				e.printStackTrace();
+			}
+			System.out.println(error);
+		}
+		else 
+			System.out.println("Something happened...");
+
+		
 
 		
 		return "MessagePHandler:sendPullRepMessage";
@@ -186,7 +262,7 @@ public class MessagePHandler extends MessageHandler {
 		int sizeList = 0;
 		try {
 			sizeList = (Integer) in.readObject();
-			System.out.println("sizelist: " + sizeList);
+			//System.out.println("sizelist: " + sizeList);
 		} catch (ClassNotFoundException | IOException e) {
 			e.printStackTrace();
 		}
@@ -211,11 +287,10 @@ public class MessagePHandler extends MessageHandler {
 		    paths.forEach(filePath -> {
 		        if (Files.isRegularFile(filePath)) {		            
 		            filesList.add(filePath);
-		            System.out.println(filePath);
+		            //System.out.println(filePath);
 		        }
 		    });
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
 	}

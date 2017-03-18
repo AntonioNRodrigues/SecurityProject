@@ -39,7 +39,7 @@ public enum MessageFactory {
 	 */
 	public IMessageTypes getmsgType(String name) {
 		try {
-			System.out.println("public IMessageTypes getmsgType(String name)");
+			/*System.out.println("public IMessageTypes getmsgType(String name)");
 			System.out.println("name: "+name);
 			System.out.println("msgTypes.values(): "+msgTypes.values());
 			System.out.println("msgTypes.keySet(): "+msgTypes.keySet());
@@ -48,6 +48,7 @@ public enum MessageFactory {
 				System.out.println("contem key!");
 			else
 				System.out.println("Não contem key!!");
+				*/
 			
 			
 		    return msgTypes.get(name);
