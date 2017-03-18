@@ -11,6 +11,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -19,7 +20,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
 
 public class RemoteRepository {
 	private String owner;
@@ -129,7 +129,7 @@ public class RemoteRepository {
 
 	public List<File> getFiles(String nameRepo) {
 
-		if (!getMapFiles().get(nameRepo).isEmpty())
+		if (!(getMapFiles().get(nameRepo).isEmpty()))
 			return getMapFiles().get(nameRepo);
 
 		return null;
@@ -199,6 +199,41 @@ public class RemoteRepository {
 	}
 
 	/**
+	 * method to split the filename by the . and adds the number of versions in
+	 * the file
+	 * 
+	 * @param nameFile
+	 * @return nameFile in version mode
+	 */
+	public String getNextNameFile(String nameFile) {
+		int i = getMapFiles().get(nameFile).size();
+		String[] a = nameFile.split(".");
+		return a[0] + "(" + i + ")." + a[1];
+	}
+
+	/**
+	 * method to get the single name without the version
+	 * 
+	 * @param nameFile
+	 * @return nameFile without version
+	 */
+	public String getNameWithOutVersion(String nameFile) {
+		String namefile = null;
+		String[] a = nameFile.split(".");
+		if (a[0].length() == 3) {
+			namefile = a[0].substring(0, a[0].length() - 3) + a[1];
+		}
+		if (a[0].length() == 4) {
+			namefile = a[0].substring(0, a[0].length() - 4) + a[1];
+		}
+		if (a[0].length() == 5) {
+			namefile = a[0].substring(0, a[0].length() - 5) + a[1];
+		}
+		return nameFile;
+
+	}
+
+	/**
 	 * method to add the user to the shared list to this repository and persist
 	 * the user in the file if its not already there.
 	 * 
@@ -252,14 +287,13 @@ public class RemoteRepository {
 
 	private void removeUserFromSharedRepo(String userId) {
 		String str = SERVER + File.separator + this.nameRepo + File.separator + SHARED;
-		try (BufferedReader br = new BufferedReader(
-				new FileReader(new File(str)));
+		try (BufferedReader br = new BufferedReader(new FileReader(new File(str)));
 				PrintWriter out = new PrintWriter(new File(str))) {
 			for (String line = br.readLine(); line != null; line = br.readLine()) {
 				System.out.println(line);
 				if (line.equals(userId)) {
-					//out.write("");
-					//does not work have to find another way 
+					// out.write("");
+					// does not work have to find another way
 					break;
 				}
 			}

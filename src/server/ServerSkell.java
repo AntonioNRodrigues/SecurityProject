@@ -89,6 +89,8 @@ public class ServerSkell {
 							System.out.printf("THE REPO %s IS SHARED WITH %s", mrs.getRepoName(),
 									mrs.getUserId());
 							break;
+						default:
+							break;
 						}
 					} else {
 						System.out.printf("THE USER %s DOES NOT HAVE PERMISSIONS TO ADD OR REMOVE TO THE REPOSITORY %s",
@@ -167,7 +169,7 @@ public class ServerSkell {
 									out.writeObject((Integer) filesList.size());
 
 									for (File f : filesList)
-										ReadWriteUtil.sendFile("SERVER" + File.separator + mp.getRepoName()
+										ReadWriteUtil.sendFile(SERVER + File.separator + mp.getRepoName()
 												+ File.separator + f.getName(), in, out);
 
 								} catch (IOException e) {
@@ -198,7 +200,7 @@ public class ServerSkell {
 							for (int i = 0; i < sizeList; i++) {
 								try {
 
-									String path = "SERVER" + File.separator + mp.getRepoName() + File.separator;
+									String path = SERVER + File.separator + mp.getRepoName() + File.separator;
 									File received = ReadWriteUtil.receiveFile(path, in, out);
 
 									// COMPARAR TIMESTAMPS
@@ -234,7 +236,7 @@ public class ServerSkell {
 
 									// Enviar o numero de ficheiros
 									out.writeObject((Integer) 1);
-									ReadWriteUtil.sendFile("SERVER" + File.separator + mp.getRepoName() + File.separator
+									ReadWriteUtil.sendFile(SERVER + File.separator + mp.getRepoName() + File.separator
 											+ mp.getFileName(), in, out);
 								} catch (IOException e) {
 									e.printStackTrace();
