@@ -9,13 +9,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import javax.print.DocFlavor.STRING;
+import static utilities.ReadWriteUtil.SERVER;
+import static utilities.ReadWriteUtil.USERS;
 
 public class UserCatalog {
 	private Map<String, User> mapUsers;
-	private static final String SERVER = "SERVER";
-	private static final String USERS = "users.txt";
+
 	public UserCatalog() {
 		super();
 		this.mapUsers = new ConcurrentHashMap<>();
@@ -26,7 +25,7 @@ public class UserCatalog {
 	}
 
 	private void readFile() {
-		File f = new File(SERVER + "/" + USERS);
+		File f = new File(SERVER + File.separator + USERS);
 
 		try {
 			BufferedReader b = new BufferedReader(new FileReader(f));
@@ -85,7 +84,7 @@ public class UserCatalog {
 
 	public void persisteUser(String name, String password) {
 		System.out.println("PERSISTING USER");
-		try (FileWriter fw = new FileWriter(new File(SERVER + "/" + USERS), true);
+		try (FileWriter fw = new FileWriter(new File(SERVER + File.separator + USERS), true);
 				BufferedWriter bf = new BufferedWriter(fw);
 				PrintWriter out = new PrintWriter(bf)) {
 			out.println(name + ":" + password);
@@ -94,11 +93,9 @@ public class UserCatalog {
 		}
 		System.out.println(mapUsers);
 	}
-	
-	
+
 	public boolean userExists(String user) {
 		return mapUsers.containsKey(user);
 	}
-
 
 }
