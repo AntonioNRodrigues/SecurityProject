@@ -38,7 +38,7 @@ public class ReadWriteUtil {
 
 		inputFileStream.close();
 	}
-		
+
 	public static void sendFile(String filename, ObjectInputStream inStream, ObjectOutputStream outStream)
 			throws IOException {
 		File f = new File(filename);
@@ -59,15 +59,15 @@ public class ReadWriteUtil {
 		}
 
 		inputFileStream.close();
-	}	
+	}
 
 	public static File receiveFile(String path, ObjectInputStream inStream, ObjectOutputStream outStream)
 			throws ClassNotFoundException, IOException {
 
 		Long sizeFile = (Long) inStream.readObject();
 		String filename = (String) inStream.readObject();
-				
-		File fileReceived = new File(path+filename);		
+
+		File fileReceived = new File(path + filename);
 		BufferedOutputStream bf = new BufferedOutputStream(new FileOutputStream(fileReceived));
 		int len = 0;
 		byte[] buffer = new byte[VALUE];
@@ -86,8 +86,8 @@ public class ReadWriteUtil {
 			len += lido;
 		}
 		bf.close();
-		
+
 		return fileReceived;
 	}
-	
+
 }
