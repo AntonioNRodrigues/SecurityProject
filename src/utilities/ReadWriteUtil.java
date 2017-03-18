@@ -19,7 +19,6 @@ public class ReadWriteUtil {
 
 	public static void sendFile(Path path, ObjectInputStream inStream, ObjectOutputStream outStream)
 			throws IOException {
-		//System.out.println("SENDING FILE");
 		File f = path.toFile();
 
 		BufferedInputStream inputFileStream = new BufferedInputStream(new FileInputStream(f));
@@ -42,7 +41,6 @@ public class ReadWriteUtil {
 		
 	public static void sendFile(String filename, ObjectInputStream inStream, ObjectOutputStream outStream)
 			throws IOException {
-		//System.out.println("SENDING FILE");
 		File f = new File(filename);
 
 		BufferedInputStream inputFileStream = new BufferedInputStream(new FileInputStream(f));
@@ -61,40 +59,10 @@ public class ReadWriteUtil {
 		}
 
 		inputFileStream.close();
-	}
-
-	public static File receiveFile(ObjectInputStream inStream, ObjectOutputStream outStream)
-			throws ClassNotFoundException, IOException {
-		//System.out.println("RECEIVING FILE");
-
-		Long sizeFile = (Long) inStream.readObject();
-		String filename = (String) inStream.readObject();
-		File fileReceived = new File(filename);		
-		BufferedOutputStream bf = new BufferedOutputStream(new FileOutputStream(fileReceived));
-		int len = 0;
-		byte[] buffer = new byte[VALUE];
-		int lido;
-
-		while (len < sizeFile) {
-			int resto = (int) (sizeFile - len);
-			int n = (resto < VALUE) ? resto : buffer.length;
-			lido = inStream.read(buffer, 0, n);
-
-			if (lido == -1) {
-				break;
-			}
-
-			bf.write(buffer, 0, n);
-			len += lido;
-			//System.out.println(".......");
-		}
-		bf.close();
-		return fileReceived;
-	}
+	}	
 
 	public static File receiveFile(String path, ObjectInputStream inStream, ObjectOutputStream outStream)
 			throws ClassNotFoundException, IOException {
-		//System.out.println("RECEIVING FILE");
 
 		Long sizeFile = (Long) inStream.readObject();
 		String filename = (String) inStream.readObject();
@@ -116,7 +84,6 @@ public class ReadWriteUtil {
 
 			bf.write(buffer, 0, n);
 			len += lido;
-			//System.out.println(".......");
 		}
 		bf.close();
 		

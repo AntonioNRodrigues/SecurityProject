@@ -133,7 +133,7 @@ public class MessagePHandler extends MessageHandler {
 			// Enviar os ficheiros
 			for (Path path: filesList){
 				try {
-					ReadWriteUtil.sendFile( path, in, out);
+					ReadWriteUtil.sendFile(path, in, out);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

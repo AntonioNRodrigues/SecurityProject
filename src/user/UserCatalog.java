@@ -54,7 +54,7 @@ public class UserCatalog {
 	}
 
 	private boolean buildUsers() {
-		File userFile = new File(SERVER + "/" + USERS);
+		File userFile = new File(SERVER + File.separator + USERS);
 		boolean create = false;
 		if (!userFile.exists()) {
 			try {
