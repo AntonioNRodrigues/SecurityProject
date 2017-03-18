@@ -3,7 +3,6 @@ package server.repository;
 import static utilities.ReadWriteUtil.OWNER;
 import static utilities.ReadWriteUtil.SERVER;
 import static utilities.ReadWriteUtil.SHARED;
-import static utilities.ReadWriteUtil.USERS;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -20,6 +19,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 public class RemoteRepository {
 	private String owner;
@@ -198,9 +198,33 @@ public class RemoteRepository {
 		this.mapFiles.put(repoName, listFiles);
 	}
 
+	/**
+	 * method to add the user to the shared list to this repository and persist
+	 * the user in the file if its not already there.
+	 * 
+	 * @param userName
+	 */
 	public void addShareUserToRepo(String userName) {
 		sharedUsers.add(userName);
-		persisteSharedUser(userName, this);
+		System.out.println("addShareUserToRepo" + sharedUsers);
+		// if its not a shared user persist
+		if ((isSharedUser(userName))) {
+			persisteSharedUser(userName, this);
+		}
+		System.out.println("addShareUserToRepo" + sharedUsers);
+
+	}
+
+	/*
+	 * method to check is the user is already in the list os shared users
+	 */
+	private boolean isSharedUser(String userName) {
+		for (String string : sharedUsers) {
+			if (string.equals(userName)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -210,6 +234,7 @@ public class RemoteRepository {
 	 * @param remoteRepository
 	 */
 	private void persisteSharedUser(String userName, RemoteRepository remoteRepository) {
+		System.out.println("persisteSharedUser");
 		try (BufferedWriter bf = new BufferedWriter(
 				new FileWriter(new File(SERVER + File.separator + this.nameRepo + File.separator + SHARED), true));
 				PrintWriter out = new PrintWriter(bf)) {
@@ -221,15 +246,20 @@ public class RemoteRepository {
 
 	public void removeUserFromRepo(String userId) {
 		sharedUsers.remove(userId);
+		System.out.println("SHARED USERS LIST::" + sharedUsers);
 		removeUserFromSharedRepo(userId);
 	}
 
 	private void removeUserFromSharedRepo(String userId) {
+		String str = SERVER + File.separator + this.nameRepo + File.separator + SHARED;
 		try (BufferedReader br = new BufferedReader(
-				new FileReader(new File(SERVER + File.separator + this.nameRepo + File.separator + SHARED)))) {
+				new FileReader(new File(str)));
+				PrintWriter out = new PrintWriter(new File(str))) {
 			for (String line = br.readLine(); line != null; line = br.readLine()) {
+				System.out.println(line);
 				if (line.equals(userId)) {
-					line.trim();
+					//out.write("");
+					//does not work have to find another way 
 					break;
 				}
 			}
