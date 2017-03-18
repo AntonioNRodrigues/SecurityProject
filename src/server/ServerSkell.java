@@ -26,27 +26,13 @@ public class ServerSkell {
 	private UserCatalog catUsers;
 
 	public ServerSkell(MyGitServer my) {
-		
-		//System.out.println("ServerSkell(MyGitServer my)");
 		this.catRepo = my.getCatRepo();
 		this.catUsers = my.getCatUsers();
 	}
 
-	public ServerSkell() {
-		
-		//System.out.println("ServerSkell()");
-		//this.catRepo = new RepositoryCatalog();
-		//this.catUsers = new UserCatalog();
-	}
-	
 	public ServerSkell(ObjectOutputStream out, ObjectInputStream in) {
-		
-		//System.out.println("ServerSkell(ObjectOutputStream out, ObjectInputStream in)");
-
 		this.out = out;
 		this.in = in;
-		//this.catRepo = new RepositoryCatalog();
-		//this.catUsers = new UserCatalog();
 	}
 
 	public ObjectOutputStream getOut() {
@@ -66,43 +52,40 @@ public class ServerSkell {
 	}
 
 	public void receiveMsg(Message msg) throws ClassNotFoundException, IOException {
-		
-		//System.out.println("catRepo.listRepos(): ");
 		catRepo.listRepos();
-		
+
 		RemoteRepository rr = null;
 		if (authentication(msg)) {
-			//out.writeObject((Object) "THE USER IS AUTHENTICATED");
-			//System.out.println("THE USER IS AUTHENTICATED");
+			// out.writeObject((Object) "THE USER IS AUTHENTICATED");
+			// System.out.println("THE USER IS AUTHENTICATED");
 
 			if (msg instanceof MessageRS) {
-				//System.out.println(msg);
+				// System.out.println(msg);
 				MessageRS mrs = (MessageRS) msg;
 				TypeOperation op = mrs.getTypeOperation();
-				
+
 				switch (op) {
 				case REMOVE:
-					
-					//System.out.println("ServerSkell");
-					//System.out.println("-REMOVE REPOSITORY");
-					//System.out.println(mrs.getRepoName());
-					//System.out.println(mrs.getUserId());
+
+					// System.out.println("ServerSkell");
+					// System.out.println("-REMOVE REPOSITORY");
+					// System.out.println(mrs.getRepoName());
+					// System.out.println(mrs.getUserId());
 
 					// Repositorio nao existe
-					if (!catRepo.repoExists(mrs.getRepoName())) {		
+					if (!catRepo.repoExists(mrs.getRepoName())) {
 
 						out.writeObject((Object) "NOK");
 						out.writeObject((Object) "Erro: O repositório não existe");
 
-					}
-					else {
+					} else {
 						// Repositorio existe
 
 						rr = catRepo.getRemRepository(mrs.getRepoName());
 
 						boolean error = false;
-						// Validar se o utilizador é dono 
-						if (!rr.getOwner().equals(mrs.getLocalUser().getName())  ) {
+						// Validar se o utilizador é dono
+						if (!rr.getOwner().equals(mrs.getLocalUser().getName())) {
 							error = true;
 							out.writeObject((Object) "NOK");
 							out.writeObject((Object) "Erro: Não é dono do repositório");
@@ -112,14 +95,16 @@ public class ServerSkell {
 						if (!error && !catUsers.userExists(mrs.getUserId())) {
 							error = true;
 							out.writeObject((Object) "NOK");
-							out.writeObject((Object) "Erro: O utilizador indicado na remoção de partilha do repositório não existe");							
+							out.writeObject(
+									(Object) "Erro: O utilizador indicado na remoção de partilha do repositório não existe");
 						}
-						
-						// Validar se o userId é utilizador com acesso ao repositorio
+
+						// Validar se o userId é utilizador com acesso ao
+						// repositorio
 						if (!error && !rr.getSharedUsers().contains(mrs.getUserId())) {
 							error = true;
 							out.writeObject((Object) "NOK");
-							out.writeObject((Object) "Erro: O utilizador não tem acesso ao repositório");							
+							out.writeObject((Object) "Erro: O utilizador não tem acesso ao repositório");
 						}
 
 						if (!error) {
@@ -129,29 +114,28 @@ public class ServerSkell {
 					}
 
 					break;
-					
+
 				case SHARE:
 
-					//System.out.println("ServerSkell");
-					//System.out.println("-SHARE REPOSITORY");
-					//System.out.println(mrs.getRepoName());
-					//System.out.println(mrs.getUserId());
+					// System.out.println("ServerSkell");
+					// System.out.println("-SHARE REPOSITORY");
+					// System.out.println(mrs.getRepoName());
+					// System.out.println(mrs.getUserId());
 
 					// Repositorio nao existe
-					if (!catRepo.repoExists(mrs.getRepoName())) {		
+					if (!catRepo.repoExists(mrs.getRepoName())) {
 
 						out.writeObject((Object) "NOK");
 						out.writeObject((Object) "Erro: O repositório não existe");
 
-					}
-					else {
+					} else {
 						// Repositorio existe
 
 						rr = catRepo.getRemRepository(mrs.getRepoName());
 
 						boolean error = false;
-						// Validar se o utilizador é dono 
-						if (!rr.getOwner().equals(mrs.getLocalUser().getName())  ) {
+						// Validar se o utilizador é dono
+						if (!rr.getOwner().equals(mrs.getLocalUser().getName())) {
 							error = true;
 							out.writeObject((Object) "NOK");
 							out.writeObject((Object) "Erro: Não é dono do repositório");
@@ -161,7 +145,8 @@ public class ServerSkell {
 						if (!error && !catUsers.userExists(mrs.getUserId())) {
 							error = true;
 							out.writeObject((Object) "NOK");
-							out.writeObject((Object) "Erro: O utilizador com quem vai partilhar o repositório não existe");							
+							out.writeObject(
+									(Object) "Erro: O utilizador com quem vai partilhar o repositório não existe");
 						}
 
 						if (!error) {
@@ -177,7 +162,7 @@ public class ServerSkell {
 
 			} else if (msg instanceof MessageP) {
 
-				//System.out.println(msg);
+				// System.out.println(msg);
 				MessageP mp = ((MessageP) msg);
 				TypeSend ts = mp.getTypeSend();
 				TypeOperation op = mp.getOperation();
@@ -186,107 +171,119 @@ public class ServerSkell {
 				case REPOSITORY:
 					switch (op) {
 					case PULL:
-						//System.out.println("ServerSkell: mp.getNumberFiles() :"+mp.getNumberFiles());
-						//System.out.println("-PULL REPOSITORY: "+mp.getRepoName());
+						// System.out.println("ServerSkell: mp.getNumberFiles()
+						// :"+mp.getNumberFiles());
+						// System.out.println("-PULL REPOSITORY:
+						// "+mp.getRepoName());
 
 						boolean error = false;
 						// Validar se o repositorio existe
 						if (!catRepo.repoExists(mp.getRepoName())) {
 							error = true;
-							//System.out.println("Erro: O repositório indicado não existe");	
+							// System.out.println("Erro: O repositório indicado
+							// não existe");
 							out.writeObject((Object) "NOK");
-							out.writeObject((Object) "Erro: O repositório indicado não existe");	
-						}
-						else
+							out.writeObject((Object) "Erro: O repositório indicado não existe");
+						} else
 							rr = catRepo.getRemRepository(mp.getRepoName());
 
-
-						// Validar se o utilizador é dono ou tem acesso partilhado ao repositorio
-						if (!error && !(rr.getOwner().equals(mp.getLocalUser().getName()) || rr.getSharedUsers().contains(mp.getLocalUser().getName()))) {
+						// Validar se o utilizador é dono ou tem acesso
+						// partilhado ao repositorio
+						if (!error && !(rr.getOwner().equals(mp.getLocalUser().getName())
+								|| rr.getSharedUsers().contains(mp.getLocalUser().getName()))) {
 							error = true;
-							//System.out.println("Erro: o utilizador não tem acesso ao repositório");
+							// System.out.println("Erro: o utilizador não tem
+							// acesso ao repositório");
 							out.writeObject((Object) "NOK");
 							out.writeObject((Object) "Erro: o utilizador não tem acesso ao repositório");
 						}
 
-
 						if (!error) {
-							List <File> filesList= rr.getFiles(mp.getRepoName()); 
+							List<File> filesList = rr.getFiles(mp.getRepoName());
 
-							//System.out.println("filesList.size(): "+filesList.size());
-							if (filesList.size()>0) {
+							// System.out.println("filesList.size():
+							// "+filesList.size());
+							if (filesList.size() > 0) {
 								try {
 									out.writeObject((Object) "OK");
 									// Enviar o numero de ficheiros
 									out.writeObject((Integer) filesList.size());
 
-									for (File f: filesList)
-										ReadWriteUtil.sendFile("SERVER"+File.separator+mp.getRepoName()+File.separator+f.getName(), in, out);
+									for (File f : filesList)
+										ReadWriteUtil.sendFile("SERVER" + File.separator + mp.getRepoName()
+												+ File.separator + f.getName(), in, out);
 
 								} catch (IOException e) {
 									e.printStackTrace();
 									out.writeObject((Object) "NOK");
 									out.writeObject((Object) "SERVER ERROR");
 								}
-							}
-							else {
+							} else {
 								// falta tratar do versionamento...
-								//System.out.println("THE SERVER HAS NOT A RECENT VERSION FOR U");
+								// System.out.println("THE SERVER HAS NOT A
+								// RECENT VERSION FOR U");
 								out.writeObject((Object) "NOK");
 								out.writeObject((Object) "THE SERVER HAS NOT A RECENT VERSION FOR U");
-							}	
+							}
 						}
 						break;
 
-							// Enviar numero de ficheiros
-							//System.out.println("rr.sizeUniqueFilesInMap()): "+rr.sizeUniqueFilesInMap());
-							//out.writeObject((Integer) rr.sizeUniqueFilesInMap());
-							//Set<File> set = rr.getListMostRecentFiles();
+					// Enviar numero de ficheiros
+					// System.out.println("rr.sizeUniqueFilesInMap()):
+					// "+rr.sizeUniqueFilesInMap());
+					// out.writeObject((Integer) rr.sizeUniqueFilesInMap());
+					// Set<File> set = rr.getListMostRecentFiles();
 
-							/*
-							 * TO DO iterate over the set and send each file check a
-							 * better place to do so i dont think this works inside
-							 * this method WAITING FOR CLIENT TO DEAL WITH IT
-							 */				
+					/*
+					 * TO DO iterate over the set and send each file check a
+					 * better place to do so i dont think this works inside this
+					 * method WAITING FOR CLIENT TO DEAL WITH IT
+					 */
 
-							// Enviar ficheiros
-							//for (File f : set) {
-							//	ReadWriteUtil.sendFile("SERVER"+File.separator+mp.getRepoName()+File.separator+f.getName(), in, out);
-							//}
-							
-							// Enviar numero de ficheiros
-							//System.out.println("rr.sizeUniqueFilesInMap()): "+rr.sizeUniqueFilesInMap());
-							//out.writeObject((Integer) rr.sizeUniqueFilesInMap());
-							//Set<File> set = rr.getListMostRecentFiles();
+					// Enviar ficheiros
+					// for (File f : set) {
+					// ReadWriteUtil.sendFile("SERVER"+File.separator+mp.getRepoName()+File.separator+f.getName(),
+					// in, out);
+					// }
 
-							/*
-							 * TO DO iterate over the set and send each file check a
-							 * better place to do so i dont think this works inside
-							 * this method WAITING FOR CLIENT TO DEAL WITH IT
-							 */				
+					// Enviar numero de ficheiros
+					// System.out.println("rr.sizeUniqueFilesInMap()):
+					// "+rr.sizeUniqueFilesInMap());
+					// out.writeObject((Integer) rr.sizeUniqueFilesInMap());
+					// Set<File> set = rr.getListMostRecentFiles();
 
-							// Enviar ficheiros
-							//for (File f : set) {
-							//	ReadWriteUtil.sendFile("SERVER"+File.separator+mp.getRepoName()+File.separator+f.getName(), in, out);
-							//}
+					/*
+					 * TO DO iterate over the set and send each file check a
+					 * better place to do so i dont think this works inside this
+					 * method WAITING FOR CLIENT TO DEAL WITH IT
+					 */
+
+					// Enviar ficheiros
+					// for (File f : set) {
+					// ReadWriteUtil.sendFile("SERVER"+File.separator+mp.getRepoName()+File.separator+f.getName(),
+					// in, out);
+					// }
 
 					case PUSH:
 						// -push repo
-						//System.out.println("ServerSkell: mp.getNumberFiles() :"+mp.getNumberFiles());
-						//System.out.println("-PUSH REPOSITORY: "+mp.getRepoName());
+						// System.out.println("ServerSkell: mp.getNumberFiles()
+						// :"+mp.getNumberFiles());
+						// System.out.println("-PUSH REPOSITORY:
+						// "+mp.getRepoName());
 
 						// Repositorio nao existe, criar
-						if (!catRepo.repoExists(mp.getRepoName())) {		
+						if (!catRepo.repoExists(mp.getRepoName())) {
 							// repository does not exist
-							rr = catRepo.buildRepo(mp.getLocalUser(), mp.getRepoName());							
-							//System.out.println("repository created");
-						}
-						else
+							rr = catRepo.buildRepo(mp.getLocalUser(), mp.getRepoName());
+							// System.out.println("repository created");
+						} else
 							// Repositorio existe
 							rr = catRepo.getRemRepository(mp.getRepoName());
 
-						// Validar se o utilizador é dono ou tem acesso partilhado ao repositorio
-						if (rr.getOwner().equals(mp.getLocalUser().getName()) || rr.getSharedUsers().contains(mp.getLocalUser().getName()) ) {
+						// Validar se o utilizador é dono ou tem acesso
+						// partilhado ao repositorio
+						if (rr.getOwner().equals(mp.getLocalUser().getName())
+								|| rr.getSharedUsers().contains(mp.getLocalUser().getName())) {
 
 							out.writeObject((Object) "OK");
 
@@ -294,13 +291,13 @@ public class ServerSkell {
 							int sizeList = mp.getNumberFiles();
 							for (int i = 0; i < sizeList; i++) {
 								try {
-									String path = "SERVER" + File.separator + mp.getRepoName() + File.separator;									
+									String path = "SERVER" + File.separator + mp.getRepoName() + File.separator;
 									File received = ReadWriteUtil.receiveFile(path, in, out);
 
-									//TODO?
+									// TODO?
 									if (!rr.fileExists(mp.getRepoName(), received.getName()))
 										rr.addFile(mp.getRepoName(), received);
-									
+
 								} catch (ClassNotFoundException e) {
 									e.printStackTrace();
 								}
@@ -311,47 +308,48 @@ public class ServerSkell {
 							out.writeObject((Object) "Erro: o utilizador não tem acesso ao repositório");
 						}
 
-
 						break;
-						
+
 					default:
 						break;
-					}	
+					}
 					break;
-					
+
 				case FILE:
 					switch (op) {
 					case PULL:
-						//System.out.println("-PULL FILE");
+						// System.out.println("-PULL FILE");
 						long lastModifiedDate = mp.getTimestamp();
 
 						boolean error = false;
 						// Validar se o repositorio existe
 						if (!catRepo.repoExists(mp.getRepoName())) {
 							error = true;
-							//System.out.println("Erro: O repositório indicado não existe");	
+							// System.out.println("Erro: O repositório indicado
+							// não existe");
 							out.writeObject((Object) "NOK");
-							out.writeObject((Object) "Erro: O repositório indicado não existe");	
-						}
-						else
+							out.writeObject((Object) "Erro: O repositório indicado não existe");
+						} else
 							rr = catRepo.getRemRepository(mp.getRepoName());
 
-
-						// Validar se o utilizador é dono ou tem acesso partilhado ao repositorio
-						if (!error && !(rr.getOwner().equals(mp.getLocalUser().getName()) || rr.getSharedUsers().contains(mp.getLocalUser().getName()))) {
+						// Validar se o utilizador é dono ou tem acesso
+						// partilhado ao repositorio
+						if (!error && !(rr.getOwner().equals(mp.getLocalUser().getName())
+								|| rr.getSharedUsers().contains(mp.getLocalUser().getName()))) {
 							error = true;
-							//System.out.println("Erro: o utilizador não tem acesso ao repositório");
+							// System.out.println("Erro: o utilizador não tem
+							// acesso ao repositório");
 							out.writeObject((Object) "NOK");
 							out.writeObject((Object) "Erro: o utilizador não tem acesso ao repositório");
 						}
 
 						// Validar se o ficheiro existe
 						if (!error && !rr.fileExists(mp.getRepoName(), mp.getFileName())) {
-							//System.out.println("Erro: O ficheiro indicado não existe");
+							// System.out.println("Erro: O ficheiro indicado não
+							// existe");
 							out.writeObject((Object) "NOK");
-							out.writeObject((Object) "Erro: O ficheiro indicado não existe");		
-						}
-						else {
+							out.writeObject((Object) "Erro: O ficheiro indicado não existe");
+						} else {
 
 							File inRepo = rr.getFile(mp.getRepoName(), mp.getFileName());
 
@@ -362,8 +360,9 @@ public class ServerSkell {
 									out.writeObject((Object) "OK");
 									// Enviar o numero de ficheiros
 									out.writeObject((Integer) 1);
-									//Enviar o ficheiro
-									ReadWriteUtil.sendFile("SERVER"+File.separator+mp.getRepoName()+File.separator+mp.getFileName(), in, out);
+									// Enviar o ficheiro
+									ReadWriteUtil.sendFile("SERVER" + File.separator + mp.getRepoName() + File.separator
+											+ mp.getFileName(), in, out);
 
 								} catch (IOException e) {
 									e.printStackTrace();
@@ -371,43 +370,47 @@ public class ServerSkell {
 									out.writeObject((Object) "SERVER ERROR");
 								}
 							} else {
-								//System.out.println("THE SERVER HAS NOT A RECENT VERSION FOR U");
+								// System.out.println("THE SERVER HAS NOT A
+								// RECENT VERSION FOR U");
 								out.writeObject((Object) "NOK");
 								out.writeObject((Object) "THE SERVER HAS NOT A RECENT VERSION FOR U");
 							}
 						}
-							
+
 						break;
-						
+
 					case PUSH:
 
 						// -push file
-						//System.out.println("ServerSkell: mp.getNumberFiles() :"+mp.getNumberFiles());
-						//System.out.println("-PUSH FILE: "+mp.getRepoName()+" "+mp.getFileName());
+						// System.out.println("ServerSkell: mp.getNumberFiles()
+						// :"+mp.getNumberFiles());
+						// System.out.println("-PUSH FILE: "+mp.getRepoName()+"
+						// "+mp.getFileName());
 
 						// Repositorio nao existe
-						if (!catRepo.repoExists(mp.getRepoName())) {		
+						if (!catRepo.repoExists(mp.getRepoName())) {
 
 							out.writeObject((Object) "NOK");
 							out.writeObject((Object) "Erro: O repositório não existe");
 
-						}
-						else {
+						} else {
 							// Repositorio existe
 
 							rr = catRepo.getRemRepository(mp.getRepoName());
 
-							// Validar se o utilizador é dono ou tem acesso partilhado ao repositorio
-							if (rr.getOwner().equals(mp.getLocalUser().getName()) || rr.getSharedUsers().contains(mp.getLocalUser().getName()) ) {
+							// Validar se o utilizador é dono ou tem acesso
+							// partilhado ao repositorio
+							if (rr.getOwner().equals(mp.getLocalUser().getName())
+									|| rr.getSharedUsers().contains(mp.getLocalUser().getName())) {
 
 								out.writeObject((Object) "OK");
 
 								// Receber ficheiro
 								try {
-									String path = "SERVER" + File.separator + mp.getRepoName() + File.separator;									
+									String path = "SERVER" + File.separator + mp.getRepoName() + File.separator;
 									File received = ReadWriteUtil.receiveFile(path, in, out);
-									
-									// TODO? 
+
+									// TODO?
 									if (!rr.fileExists(mp.getRepoName(), received.getName()))
 										rr.addFile(mp.getRepoName(), received);
 
@@ -415,30 +418,32 @@ public class ServerSkell {
 									e.printStackTrace();
 								}
 
-								/*	
-								try {
-
-									String path = "SERVER" + File.separator + mp.getRepoName() + File.separator;									
-									File received = ReadWriteUtil.receiveFile(path, in, out);
-
-									//File received = ReadWriteUtil.receiveFile(in, out);
-									System.out.println(received.getName() + received.lastModified());
-									File inRepo = rr.getMostRecentFile(received.getName());
-									System.out.println(inRepo.getName() + inRepo.lastModified());
-									// if received file has lastmodified > than the
-									// one that exists in the repo
-									if (received.lastModified() > inRepo.lastModified()) {
-										// added to the list
-										rr.getVersionList(received.getName()).add(received);
-									} else {
-										// delete file the repo has a recent file
-										Files.deleteIfExists(received.toPath());
-									}
-								} catch (ClassNotFoundException e) {
-									e.printStackTrace();
-								} catch (IOException e) {
-									e.printStackTrace();
-								}
+								/*
+								 * try {
+								 * 
+								 * String path = "SERVER" + File.separator +
+								 * mp.getRepoName() + File.separator; File
+								 * received = ReadWriteUtil.receiveFile(path,
+								 * in, out);
+								 * 
+								 * //File received =
+								 * ReadWriteUtil.receiveFile(in, out);
+								 * System.out.println(received.getName() +
+								 * received.lastModified()); File inRepo =
+								 * rr.getMostRecentFile(received.getName());
+								 * System.out.println(inRepo.getName() +
+								 * inRepo.lastModified()); // if received file
+								 * has lastmodified > than the // one that
+								 * exists in the repo if
+								 * (received.lastModified() >
+								 * inRepo.lastModified()) { // added to the list
+								 * rr.getVersionList(received.getName()).add(
+								 * received); } else { // delete file the repo
+								 * has a recent file
+								 * Files.deleteIfExists(received.toPath()); } }
+								 * catch (ClassNotFoundException e) {
+								 * e.printStackTrace(); } catch (IOException e)
+								 * { e.printStackTrace(); }
 								 */
 
 							} else {
@@ -446,12 +451,12 @@ public class ServerSkell {
 								out.writeObject((Object) "Erro: o utilizador não tem acesso ao repositório");
 							}
 
-						}							
+						}
 						break;
-						
+
 					default:
 						break;
-						
+
 					}
 				default:
 					break;
@@ -460,7 +465,8 @@ public class ServerSkell {
 		} else {
 			out.writeObject((Object) "NOK");
 			out.writeObject((Object) "YOU DOT NOT HAVE PREMISSIONS TO KEEP GOING PLEASE CHECK PASSWORD");
-			//System.out.println("YOU DOT NOT HAVE PREMISSIONS TO KEEP GOING PLEASE CHECK PASSWORD");
+			// System.out.println("YOU DOT NOT HAVE PREMISSIONS TO KEEP GOING
+			// PLEASE CHECK PASSWORD");
 		}
 	}
 
