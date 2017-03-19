@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Path;
+import java.util.Random;
 
 public class ReadWriteUtil {
 	private static final int VALUE = 1024;
@@ -67,7 +68,7 @@ public class ReadWriteUtil {
 		Long sizeFile = (Long) inStream.readObject();
 		String filename = (String) inStream.readObject();
 
-		File fileReceived = new File(path + filename);
+		File fileReceived = new File(path + filename + " " + random());
 		BufferedOutputStream bf = new BufferedOutputStream(new FileOutputStream(fileReceived));
 		int len = 0;
 		byte[] buffer = new byte[VALUE];
@@ -90,4 +91,11 @@ public class ReadWriteUtil {
 		return fileReceived;
 	}
 
+	private static String random() {
+		return "(" + (new Random().nextInt(900) + 100) + ")";
+	}
+
+	public static String getRealFileName(String f) {
+		return f.split(" ")[0];
+	}
 }
