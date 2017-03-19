@@ -4,16 +4,16 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 public interface IMessageTypes {
-	
+
 	/**
 	 * @return
 	 */
 	String getName();
-	
+
 	/**
 	 * @param operation
-	 * @return 
+	 * @return
 	 */
-	String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params);	
-	
+	String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params);
+
 }

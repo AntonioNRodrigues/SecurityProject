@@ -29,8 +29,6 @@ public class MessagePHandler extends MessageHandler {
 	@Override
 	public String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
 
-		// sendAuthMessage(in, out, params);
-
 		if (params.getOperation().contentEquals("PUSH")) {
 
 			if (params.getTypeSend().contentEquals("FILE"))
@@ -57,10 +55,6 @@ public class MessagePHandler extends MessageHandler {
 
 		BasicFileAttributes attributes = getFileAttributes(params.getFile());
 
-		// Message to use when we want to send or receive a file. Used in PULL
-		// fileName and PUSH fileName
-		// serverAddress não será necessário, já está presente na criação do
-		// socket...
 		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(),
 				params.getPassword(), TypeSend.FILE, params.getRepName(), params.getFileName(), TypeOperation.PUSH, 1,
 				attributes.lastModifiedTime().toMillis());
@@ -71,7 +65,6 @@ public class MessagePHandler extends MessageHandler {
 			e.printStackTrace();
 		}
 
-		// get status from server
 		String result = "";
 		try {
 			result = (String) in.readObject();
@@ -79,10 +72,7 @@ public class MessagePHandler extends MessageHandler {
 			e.printStackTrace();
 		}
 
-		// System.out.println("result: "+result);
-
 		if (result.contentEquals("OK")) {
-			// System.out.println("OK");
 			// Enviar o ficheiro
 			try {
 				ReadWriteUtil.sendFile(params.getFile(), in, out);
@@ -170,10 +160,6 @@ public class MessagePHandler extends MessageHandler {
 			lastModifiedTime = attributes.lastModifiedTime().toMillis();
 		}
 
-		// Message to use when we want to send or receive a file. Used in PULL
-		// fileName and PUSH fileName
-		// serverAddress não será necessário, já está presente na criação do
-		// socket...
 		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(),
 				params.getPassword(), TypeSend.FILE, params.getRepName(), params.getFileName(), TypeOperation.PULL, 1,
 				lastModifiedTime);
@@ -295,7 +281,7 @@ public class MessagePHandler extends MessageHandler {
 				File received = ReadWriteUtil.receiveFile(tempPath, in, out);
 				received.setLastModified(receivedTimeStamp);
 				System.out.println(received.getName());
-				
+
 			} catch (ClassNotFoundException | IOException e) {
 				e.printStackTrace();
 			}

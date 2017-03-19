@@ -13,42 +13,43 @@ import user.User;
 import utilities.ReadWriteUtil;
 
 public abstract class MessageHandler implements IMessageTypes {
-	
+
 	/**
-	 * The name of the message handler 
+	 * The name of the message handler
 	 */
 	private String name;
-    
+
 	/**
 	 * Constructs a message handler given its name
 	 * 
-	 * @param name The name of the handler
-	 * @return 
+	 * @param name
+	 *            The name of the handler
+	 * @return
 	 */
-	public MessageHandler (String name) {
+	public MessageHandler(String name) {
 		this.name = name;
 	}
-	
+
 	@Override
 	public String getName() {
 		return this.name;
 	}
-	
-	
+
 	public String sendAuthMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
 
 		// Mensagem de autenticação
-		Message m = new MessageA(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(), params.getPassword());
+		Message m = new MessageA(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(),
+				params.getPassword());
 
 		try {
-			out.writeObject((Object)m);
+			out.writeObject((Object) m);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		// get status from server
-		String result="";
-		String status="";
+		String result = "";
+		String status = "";
 		try {
 			result = (String) in.readObject();
 		} catch (ClassNotFoundException | IOException e) {
@@ -62,27 +63,20 @@ public abstract class MessageHandler implements IMessageTypes {
 				e.printStackTrace();
 			}
 			System.out.println(status);
+		} else {
+			status = "Ocorreu um erro no processamento do pedido";
 		}
-		else {
-			status="Ocorreu um erro no processamento do pedido";
-		}
-		return status;	
-}
-	
-	
+		return status;
+	}
+
 	protected BasicFileAttributes getFileAttributes(Path filePath) {
-		
-        BasicFileAttributes attributes = null;
-        try
-        {
-            attributes =
-                    Files.readAttributes(filePath, BasicFileAttributes.class);
-        }
-        catch (IOException exception)
-        {
-            System.out.println("Exception handled when trying to get file " +
-                    "attributes: " + exception.getMessage());
-        }
+
+		BasicFileAttributes attributes = null;
+		try {
+			attributes = Files.readAttributes(filePath, BasicFileAttributes.class);
+		} catch (IOException exception) {
+			System.out.println("Exception handled when trying to get file " + "attributes: " + exception.getMessage());
+		}
 		return attributes;
 	}
 

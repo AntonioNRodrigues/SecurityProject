@@ -17,33 +17,32 @@ public class LocalRepository {
 	private String nameRepo;
 	private List<Path> listFiles;
 	private List<String> sharedUsers;
-	
-	public LocalRepository(String name){
+
+	public LocalRepository(String name) {
 		this.nameRepo = name;
 		this.listFiles = new ArrayList<>();
 
 		loadLocalRepo();
 	}
-		
+
 	/*
 	 * To be used in push/pull repo operations...a local repository object will
 	 * be created, listFiles will contain the list of the folder files...
 	 */
 	private void loadLocalRepo() {
-		
-		try(Stream<Path> paths = Files.walk(Paths.get("CLIENT"+ File.separator+this.nameRepo))) {
-		    paths.forEach(filePath -> {
-		        if (Files.isRegularFile(filePath)) {		            
-		            listFiles.add(filePath);
-		            System.out.println(filePath);
-		        }
-		    });
+
+		try (Stream<Path> paths = Files.walk(Paths.get("CLIENT" + File.separator + this.nameRepo))) {
+			paths.forEach(filePath -> {
+				if (Files.isRegularFile(filePath)) {
+					listFiles.add(filePath);
+					System.out.println(filePath);
+				}
+			});
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} 
+		}
 	}
-	
+
 	public User getOnwer() {
 		return onwer;
 	}
@@ -75,11 +74,11 @@ public class LocalRepository {
 	public void setListFiles(List<Path> listFiles) {
 		this.listFiles = listFiles;
 	}
-	
-	public List<String> getListSharedUsers(){
+
+	public List<String> getListSharedUsers() {
 		return sharedUsers;
 	}
-	
+
 	public void setListUsers(List<String> listUsers) {
 		this.sharedUsers = listUsers;
 	}

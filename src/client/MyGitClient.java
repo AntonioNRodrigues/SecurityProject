@@ -1,3 +1,9 @@
+/**
+ * Grupo n.33
+ * Pedro Pais, n.º 41375
+ * Pedto Candido, n.º15674
+ * Antonio Rodrigues n.º40853
+ */
 package client;
 
 import java.io.File;
@@ -34,7 +40,6 @@ public class MyGitClient {
 	private Path file;
 	private String repName;
 	private String repOrFileName;
-	//private LocalRepository lRepo;
 
 	public MyGitClient(String[] args) {
 
@@ -43,39 +48,32 @@ public class MyGitClient {
 
 	}
 
-	public static void main(String[] args)
-			throws UnknownHostException, IOException {
+	public static void main(String[] args) throws UnknownHostException, IOException {
 
 		MyGitClient myGitClient = new MyGitClient(args);
 		String op = myGitClient.getOperation();
-		//System.out.println("op: " + op);
-
 		if (op.toUpperCase().contentEquals("INIT")) {
 
 			/*
-			 * Neste caso não é necessário criar objecto repositório
-			 * local O programa limitar-se-á a criar a directoria
-			 * correspondente ao repositório, se ainda não existir...
+			 * Neste caso não é necessário criar objecto repositório local O
+			 * programa limitar-se-á a criar a directoria correspondente ao
+			 * repositório, se ainda não existir...
 			 */
 
 			createLocalRepo(myGitClient.getRepName());
-			
+
 		} else if (TypeOperation.contains(op)) {
 
-			Socket socket = new Socket(myGitClient.getHost(),
-					myGitClient.getPort());
-			ObjectInputStream in = new ObjectInputStream(
-					socket.getInputStream());
-			ObjectOutputStream out = new ObjectOutputStream(
-					socket.getOutputStream());
+			Socket socket = new Socket(myGitClient.getHost(), myGitClient.getPort());
+			ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+			ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
 
 			// Create the message handler
 			IMessageTypes mTypes = MessageFactory.INSTANCE.getmsgType(op);
 			if (mTypes != null) {
 				String str = mTypes.sendMessage(in, out, myGitClient);
-				//System.out.println(str);
 			}
-			
+
 			out.close();
 			in.close();
 			socket.close();
@@ -93,17 +91,13 @@ public class MyGitClient {
 		boolean isFile = Files.isRegularFile(path);
 
 		if (exists && isDirectory) {
-			System.out.println(
-					"ERRO: Um repositório com esse nome já existe.");
+			System.out.println("ERRO: Um repositório com esse nome já existe.");
 		} else if (exists && isFile) {
-			System.out.println(
-					"ERRO: Já existe um ficheiro com o mesmo nome dado ao repositório.");
-		}
-		else {
+			System.out.println("ERRO: Já existe um ficheiro com o mesmo nome dado ao repositório.");
+		} else {
 			try {
 				Files.createDirectories(path);
-				System.out.println(
-						"-- O repositório "+repName+" foi criado localmente");
+				System.out.println("-- O repositório " + repName + " foi criado localmente");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -155,20 +149,13 @@ public class MyGitClient {
 		System.out.println("Invalid command, available options are: ");
 		System.out.println("");
 		System.out.println("Usage: myGit -init <rep_name>");
-		System.out.println(
-				"Usage: myGit <localUser> <serverAddress> [ -p <password> ]");
-		System.out.println(
-				"Usage: myGit <localUser> <serverAddress> [ -p <password> ] -push <rep_name>");
-		System.out.println(
-				"Usage: myGit <localUser> <serverAddress> [ -p <password> ] -push <file_name>");
-		System.out.println(
-				"Usage: myGit <localUser> <serverAddress> [ -p <password> ] -pull <file_name>");
-		System.out.println(
-				"Usage: myGit <localUser> <serverAddress> [ -p <password> ] -pull <rep_name>");
-		System.out.println(
-				"Usage: myGit <localUser> <serverAddress> [ -p <password> ] -share <rep_name> <userId>");
-		System.out.println(
-				"Usage: myGit <localUser> <serverAddress> [ -p <password> ] -remove <rep_name> <userId>");
+		System.out.println("Usage: myGit <localUser> <serverAddress> [ -p <password> ]");
+		System.out.println("Usage: myGit <localUser> <serverAddress> [ -p <password> ] -push <rep_name>");
+		System.out.println("Usage: myGit <localUser> <serverAddress> [ -p <password> ] -push <file_name>");
+		System.out.println("Usage: myGit <localUser> <serverAddress> [ -p <password> ] -pull <file_name>");
+		System.out.println("Usage: myGit <localUser> <serverAddress> [ -p <password> ] -pull <rep_name>");
+		System.out.println("Usage: myGit <localUser> <serverAddress> [ -p <password> ] -share <rep_name> <userId>");
+		System.out.println("Usage: myGit <localUser> <serverAddress> [ -p <password> ] -remove <rep_name> <userId>");
 
 		System.exit(-1);
 	}
@@ -179,15 +166,9 @@ public class MyGitClient {
 		// Variavel para nao haver return e permitir imprimir a lista final
 		boolean validated = false;
 
-		//System.out.println("args.length: " + args.length);
-
-		for (String a : args) {
-			//System.out.println(a);
-		}
-
 		int ind;
 		List<String> lArgs = Arrays.asList(args);
-		//System.out.println("lArgs.size(): " + lArgs.size());
+		// System.out.println("lArgs.size(): " + lArgs.size());
 
 		// Variavel aux para o comando
 		String command = "";
@@ -229,13 +210,13 @@ public class MyGitClient {
 
 			if (lArgs.size() >= ind + 1)
 				this.repName = lArgs.get(ind + 1);
-			//System.out.println();
+			// System.out.println();
 			validated = true;
 			break;
 
 		case "-push":
 			ind = lArgs.indexOf(command);
-			//System.out.println("ind: " + ind);
+			// System.out.println("ind: " + ind);
 
 			this.operation = "PUSH";
 
@@ -320,40 +301,17 @@ public class MyGitClient {
 			}
 
 		}
-
-		// Apenas para testar (nao estava a ser imprimido)
-		//System.out.println("-------------------------DEPOIS DE VALIDAR OS ARGUMENTOS ---------------------");
-		//System.err.println("validated: " + validated);
-		//System.out.println("localUser: " + this.localUser);
-		//System.out.println("serverAddress: " + this.serverAddress);
-		//System.out.println("host: " + this.host);
-		//System.out.println("port: " + this.port);
-		//System.out.println("password: " + this.password);
-		//System.out.println("operation: " + this.operation);
-		//System.out.println("repName: " + this.repName);
-		//System.out.println("fileName: " + this.fileName);
-		//System.out.println("repOrFileName: " + this.repOrFileName);
-		//System.out.println("userId: " + this.userId);
-		//System.out.println("---------------------------------------------------------------------------");
-
 		return validated;
 	}
-	
-	// Old one
+
 	private boolean validateArgs(String[] args) {
 
 		// Variavel para nao haver return e permitir imprimir a lista final
 		boolean validated = false;
 
-		//System.out.println("args.length: " + args.length);
-
-		for (String a : args) {
-			//System.out.println(a);
-		}
-
 		int ind;
 		List<String> lArgs = Arrays.asList(args);
-		//System.out.println("lArgs.size(): " + lArgs.size());
+		// System.out.println("lArgs.size(): " + lArgs.size());
 
 		if (lArgs.contains("-init")) {
 			ind = lArgs.indexOf("-init");
@@ -361,12 +319,12 @@ public class MyGitClient {
 
 			if (lArgs.size() >= ind + 1)
 				this.repName = lArgs.get(ind + 1);
-			//System.out.println();
+			// System.out.println();
 			return true;
 
 		} else if (lArgs.contains("-push")) {
 			ind = lArgs.indexOf("-push");
-			//System.out.println("ind: " + ind);
+			// System.out.println("ind: " + ind);
 
 			this.operation = "PUSH";
 
@@ -376,7 +334,7 @@ public class MyGitClient {
 			} else
 				validated = false;
 
-			if (!valConnArgs(lArgs, ind)) 
+			if (!valConnArgs(lArgs, ind))
 				validated = false;
 
 			if (!valTypeSend(this.repOrFileName))
@@ -384,7 +342,7 @@ public class MyGitClient {
 
 		} else if (lArgs.contains("-pull")) {
 			ind = lArgs.indexOf("-pull");
-			
+
 			this.operation = "PULL";
 
 			if (lArgs.size() >= ind + 1) {
@@ -429,243 +387,176 @@ public class MyGitClient {
 
 		} else {
 
-			//if (lArgs.size() == 2) {
-			//	if (valConnArgs(lArgs, 2))
-			//		validated = true;
-			//} else 
-
 			if (lArgs.size() == 4) {
 				this.operation = "AUTH";
 				if (valConnArgs(lArgs, 4))
-					validated = true;			
+					validated = true;
 			} else
 				validated = false;
 		}
 
-		// Apenas para testar (nao estava a ser imprimido)
-		//System.out.println(
-		//		"-------------------------DEPOIS DE VALIDAR OS ARGUMENTOS ---------------------");
-		//System.err.println("validated: " + validated);
-		//System.out.println("localUser: " + this.localUser);
-		//System.out.println("serverAddress: " + this.serverAddress);
-		//System.out.println("host: " + this.host);
-		//System.out.println("port: " + this.port);
-		//System.out.println("password: " + this.password);
-		//System.out.println("operation: " + this.operation);
-		//System.out.println("repName: " + this.repName);
-		//System.out.println("fileName: " + this.fileName);
-		//System.out.println("repOrFileName: " + this.repOrFileName);
-		//System.out.println("userId: " + this.userId);
-		//System.out.println(
-		//		"---------------------------------------------------------------------------");
-
 		return validated;
 	}
 
-	
 	// Para o push
 	private boolean valTypeSend(String repOrFileName) {
 
-		// java myGit maria 127.0.0.1:23456 -p badpwd  -push myrep
-		// java myGit pedro 127.0.0.1:23456 -p badpwd1 -pull maria/myrep
-		// java myGit pedro 127.0.0.1:23456 -p badpwd1 -push maria/myrep/myGit.java
-		// java myGit maria 127.0.0.1:23456 -p badpwd  -pull myrep/myGit.java
-		// java myGit pedro 127.0.0.1:23456 -p badpwd1 -pull maria/myrep
-		// Obrigo que se escreva sempre o rep no caminho do ficheiro como nos exemplos do trabalho?
-		// Se quiser fazer push do ficheiro myGyt.java que esta no meu repositorio myrep terei de fazer
-		// java myGit maria 127.0.0.1:23456 -p badpwd  -push myrep/myGit.java		
-		
 		String[] repFile = this.repOrFileName.split(File.separator);
-		
+
 		// owner/repo/file ...
 		if (repFile.length == 3) {
-			
+
 			this.setTypeSend("FILE");
 			this.userId = repFile[0];
 			this.repName = repFile[1];
-			this.fileName =repFile[2];
-			
-			Path path = Paths.get("CLIENT"+ File.separator + repFile[1] + File.separator + repFile[2]); //owner/repo/file
+			this.fileName = repFile[2];
+
+			Path path = Paths.get("CLIENT" + File.separator + repFile[1] + File.separator + repFile[2]); // owner/repo/file
 			boolean exists = Files.exists(path);
 			boolean isFolder = Files.isDirectory(path);
 			boolean isFile = Files.isRegularFile(path);
-			
+
 			if (exists && isFile) {
 				this.setFile(path);
 				return true;
-			}
-			else {
+			} else {
 				System.out.println("Erro: O ficheiro indicado não existe");
 				return false;
-			}				
+			}
 		}
-		
+
 		else if (repFile.length == 2) {
-			
-			//owner/repo
-			Path path1 = Paths.get("CLIENT"+ File.separator + repFile[1]); 
+
+			// owner/repo
+			Path path1 = Paths.get("CLIENT" + File.separator + repFile[1]);
 			boolean exists = Files.exists(path1);
 			boolean isFolder = Files.isDirectory(path1);
 			boolean isFile = Files.isRegularFile(path1);
-			
+
 			if (exists && isFolder) {
-				this.userId =repFile[0];
+				this.userId = repFile[0];
 				this.repName = repFile[1];
 				this.setTypeSend("REPOSITORY");
 				this.setFile(path1);
 				return true;
 			}
 
-			//repo/file
-			Path path2 = Paths.get("CLIENT"+ File.separator + repFile[0]+ File.separator + repFile[1]); 
+			// repo/file
+			Path path2 = Paths.get("CLIENT" + File.separator + repFile[0] + File.separator + repFile[1]);
 			exists = Files.exists(path2);
 			isFolder = Files.isDirectory(path2);
 			isFile = Files.isRegularFile(path2);
 
 			if (exists && isFile) {
 				this.repName = repFile[0];
-				this.fileName =repFile[1];
+				this.fileName = repFile[1];
 				this.setTypeSend("FILE");
 				this.setFile(path2);
 				return true;
 			}
-			
+
 			System.out.println("Erro: O ficheiro indicado não existe");
 			return false;
 		}
-		// repo 
+		// repo
 		else if (repFile.length == 1) {
-			
-			Path path3 = Paths.get("CLIENT"+ File.separator + repFile[0]); //repo
+
+			Path path3 = Paths.get("CLIENT" + File.separator + repFile[0]); // repo
 			boolean exists = Files.exists(path3);
 			boolean isFolder = Files.isDirectory(path3);
-			
+
 			if (exists && isFolder) {
 				this.repName = repFile[0];
 				this.setTypeSend("REPOSITORY");
 				return true;
-			}
-			else {
+			} else {
 				System.out.println("Erro: O folder/repositório indicado não existe");
 				return false;
 			}
-		}
-		else {
+		} else {
 			System.out.println("Erro: Parametros invalidos");
 			return false;
 		}
 	}
 
-	// Para ser usado no pull 
+	// Para ser usado no pull
 	private boolean valTypeSend2(String repOrFileName) {
-			
-			String[] repFile = this.repOrFileName.split(File.separator);
-			
-			// owner/repo/file ...
-			if (repFile.length == 3) {
-				
+
+		String[] repFile = this.repOrFileName.split(File.separator);
+
+		// owner/repo/file ...
+		if (repFile.length == 3) {
+
+			this.setTypeSend("FILE");
+			this.userId = repFile[0];
+			this.repName = repFile[1];
+			this.fileName = repFile[2];
+
+			Path path = Paths.get("CLIENT" + File.separator + repFile[1]); // owner/repo/file
+			boolean exists = Files.exists(path);
+			boolean isFolder = Files.isDirectory(path);
+			// não podemos testar existencia de ficheiro no pull
+			// boolean isFile = Files.isRegularFile(path);
+
+			if (exists && isFolder) {
 				this.setTypeSend("FILE");
+				this.setFile(path);
+				return true;
+			} else {
+				System.out.println("Erro: Parametros invalidos");
+				return false;
+			}
+		} else if (repFile.length == 2) {
+
+			Path path1 = Paths.get("CLIENT" + File.separator + repFile[1]); // owner/repo
+			boolean exists = Files.exists(path1);
+			boolean isFolder = Files.isDirectory(path1);
+			// boolean isFile = Files.isRegularFile(path);
+
+			if (exists && isFolder) {
 				this.userId = repFile[0];
 				this.repName = repFile[1];
-				this.fileName =repFile[2];
-				
-				Path path = Paths.get("CLIENT"+ File.separator + repFile[1]); //owner/repo/file
-				boolean exists = Files.exists(path);
-				boolean isFolder = Files.isDirectory(path);
-				// não podemos testar existencia de ficheiro no pull
-				//boolean isFile = Files.isRegularFile(path);
-				
-				if (exists && isFolder) {
-					this.setTypeSend("FILE");
-					this.setFile(path);
-					return true;
-				}
-				else {
-					System.out.println("Erro: Parametros invalidos");
-					return false;
-				}				
+				this.setTypeSend("REPOSITORY");
+				this.setFile(path1);
+				return true;
 			}
-			/* owner/repo or repo/file
-			 * 
-			 * mas no caso do pull posso estar a fazer pull de um ficheiro 
-			 * que sei que existe mas ainda não tenho localmente e portanto os 
-			 * testes Files.exists, Files.isDirectory e Files.isRegularFile
-			 * não se aplicam...
-			 * 
-			 *  eu não devia estar a advinhar o que são os argumentos
-			 *  O comando devia ter uma sintaxe,por exemplo
-			 *   
-			 *  -r repo -f file 
-			 *  ou
-			 *  -r owner:repo -f file
-			 *  ou
-			 *  -r repo
-			 *  
-			 *  por exemplo
-			 *  
-			 *  estou aqui a barafustar e reparo que no caso de ter 2 argumentos
-			 *  (que serão owner/repo ou repo/file) posso testar se existe um folder
-			 *  na segunda ou na primeira posição, na segunda significa owner/rep e
-			 *  na primeira repo/file
-			 *  
-			 *  como pressuposto o folder tem de existir e não é criado pela operação
-			 *  de pull por exemplo...
-			 *  
-			 */
-			else if (repFile.length == 2) {
-				
-				Path path1 = Paths.get("CLIENT"+ File.separator + repFile[1]); //owner/repo
-				boolean exists = Files.exists(path1);
-				boolean isFolder = Files.isDirectory(path1);
-				//boolean isFile = Files.isRegularFile(path);
-				
-				if (exists && isFolder) {
-					this.userId =repFile[0];
-					this.repName = repFile[1];
-					this.setTypeSend("REPOSITORY");
-					this.setFile(path1);
-					return true;
-				}
 
-				Path path2 = Paths.get("CLIENT"+ File.separator + repFile[0]); //repo/file
-				exists = Files.exists(path2);
-				isFolder = Files.isDirectory(path2);
+			Path path2 = Paths.get("CLIENT" + File.separator + repFile[0]); // repo/file
+			exists = Files.exists(path2);
+			isFolder = Files.isDirectory(path2);
 
-				if (exists && isFolder) {
-					this.repName = repFile[0];
-					this.fileName =repFile[1];
-					this.setTypeSend("FILE");
-					this.setFile(path2);
-					return true;
-				}
-				
+			if (exists && isFolder) {
+				this.repName = repFile[0];
+				this.fileName = repFile[1];
+				this.setTypeSend("FILE");
+				this.setFile(path2);
+				return true;
+			}
+
+			System.out.println("Erro: Parametros invalidos");
+			return false;
+		}
+		// repo
+		else if (repFile.length == 1) {
+
+			Path path3 = Paths.get("CLIENT" + File.separator + repFile[0]); // repo
+			boolean exists = Files.exists(path3);
+			boolean isFolder = Files.isDirectory(path3);
+
+			if (exists && isFolder) {
+				this.repName = repFile[0];
+				this.setTypeSend("REPOSITORY");
+				return true;
+			} else {
 				System.out.println("Erro: Parametros invalidos");
 				return false;
 			}
-			// repo 
-			else if (repFile.length == 1) {
-				
-				Path path3 = Paths.get("CLIENT"+ File.separator + repFile[0]); //repo
-				boolean exists = Files.exists(path3);
-				boolean isFolder = Files.isDirectory(path3);
-				
-				if (exists && isFolder) {
-					this.repName = repFile[0];
-					this.setTypeSend("REPOSITORY");
-					return true;
-				}
-				else {
-					System.out.println("Erro: Parametros invalidos");
-					return false;
-				}
-			}
-			else {
-				System.out.println("Erro: Parametros invalidos");
-				return false;
-			}
+		} else {
+			System.out.println("Erro: Parametros invalidos");
+			return false;
+		}
 	}
-	
-	
+
 	private boolean valConnArgs(List<String> lArgs, int ind) {
 		if (ind == 2) {
 			this.localUser = lArgs.get(0);
@@ -749,8 +640,7 @@ public class MyGitClient {
 			String currentPropertyValues = null;
 			currentPropertyValues = getProperty(propertyName);
 			if (currentPropertyValues != null)
-				prop.setProperty(propertyName,
-						currentPropertyValues + "," + propertyValue);
+				prop.setProperty(propertyName, currentPropertyValues + "," + propertyValue);
 			else
 				prop.setProperty(propertyName, propertyValue);
 

@@ -8,19 +8,19 @@ import client.MessagePHandler;
 import client.MessageRSHandler;
 
 public enum MessageFactory {
-	
+
 	INSTANCE;
 
-	private Map<String,IMessageTypes> msgTypes;
-	
+	private Map<String, IMessageTypes> msgTypes;
+
 	/**
 	 * Constructs the factory
 	 */
 	private MessageFactory() {
-		msgTypes = new HashMap<String, IMessageTypes> ();
+		msgTypes = new HashMap<String, IMessageTypes>();
 		loadmsgTypes();
 	}
-		
+
 	/**
 	 * Loads message types
 	 */
@@ -33,26 +33,14 @@ public enum MessageFactory {
 		msgTypes.put("REMOVE", new MessageRSHandler());
 
 	}
-	
+
 	/**
 	 * Find message type by name
 	 */
 	public IMessageTypes getmsgType(String name) {
 		try {
-			/*System.out.println("public IMessageTypes getmsgType(String name)");
-			System.out.println("name: "+name);
-			System.out.println("msgTypes.values(): "+msgTypes.values());
-			System.out.println("msgTypes.keySet(): "+msgTypes.keySet());
-				
-			if (msgTypes.containsKey(name))
-				System.out.println("contem key!");
-			else
-				System.out.println("Não contem key!!");
-				*/
-			
-			
-		    return msgTypes.get(name);
-		    
+			return msgTypes.get(name);
+
 		} catch (Exception e) {
 			return null;
 		}
@@ -66,8 +54,7 @@ public enum MessageFactory {
 	}
 
 	public static MessageFactory getInstance() {
-			return INSTANCE;
+		return INSTANCE;
 	}
-	
 
 }

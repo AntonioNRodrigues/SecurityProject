@@ -1,3 +1,9 @@
+/**
+ * Grupo n.33
+ * Pedro Pais, n.º 41375
+ * Pedto Candido, n.º15674
+ * Antonio Rodrigues n.º40853
+ */
 package server;
 
 import java.io.IOException;
