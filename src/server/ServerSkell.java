@@ -14,6 +14,7 @@ import java.util.Set;
 import enums.TypeOperation;
 import enums.TypeSend;
 import message.Message;
+import message.MessageA;
 import message.MessageP;
 import message.MessageRS;
 import server.repository.RemoteRepository;
@@ -59,21 +60,19 @@ public class ServerSkell {
 
 		RemoteRepository rr = null;
 		if (authentication(msg)) {
-			// out.writeObject((Object) "THE USER IS AUTHENTICATED");
 			// System.out.println("THE USER IS AUTHENTICATED");
 
-			if (msg instanceof MessageRS) {
+			if (msg instanceof MessageA) {
+				// caso de uso: "java myGit pedro 127.0.0.1:23456 -p badpwd1"
+				// do nothing, all the work done inside authentication(msg)
+				// but but keep this here to not reach the else in the end
+			} else if (msg instanceof MessageRS) {
 				// System.out.println(msg);
 				MessageRS mrs = (MessageRS) msg;
 				TypeOperation op = mrs.getTypeOperation();
 
 				switch (op) {
 				case REMOVE:
-
-					// System.out.println("ServerSkell");
-					// System.out.println("-REMOVE REPOSITORY");
-					// System.out.println(mrs.getRepoName());
-					// System.out.println(mrs.getUserId());
 
 					// Repositorio nao existe
 					if (!catRepo.repoExists(mrs.getRepoName())) {
@@ -107,7 +106,7 @@ public class ServerSkell {
 						if (!error && !rr.getSharedUsers().contains(mrs.getUserId())) {
 							error = true;
 							out.writeObject((Object) "NOK");
-							out.writeObject((Object) "Erro: O utilizador não tem acesso ao repositório");
+							out.writeObject((Object) "Erro: O utilizador indicado não tem acesso ao repositório");
 						}
 
 						if (!error) {
@@ -119,11 +118,6 @@ public class ServerSkell {
 					break;
 
 				case SHARE:
-
-					// System.out.println("ServerSkell");
-					// System.out.println("-SHARE REPOSITORY");
-					// System.out.println(mrs.getRepoName());
-					// System.out.println(mrs.getUserId());
 
 					// Repositorio nao existe
 					if (!catRepo.repoExists(mrs.getRepoName())) {
@@ -173,6 +167,7 @@ public class ServerSkell {
 				case REPOSITORY:
 					switch (op) {
 					case PULL:
+
 						boolean error = false;
 						// Validar se o repositorio existe
 						if (!catRepo.repoExists(mp.getRepoName())) {
@@ -207,7 +202,7 @@ public class ServerSkell {
 									out.writeObject((Integer) filesList.size());
 
 									for (File f : filesList) {
-										 out.writeObject((Object) f.lastModified());
+										out.writeObject((Object) f.lastModified());
 										ReadWriteUtil.sendFile(SERVER + File.separator + mp.getRepoName()
 												+ File.separator + f.getName(), in, out);
 									}
@@ -263,7 +258,7 @@ public class ServerSkell {
 					// }
 
 					case PUSH:
-						// Repositorio nao existe, criar
+
 						if (!catRepo.repoExists(mp.getRepoName())) {
 							// repository does not exist
 							rr = catRepo.buildRepo(mp.getLocalUser(), mp.getRepoName());
@@ -283,6 +278,7 @@ public class ServerSkell {
 							int sizeList = mp.getNumberFiles();
 							for (int i = 0; i < sizeList; i++) {
 								try {
+
 									String path = SERVER + File.separator + mp.getRepoName() + File.separator;
 									Long timestampReceivedFile = (Long) in.readObject();
 									File received = ReadWriteUtil.receiveFile(in, out);
@@ -304,6 +300,16 @@ public class ServerSkell {
 											Files.deleteIfExists(received.toPath());
 										}
 									}
+									/*
+									 * String path = "SERVER" + File.separator +
+									 * mp.getRepoName() + File.separator; File
+									 * received =
+									 * ReadWriteUtil.receiveFile(path, in, out);
+									 * 
+									 * if (!rr.fileExists(mp.getRepoName(),
+									 * received.getName()))
+									 * rr.addFile(mp.getRepoName(), received);
+									 */
 
 								} catch (ClassNotFoundException e) {
 									e.printStackTrace();
@@ -470,38 +476,78 @@ public class ServerSkell {
 	}
 
 	private boolean authentication(Message msg) {
-		User u = catUsers.getMapUsers().get(msg.getLocalUser().getName());
-		// user does not exist, register user
-		if (u == null) {
-			System.out.println("THE USER WAS NOT FOUND:: REGISTERING USER");
-			catUsers.registerUser(msg.getLocalUser().getName(), msg.getPassword());
 
-			return true;
-		}
-		// user exists check permissions
-		if (u != null) {
-			// user exists but does not have the password filled
-			if (u.getPassword().equals("")) {
+		if (msg instanceof MessageA) {
+			// caso de uso: "java myGit pedro 127.0.0.1:23456 -p badpwd1"
+			MessageA m = (MessageA) msg;
+
+			User u = catUsers.getMapUsers().get(m.getLocalUser().getName());
+			// user does not exist, register user
+			if (u == null) {
+				catUsers.registerUser(m.getLocalUser().getName(), m.getPassword());
 				try {
-					out.writeObject((Object) "Please fill your password");
-					String password = (String) in.readObject();
-					// password did not come
-					if (password == null) {
-						return false;
-					}
-					u.setPassword(password);
-					// persist the user in the file users.txt
-					catUsers.persisteUser(u.getName(), password);
-				} catch (IOException | ClassNotFoundException e) {
+					out.writeObject((Object) "OK");
+					out.writeObject((Object) "-- O  utilizador " + m.getLocalUser().getName() + " foi criado");
+				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
-			// user has password filled and its the same
-			if (u.getPassword().equals(msg.getLocalUser().getPassword())) {
+			// user exists check permissions
+			if (u != null) {
+				// user has password filled and its the same
+				if (u.getPassword().equals(m.getLocalUser().getPassword())) {
+					try {
+						out.writeObject((Object) "OK");
+						out.writeObject((Object) "-- O  utilizador " + m.getLocalUser().getName() + " foi autenticado");
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				} else {
+					try {
+						out.writeObject((Object) "NOK");
+						out.writeObject((Object) "Erro: O  utilizador " + m.getLocalUser().getName()
+								+ " introduziu uma password inválida");
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			return true;
+		} else {
+
+			User u = catUsers.getMapUsers().get(msg.getLocalUser().getName());
+			// user does not exist, register user
+			if (u == null) {
+				System.out.println("THE USER WAS NOT FOUND:: REGISTERING USER");
+				catUsers.registerUser(msg.getLocalUser().getName(), msg.getPassword());
+
 				return true;
 			}
+			// user exists check permissions
+			if (u != null) {
+				// user exists but does not have the password filled
+				if (u.getPassword().equals("")) {
+					try {
+						out.writeObject((Object) "Please fill your password");
+						String password = (String) in.readObject();
+						// password did not come
+						if (password == null) {
+							return false;
+						}
+						u.setPassword(password);
+						// persist the user in the file users.txt
+						catUsers.persisteUser(u.getName(), password);
+					} catch (IOException | ClassNotFoundException e) {
+						e.printStackTrace();
+					}
+				}
+				// user has password filled and its the same
+				if (u.getPassword().equals(msg.getLocalUser().getPassword())) {
+					return true;
+				}
+			}
+			return false;
 		}
-		return false;
 	}
 
 }

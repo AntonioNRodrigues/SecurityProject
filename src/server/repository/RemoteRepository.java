@@ -11,12 +11,16 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -202,12 +206,8 @@ public class RemoteRepository {
 	 * method to check is the user is already in the list os shared users
 	 */
 	private boolean isSharedUser(String userName) {
-		for (String string : sharedUsers) {
-			if (string.equals(userName)) {
-				return true;
-			}
-		}
-		return false;
+				
+		return sharedUsers.contains(userName) ? true : false;
 	}
 
 	/**
@@ -234,20 +234,35 @@ public class RemoteRepository {
 	}
 
 	private void removeUserFromSharedRepo(String userId) {
-		String str = SERVER + File.separator + this.nameRepo + File.separator + SHARED;
-		try (BufferedReader br = new BufferedReader(new FileReader(new File(str)));
-				PrintWriter out = new PrintWriter(new File(str))) {
-			for (String line = br.readLine(); line != null; line = br.readLine()) {
-				System.out.println(line);
-				if (line.equals(userId)) {
-					// out.write("");
-					// does not work have to find another way
-					break;
-				}
+		
+		UUID uuid = UUID.randomUUID();
+		String uuidString = SERVER + File.separator+uuid.toString();    
+		String fileName = SERVER + File.separator + this.nameRepo + File.separator + SHARED;
+		File inputFile = new File(fileName);		
+		File tempFile = null;
+		try {
+			tempFile = File.createTempFile(uuidString, ".txt");
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+	
+		try ( BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+				BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));) {
+
+			String line;
+			while((line = reader.readLine()) != null) {
+				if(line.equals(userId)) continue;
+				writer.write(line + System.getProperty("line.separator"));
 			}
+
+			if (inputFile.delete())
+				if (tempFile.renameTo(inputFile))
+					System.out.println("O utilizador "+userId+" foi removido do ficheiro "+fileName);
+			  
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
 	}
 
 	public List<String> getSharedUsers() {

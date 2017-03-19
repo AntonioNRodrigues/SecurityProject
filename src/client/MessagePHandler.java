@@ -127,7 +127,7 @@ public class MessagePHandler extends MessageHandler {
 			e.printStackTrace();
 		}
 
-		if (result.contentEquals("OK"))
+		if (result.contentEquals("OK")) {
 			// Enviar os ficheiros
 			for (Path path : filesList) {
 				try {
@@ -139,7 +139,8 @@ public class MessagePHandler extends MessageHandler {
 				}
 				System.out.println("-- O  repositório " + params.getRepName() + " foi copiado  para o  servidor");
 			}
-		else if (result.contentEquals("NOK")) {
+
+		} else if (result.contentEquals("NOK")) {
 			String error = "";
 			try {
 				error = (String) in.readObject();
@@ -262,10 +263,10 @@ public class MessagePHandler extends MessageHandler {
 
 		for (int i = 0; i < sizeList; i++) {
 			try {
-				//Long receivedTimeStamp = (Long) in.readObject();
+				// Long receivedTimeStamp = (Long) in.readObject();
 				String path = "CLIENT" + File.separator + repoName + File.separator;
 				File received = ReadWriteUtil.receiveFile(path, in, out);
-//				received.setLastModified(receivedTimeStamp);
+				// received.setLastModified(receivedTimeStamp);
 
 			} catch (ClassNotFoundException | IOException e) {
 				e.printStackTrace();
@@ -274,6 +275,7 @@ public class MessagePHandler extends MessageHandler {
 		}
 
 	}
+
 	private void receiveFilesPushRep(String repoName, ObjectInputStream in, ObjectOutputStream out) {
 
 		// mesmmo protocolo do servidor, receber primeiro o numero de ficheiros,
