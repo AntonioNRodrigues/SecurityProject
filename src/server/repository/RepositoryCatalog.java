@@ -142,11 +142,14 @@ public class RepositoryCatalog {
 		return str;
 	}
 
+	/*
+	 * Ler o ficheiro shared.txt e criar a lista em memoria dos utilizadores com acesso ao repositorio
+	 */
 	private void iterateSharedWithFile(String repFolderName, String shared, RemoteRepository rr) {
 
-		try (BufferedReader br = new BufferedReader(new FileReader(new File(repFolderName + File.separator + OWNER)))) {
+		try (BufferedReader br = new BufferedReader(new FileReader(new File(repFolderName + File.separator + SHARED)))) {
 			for (String line = br.readLine(); line != null; line = br.readLine()) {
-				rr.addShareUserToRepo(line);
+				rr.getSharedUsers().add(line);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

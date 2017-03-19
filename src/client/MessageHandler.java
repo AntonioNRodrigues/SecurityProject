@@ -8,7 +8,9 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 
 import message.Message;
+import message.MessageA;
 import user.User;
+import utilities.ReadWriteUtil;
 
 public abstract class MessageHandler implements IMessageTypes {
 	
@@ -36,15 +38,37 @@ public abstract class MessageHandler implements IMessageTypes {
 	public String sendAuthMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
 
 		// Mensagem de autenticação
-		Message m = new Message(new User(params.getLocalUser(), params.getPassword()), params.getHost() + params.getPort(), params.getPassword());
+		Message m = new MessageA(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(), params.getPassword());
 
 		try {
 			out.writeObject((Object)m);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return null;	
+		
+		// get status from server
+		String result="";
+		String status="";
+		try {
+			result = (String) in.readObject();
+		} catch (ClassNotFoundException | IOException e) {
+			e.printStackTrace();
+		}
+
+		if (result.contentEquals("OK") || result.contentEquals("NOK")) {
+			try {
+				status = (String) in.readObject();
+			} catch (ClassNotFoundException | IOException e) {
+				e.printStackTrace();
+			}
+			System.out.println(status);
+		}
+		else {
+			status="Ocorreu um erro no processamento do pedido";
+		}
+		return status;	
 }
+	
 	
 	protected BasicFileAttributes getFileAttributes(Path filePath) {
 		

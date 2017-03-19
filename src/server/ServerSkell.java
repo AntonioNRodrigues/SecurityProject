@@ -11,6 +11,7 @@ import java.util.Set;
 import enums.TypeOperation;
 import enums.TypeSend;
 import message.Message;
+import message.MessageA;
 import message.MessageP;
 import message.MessageRS;
 import server.repository.RemoteRepository;
@@ -56,21 +57,20 @@ public class ServerSkell {
 
 		RemoteRepository rr = null;
 		if (authentication(msg)) {
-			// out.writeObject((Object) "THE USER IS AUTHENTICATED");
 			// System.out.println("THE USER IS AUTHENTICATED");
 
-			if (msg instanceof MessageRS) {
+			if (msg instanceof MessageA) {
+				// caso de uso: "java myGit pedro 127.0.0.1:23456 -p badpwd1"
+				// do nothing, all the work done inside authentication(msg)
+				// but but keep this here to not reach the else in the end 
+			}
+			else if (msg instanceof MessageRS) {
 				// System.out.println(msg);
 				MessageRS mrs = (MessageRS) msg;
 				TypeOperation op = mrs.getTypeOperation();
 
 				switch (op) {
 				case REMOVE:
-
-					// System.out.println("ServerSkell");
-					// System.out.println("-REMOVE REPOSITORY");
-					// System.out.println(mrs.getRepoName());
-					// System.out.println(mrs.getUserId());
 
 					// Repositorio nao existe
 					if (!catRepo.repoExists(mrs.getRepoName())) {
@@ -104,7 +104,7 @@ public class ServerSkell {
 						if (!error && !rr.getSharedUsers().contains(mrs.getUserId())) {
 							error = true;
 							out.writeObject((Object) "NOK");
-							out.writeObject((Object) "Erro: O utilizador não tem acesso ao repositório");
+							out.writeObject((Object) "Erro: O utilizador indicado não tem acesso ao repositório");
 						}
 
 						if (!error) {
@@ -116,11 +116,6 @@ public class ServerSkell {
 					break;
 
 				case SHARE:
-
-					// System.out.println("ServerSkell");
-					// System.out.println("-SHARE REPOSITORY");
-					// System.out.println(mrs.getRepoName());
-					// System.out.println(mrs.getUserId());
 
 					// Repositorio nao existe
 					if (!catRepo.repoExists(mrs.getRepoName())) {
@@ -171,10 +166,6 @@ public class ServerSkell {
 				case REPOSITORY:
 					switch (op) {
 					case PULL:
-						// System.out.println("ServerSkell: mp.getNumberFiles()
-						// :"+mp.getNumberFiles());
-						// System.out.println("-PULL REPOSITORY:
-						// "+mp.getRepoName());
 
 						boolean error = false;
 						// Validar se o repositorio existe
@@ -265,11 +256,6 @@ public class ServerSkell {
 					// }
 
 					case PUSH:
-						// -push repo
-						// System.out.println("ServerSkell: mp.getNumberFiles()
-						// :"+mp.getNumberFiles());
-						// System.out.println("-PUSH REPOSITORY:
-						// "+mp.getRepoName());
 
 						// Repositorio nao existe, criar
 						if (!catRepo.repoExists(mp.getRepoName())) {
@@ -294,7 +280,6 @@ public class ServerSkell {
 									String path = "SERVER" + File.separator + mp.getRepoName() + File.separator;
 									File received = ReadWriteUtil.receiveFile(path, in, out);
 
-									// TODO?
 									if (!rr.fileExists(mp.getRepoName(), received.getName()))
 										rr.addFile(mp.getRepoName(), received);
 
@@ -381,12 +366,6 @@ public class ServerSkell {
 
 					case PUSH:
 
-						// -push file
-						// System.out.println("ServerSkell: mp.getNumberFiles()
-						// :"+mp.getNumberFiles());
-						// System.out.println("-PUSH FILE: "+mp.getRepoName()+"
-						// "+mp.getFileName());
-
 						// Repositorio nao existe
 						if (!catRepo.repoExists(mp.getRepoName())) {
 
@@ -418,34 +397,6 @@ public class ServerSkell {
 									e.printStackTrace();
 								}
 
-								/*
-								 * try {
-								 * 
-								 * String path = "SERVER" + File.separator +
-								 * mp.getRepoName() + File.separator; File
-								 * received = ReadWriteUtil.receiveFile(path,
-								 * in, out);
-								 * 
-								 * //File received =
-								 * ReadWriteUtil.receiveFile(in, out);
-								 * System.out.println(received.getName() +
-								 * received.lastModified()); File inRepo =
-								 * rr.getMostRecentFile(received.getName());
-								 * System.out.println(inRepo.getName() +
-								 * inRepo.lastModified()); // if received file
-								 * has lastmodified > than the // one that
-								 * exists in the repo if
-								 * (received.lastModified() >
-								 * inRepo.lastModified()) { // added to the list
-								 * rr.getVersionList(received.getName()).add(
-								 * received); } else { // delete file the repo
-								 * has a recent file
-								 * Files.deleteIfExists(received.toPath()); } }
-								 * catch (ClassNotFoundException e) {
-								 * e.printStackTrace(); } catch (IOException e)
-								 * { e.printStackTrace(); }
-								 */
-
 							} else {
 								out.writeObject((Object) "NOK");
 								out.writeObject((Object) "Erro: o utilizador não tem acesso ao repositório");
@@ -471,38 +422,78 @@ public class ServerSkell {
 	}
 
 	private boolean authentication(Message msg) {
-		User u = catUsers.getMapUsers().get(msg.getLocalUser().getName());
-		// user does not exist, register user
-		if (u == null) {
-			System.out.println("THE USER WAS NOT FOUND:: REGISTERING USER");
-			catUsers.registerUser(msg.getLocalUser().getName(), msg.getPassword());
+		
+		if (msg instanceof MessageA) {
+			// caso de uso: "java myGit pedro 127.0.0.1:23456 -p badpwd1"
+			MessageA m = (MessageA) msg;
 
-			return true;
-		}
-		// user exists check permissions
-		if (u != null) {
-			// user exists but does not have the password filled
-			if (u.getPassword().equals("")) {
+			User u = catUsers.getMapUsers().get(m.getLocalUser().getName());
+			// user does not exist, register user
+			if (u == null) {
+				catUsers.registerUser(m.getLocalUser().getName(), m.getPassword());
 				try {
-					out.writeObject((Object) "Please fill your password");
-					String password = (String) in.readObject();
-					// password did not come
-					if (password == null) {
-						return false;
-					}
-					u.setPassword(password);
-					// persist the user in the file users.txt
-					catUsers.persisteUser(u.getName(), password);
-				} catch (IOException | ClassNotFoundException e) {
+					out.writeObject((Object) "OK");
+					out.writeObject((Object) "-- O  utilizador "+m.getLocalUser().getName()+" foi criado");
+				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
-			// user has password filled and its the same
-			if (u.getPassword().equals(msg.getLocalUser().getPassword())) {
+			// user exists check permissions
+			if (u != null) {
+				// user has password filled and its the same
+				if (u.getPassword().equals(m.getLocalUser().getPassword())) {
+					try {
+						out.writeObject((Object) "OK");
+						out.writeObject((Object) "-- O  utilizador "+m.getLocalUser().getName()+" foi autenticado");
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				} else {
+					try {
+						out.writeObject((Object) "NOK");
+						out.writeObject((Object) "Erro: O  utilizador "+m.getLocalUser().getName()+" introduziu uma password inválida");
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			return true;
+		}
+		else {
+
+			User u = catUsers.getMapUsers().get(msg.getLocalUser().getName());
+			// user does not exist, register user
+			if (u == null) {
+				System.out.println("THE USER WAS NOT FOUND:: REGISTERING USER");
+				catUsers.registerUser(msg.getLocalUser().getName(), msg.getPassword());
+
 				return true;
 			}
+			// user exists check permissions
+			if (u != null) {
+				// user exists but does not have the password filled
+				if (u.getPassword().equals("")) {
+					try {
+						out.writeObject((Object) "Please fill your password");
+						String password = (String) in.readObject();
+						// password did not come
+						if (password == null) {
+							return false;
+						}
+						u.setPassword(password);
+						// persist the user in the file users.txt
+						catUsers.persisteUser(u.getName(), password);
+					} catch (IOException | ClassNotFoundException e) {
+						e.printStackTrace();
+					}
+				}
+				// user has password filled and its the same
+				if (u.getPassword().equals(msg.getLocalUser().getPassword())) {
+					return true;
+				}
+			}
+			return false;
 		}
-		return false;
 	}
 
 }

@@ -129,7 +129,7 @@ public class MessagePHandler extends MessageHandler {
 		}
 	
 		
-		if (result.contentEquals("OK"))
+		if (result.contentEquals("OK")) {
 			// Enviar os ficheiros
 			for (Path path: filesList){
 				try {
@@ -137,8 +137,9 @@ public class MessagePHandler extends MessageHandler {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-				System.out.println("-- O  repositório "+params.getRepName()+" foi copiado  para o  servidor");
 			}
+			System.out.println("-- O  repositório "+params.getRepName()+" foi copiado  para o  servidor");
+		}
 		else if (result.contentEquals("NOK")) {
 			String error="";
 			try {
