@@ -79,7 +79,7 @@ public class RemoteRepository {
 		return null;
 	}
 
-	public Map sortList() {
+	public Map<String, CopyOnWriteArrayList<File>> sortList() {
 		Map<String, CopyOnWriteArrayList<File>> map = new ConcurrentHashMap<>();
 		Collections.sort(listFiles);
 		CopyOnWriteArrayList<File> tempList = null;

@@ -50,14 +50,15 @@ public class MyGitServer {
 			System.err.println(e.getMessage());
 			System.exit(-1);
 		}
-		//ExecutorService executorService = Executors.newFixedThreadPool(MAX_THREADS);
+		// ExecutorService executorService =
+		// Executors.newFixedThreadPool(MAX_THREADS);
 		System.out.println("MyGitServer Waiting for clients:");
 		while (true) {
 			try {
 				Socket inSoc = sSoc.accept();
 				ServerThread newServerThread = new ServerThread(inSoc);
-				 newServerThread.start();
-				//executorService.execute(newServerThread);
+				newServerThread.start();
+				// executorService.execute(newServerThread);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

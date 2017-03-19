@@ -83,10 +83,6 @@ public abstract class MessageHandler implements IMessageTypes {
             System.out.println("Exception handled when trying to get file " +
                     "attributes: " + exception.getMessage());
         }
-		//System.out.println("creationTime: " + attributes.creationTime());
-		//System.out.println("lastAccessTime: " + attributes.lastAccessTime());
-		//System.out.println("lastModifiedTime: " + attributes.lastModifiedTime());
-		
 		return attributes;
 	}
 

@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Files;
-import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import enums.TypeOperation;
@@ -221,42 +220,6 @@ public class ServerSkell {
 						}
 						break;
 
-					// Enviar numero de ficheiros
-					// System.out.println("rr.sizeUniqueFilesInMap()):
-					// "+rr.sizeUniqueFilesInMap());
-					// out.writeObject((Integer) rr.sizeUniqueFilesInMap());
-					// Set<File> set = rr.getListMostRecentFiles();
-
-					/*
-					 * TO DO iterate over the set and send each file check a
-					 * better place to do so i dont think this works inside this
-					 * method WAITING FOR CLIENT TO DEAL WITH IT
-					 */
-
-					// Enviar ficheiros
-					// for (File f : set) {
-					// ReadWriteUtil.sendFile("SERVER"+File.separator+mp.getRepoName()+File.separator+f.getName(),
-					// in, out);
-					// }
-
-					// Enviar numero de ficheiros
-					// System.out.println("rr.sizeUniqueFilesInMap()):
-					// "+rr.sizeUniqueFilesInMap());
-					// out.writeObject((Integer) rr.sizeUniqueFilesInMap());
-					// Set<File> set = rr.getListMostRecentFiles();
-
-					/*
-					 * TO DO iterate over the set and send each file check a
-					 * better place to do so i dont think this works inside this
-					 * method WAITING FOR CLIENT TO DEAL WITH IT
-					 */
-
-					// Enviar ficheiros
-					// for (File f : set) {
-					// ReadWriteUtil.sendFile("SERVER"+File.separator+mp.getRepoName()+File.separator+f.getName(),
-					// in, out);
-					// }
-
 					case PUSH:
 
 						if (!catRepo.repoExists(mp.getRepoName())) {
@@ -301,16 +264,6 @@ public class ServerSkell {
 											Files.deleteIfExists(received.toPath());
 										}
 									}
-									/*
-									 * String path = "SERVER" + File.separator +
-									 * mp.getRepoName() + File.separator; File
-									 * received =
-									 * ReadWriteUtil.receiveFile(path, in, out);
-									 * 
-									 * if (!rr.fileExists(mp.getRepoName(),
-									 * received.getName()))
-									 * rr.addFile(mp.getRepoName(), received);
-									 */
 
 								} catch (ClassNotFoundException e) {
 									e.printStackTrace();

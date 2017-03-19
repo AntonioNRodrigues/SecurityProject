@@ -283,7 +283,6 @@ public class MessagePHandler extends MessageHandler {
 		int sizeList = 0;
 		try {
 			sizeList = (Integer) in.readObject();
-			// System.out.println("sizelist: " + sizeList);
 		} catch (ClassNotFoundException | IOException e) {
 			e.printStackTrace();
 		}
@@ -292,13 +291,14 @@ public class MessagePHandler extends MessageHandler {
 			try {
 				Long receivedTimeStamp = (Long) in.readObject();
 				String path = "CLIENT" + File.separator + repoName + File.separator;
-				File received = ReadWriteUtil.receiveFile(path, in, out);
+				String tempPath = "CLIENT";
+				File received = ReadWriteUtil.receiveFile(tempPath, in, out);
 				received.setLastModified(receivedTimeStamp);
-
+				System.out.println(received.getName());
+				
 			} catch (ClassNotFoundException | IOException e) {
 				e.printStackTrace();
 			}
-			// do timestamp check and reject or accept the file;
 		}
 
 	}
@@ -309,7 +309,6 @@ public class MessagePHandler extends MessageHandler {
 			paths.forEach(filePath -> {
 				if (Files.isRegularFile(filePath)) {
 					filesList.add(filePath);
-					// System.out.println(filePath);
 				}
 			});
 		} catch (IOException e) {
