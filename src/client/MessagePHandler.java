@@ -219,7 +219,7 @@ public class MessagePHandler extends MessageHandler {
 
 		if (result.contentEquals("OK")) {
 			// receive the files
-			receiveFilesPushRep(params.getRepName(), in, out);
+			receiveFilesPullRep(params.getRepName(), in, out);
 			System.out.println("O  repositorio " + params.getRepName() + " foi copiado do servidor");
 		} else if (result.contentEquals("NOK")) {
 			String error = "";
@@ -262,7 +262,7 @@ public class MessagePHandler extends MessageHandler {
 
 	}
 
-	private void receiveFilesPushRep(String repoName, ObjectInputStream in, ObjectOutputStream out) {
+	private void receiveFilesPullRep(String repoName, ObjectInputStream in, ObjectOutputStream out) {
 
 		// mesmmo protocolo do servidor, receber primeiro o numero de ficheiros,
 		// ler depois os ficheiros
@@ -279,8 +279,6 @@ public class MessagePHandler extends MessageHandler {
 				String path = "CLIENT" + File.separator + repoName + File.separator;
 				File received = ReadWriteUtil.receiveFile(path, in, out);
 				received.setLastModified(receivedTimeStamp);
-				
-
 			} catch (ClassNotFoundException | IOException e) {
 				e.printStackTrace();
 			}
