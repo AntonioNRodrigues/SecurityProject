@@ -25,7 +25,7 @@ public class RemoteRepository {
 	private String owner;
 	private Long timestamp;
 	private String nameRepo;
-	//private Map<String, List<File>> mapFiles;
+	// private Map<String, List<File>> mapFiles;
 	private List<File> listFiles;
 	private List<String> sharedUsers;
 
@@ -63,7 +63,6 @@ public class RemoteRepository {
 		setTimestamp(f.lastModified());
 		System.out.println(this);
 	}
-	
 
 	public File getFile(String nameRepo, String nameFile) {
 
@@ -75,9 +74,6 @@ public class RemoteRepository {
 
 		System.out.println("repoFiles.size(): " + repoFiles.size());
 
-		for (File f : repoFiles)
-			System.out.println(f.getName());
-
 		for (File f : repoFiles) {
 			if (f != null && f.getName().equals(nameFile)) {
 				return f;
@@ -88,33 +84,26 @@ public class RemoteRepository {
 
 	public List<File> getFiles(String nameRepo) {
 
-			return getListFiles();
+		return getListFiles();
 
 	}
-	
-	
+
 	// Ver porque um mapa com apenas uma entrada e uma lista de ficheiros...
-	public boolean fileExists(String repoName, String fileName) {	
-		System.out.println(fileName+" exists?");
-			
-		    for(File f : listFiles) { 
-		    	System.out.println(f .getName());	
-
-		    	if (f.getName().equals(fileName)) {
-					System.out.println("YES");
-					return true;
-		    	}
-		    }
-
+	public boolean fileExists(String repoName, String fileName) {
+		for (File f : listFiles) {	
+			if (f.getName().equals(fileName)) {
+				System.out.println("YES");
+				return true;
+			}
+		}
 		return false;
 	}
-	
+
 	//
 	public void addFile(String repoName, File received) {
-			
-			listFiles.add(received);
+
+		listFiles.add(received);
 	}
-	
 
 	/**
 	 * method to give the size of the unique values present in the map This
@@ -146,7 +135,7 @@ public class RemoteRepository {
 	public void setNameRepo(String nameRepo) {
 		this.nameRepo = nameRepo;
 	}
-	
+
 	public List<File> getListFiles() {
 		return listFiles;
 	}
@@ -154,29 +143,23 @@ public class RemoteRepository {
 	public void setListFiles(List<File> listFiles) {
 		this.listFiles = listFiles;
 	}
-	
+
 	/*
-	public Map<String, List<File>> getListFiles() {
-		return mapFiles;
-	}
-	
-
-	public Map<String, List<File>> getMapFiles() {
-		return mapFiles;
-	}
-
-	public void setMapFiles(Map<String, List<File>> mapFiles) {
-		this.mapFiles = mapFiles;
-	}
-
+	 * public Map<String, List<File>> getListFiles() { return mapFiles; }
+	 * 
+	 * 
+	 * public Map<String, List<File>> getMapFiles() { return mapFiles; }
+	 * 
+	 * public void setMapFiles(Map<String, List<File>> mapFiles) { this.mapFiles
+	 * = mapFiles; }
+	 * 
+	 * public void addFilesToRepo(String repoName, List<File> listFiles) {
+	 * this.mapFiles.put(repoName, listFiles); }
+	 */
 	public void addFilesToRepo(String repoName, List<File> listFiles) {
-		this.mapFiles.put(repoName, listFiles);
+		this.listFiles = listFiles;
 	}
-*/
-	public void addFilesToRepo(String repoName, List<File> listFiles) {
-		this.listFiles=listFiles;
-	}
-	
+
 	/**
 	 * method to get the single name without the version
 	 * 
