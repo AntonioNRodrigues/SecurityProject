@@ -68,7 +68,35 @@ public class ReadWriteUtil {
 		Long sizeFile = (Long) inStream.readObject();
 		String filename = (String) inStream.readObject();
 
-		File fileReceived = new File(path + filename + " " + random());
+		File fileReceived = new File(path + filename);
+		BufferedOutputStream bf = new BufferedOutputStream(new FileOutputStream(fileReceived));
+		int len = 0;
+		byte[] buffer = new byte[VALUE];
+		int lido;
+
+		while (len < sizeFile) {
+			int resto = (int) (sizeFile - len);
+			int n = (resto < VALUE) ? resto : buffer.length;
+			lido = inStream.read(buffer, 0, n);
+
+			if (lido == -1) {
+				break;
+			}
+
+			bf.write(buffer, 0, n);
+			len += lido;
+		}
+		bf.close();
+
+		return fileReceived;
+	}
+	public static File receiveFile(ObjectInputStream inStream, ObjectOutputStream outStream)
+			throws ClassNotFoundException, IOException {
+
+		Long sizeFile = (Long) inStream.readObject();
+		String filename = (String) inStream.readObject();
+
+		File fileReceived = new File(filename);
 		BufferedOutputStream bf = new BufferedOutputStream(new FileOutputStream(fileReceived));
 		int len = 0;
 		byte[] buffer = new byte[VALUE];
@@ -91,8 +119,8 @@ public class ReadWriteUtil {
 		return fileReceived;
 	}
 
-	private static String random() {
-		return "(" + (new Random().nextInt(900) + 100) + ")";
+	public static String random() {
+		return " (" + (new Random().nextInt(900) + 100) + ")";
 	}
 
 	public static String getRealFileName(String f) {

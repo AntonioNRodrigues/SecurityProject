@@ -24,21 +24,20 @@ public class MessagePHandler extends MessageHandler {
 	public MessagePHandler() {
 		super("MessagePHandler");
 		this.filesList = new ArrayList<>();
-	}	
+	}
 
 	@Override
 	public String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
-	
-		//sendAuthMessage(in, out, params);
-		
+
+		// sendAuthMessage(in, out, params);
+
 		if (params.getOperation().contentEquals("PUSH")) {
 
 			if (params.getTypeSend().contentEquals("FILE"))
 				sendPushFileMessage(in, out, params);
 			else if (params.getTypeSend().contentEquals("REPOSITORY"))
 				sendPushRepMessage(in, out, params);
-		}
-		else if (params.getOperation().contentEquals("PULL")) {
+		} else if (params.getOperation().contentEquals("PULL")) {
 
 			if (params.getTypeSend().contentEquals("FILE"))
 				sendPullFileMessage(in, out, params);
@@ -46,143 +45,145 @@ public class MessagePHandler extends MessageHandler {
 				sendPullRepMessage(in, out, params);
 		}
 
-		return "MessagePHandler:sendMessage:"+params.getLocalUser()+" "+params.getServerAddress()+" "+(params.getPassword()==null?"":"-p "+params.getPassword())+" -"+params.getOperation()+" "+params.getRepOrFileName();
+		return "MessagePHandler:sendMessage:" + params.getLocalUser() + " " + params.getServerAddress() + " "
+				+ (params.getPassword() == null ? "" : "-p " + params.getPassword()) + " -" + params.getOperation()
+				+ " " + params.getRepOrFileName();
 	}
-			
-			
+
 	private String sendPushFileMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
-				
+
 		// o tipo do timestamp é FileTime que é timezone independent!
 		// LocalDateTime timestamp = LocalDateTime.now();
-	
-        BasicFileAttributes attributes = getFileAttributes(params.getFile());
 
-		// Message to use when we want to send or receive a file. Used in PULL fileName and PUSH fileName
-		// serverAddress não será necessário, já está presente na criação do socket...
-		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(), params.getPassword(), TypeSend.FILE, params.getRepName(),
-				params.getFileName(), TypeOperation.PUSH, 1,  attributes.lastModifiedTime().toMillis());
-		
+		BasicFileAttributes attributes = getFileAttributes(params.getFile());
+
+		// Message to use when we want to send or receive a file. Used in PULL
+		// fileName and PUSH fileName
+		// serverAddress não será necessário, já está presente na criação do
+		// socket...
+		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(),
+				params.getPassword(), TypeSend.FILE, params.getRepName(), params.getFileName(), TypeOperation.PUSH, 1,
+				attributes.lastModifiedTime().toMillis());
+
 		try {
-			out.writeObject((Object)mp);
+			out.writeObject((Object) mp);
 		} catch (IOException e) {
 			e.printStackTrace();
-		}				
-
+		}
 
 		// get status from server
-		String result="";
+		String result = "";
 		try {
 			result = (String) in.readObject();
 		} catch (ClassNotFoundException | IOException e) {
 			e.printStackTrace();
 		}
 
-		//System.out.println("result: "+result);
+		// System.out.println("result: "+result);
 
 		if (result.contentEquals("OK")) {
-			//System.out.println("OK");
+			// System.out.println("OK");
 			// Enviar o ficheiro
-				try {
-					ReadWriteUtil.sendFile( params.getFile(), in, out);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				System.out.println("-- O  ficheiro "+params.getFileName()+" foi copiado  para o servidor");
-		}
-		else if (result.contentEquals("NOK")) {
+			try {
+				ReadWriteUtil.sendFile(params.getFile(), in, out);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			System.out.println("-- O  ficheiro " + params.getFileName() + " foi copiado  para o servidor");
+		} else if (result.contentEquals("NOK")) {
 			System.out.println("OK");
-			String error="";
+			String error = "";
 			try {
 				error = (String) in.readObject();
 			} catch (ClassNotFoundException | IOException e) {
 				e.printStackTrace();
 			}
 			System.out.println(error);
-		}
-		else 
+		} else
 			System.out.println("Something really bad happened...");
-		
-		
+
 		return "MessagePHandler:sendPushFileMessage";
 	}
 
-	
 	private String sendPushRepMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
-		
+
 		loadRepoFiles(params.getRepName());
 
-		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(), params.getPassword(), TypeSend.REPOSITORY, params.getRepName(),
-				TypeOperation.PUSH, filesList.size(),  0);
-		
+		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(),
+				params.getPassword(), TypeSend.REPOSITORY, params.getRepName(), TypeOperation.PUSH, filesList.size(),
+				0);
+
 		try {
-			out.writeObject((Object)mp);
+			out.writeObject((Object) mp);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	
-		//get status from server
-		String result="";
+
+		// get status from server
+		String result = null;
 		try {
 			result = (String) in.readObject();
 		} catch (ClassNotFoundException | IOException e) {
 			e.printStackTrace();
 		}
-	
-		
+
 		if (result.contentEquals("OK"))
 			// Enviar os ficheiros
-			for (Path path: filesList){
+			for (Path path : filesList) {
 				try {
+					File f = path.toFile();
+					out.writeObject((Object) f.lastModified());
 					ReadWriteUtil.sendFile(path, in, out);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-				System.out.println("-- O  repositório "+params.getRepName()+" foi copiado  para o  servidor");
+				System.out.println("-- O  repositório " + params.getRepName() + " foi copiado  para o  servidor");
 			}
 		else if (result.contentEquals("NOK")) {
-			String error="";
+			String error = "";
 			try {
 				error = (String) in.readObject();
 			} catch (ClassNotFoundException | IOException e) {
 				e.printStackTrace();
 			}
 			System.out.println(error);
-		}
-		else 
+		} else
 			System.out.println("Something really bad happened...");
-		
+
 		return "MessagePHandler:sendPushRepMessage";
 	}
-	
-	
+
 	private String sendPullFileMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
-		
+
 		// Se o ficheiro a que se está a fazer pull já existe então armazenar e
 		// enviar a data da última modificação
-		Path path = Paths.get("CLIENT"+ File.separator + params.getRepOrFileName());
+		Path path = Paths.get("CLIENT" + File.separator + params.getRepOrFileName());
 		boolean exists = Files.exists(path);
-		//boolean isDirectory = Files.isDirectory(path);
+		// boolean isDirectory = Files.isDirectory(path);
 		boolean isFile = Files.isRegularFile(path);
-		
+
 		long lastModifiedTime = 0;
-		BasicFileAttributes attributes = null; 
-		if (exists&&isFile) {
+		BasicFileAttributes attributes = null;
+		if (exists && isFile) {
 			attributes = getFileAttributes(params.getFile());
 			lastModifiedTime = attributes.lastModifiedTime().toMillis();
 		}
-		
-		// Message to use when we want to send or receive a file. Used in PULL fileName and PUSH fileName
-		// serverAddress não será necessário, já está presente na criação do socket...
-		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(), params.getPassword(), TypeSend.FILE, params.getRepName(),
-				params.getFileName(), TypeOperation.PULL, 1,  lastModifiedTime);
-		
+
+		// Message to use when we want to send or receive a file. Used in PULL
+		// fileName and PUSH fileName
+		// serverAddress não será necessário, já está presente na criação do
+		// socket...
+		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(),
+				params.getPassword(), TypeSend.FILE, params.getRepName(), params.getFileName(), TypeOperation.PULL, 1,
+				lastModifiedTime);
+
 		try {
-			out.writeObject((Object)mp);
+			out.writeObject((Object) mp);
 		} catch (IOException e) {
 			e.printStackTrace();
-		}		
-		
-		String result="";
+		}
+
+		String result = "";
 		try {
 			result = (String) in.readObject();
 		} catch (ClassNotFoundException | IOException e) {
@@ -192,39 +193,37 @@ public class MessagePHandler extends MessageHandler {
 		if (result.contentEquals("OK")) {
 			// receive the files
 			receiveFiles(params.getRepName(), in, out);
-			System.out.println("O  ficheiro "+params.getFileName()+" foi copiado do servidor");
-		}
-		else if (result.contentEquals("NOK")) {
-			String error="";
+			System.out.println("O  ficheiro " + params.getFileName() + " foi copiado do servidor");
+		} else if (result.contentEquals("NOK")) {
+			String error = "";
 			try {
 				error = (String) in.readObject();
 			} catch (ClassNotFoundException | IOException e) {
 				e.printStackTrace();
 			}
 			System.out.println(error);
-		}
-		else 
+		} else
 			System.out.println("Something happened...");
 
-		
 		return "MessagePHandler:sendPullFileMessage";
 	}
 
-	
 	private String sendPullRepMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
-		
-        // Message to use when we want to send or receive a file. Used in PULL fileName and PUSH fileName
-		// serverAddress não será necessário, já está presente na criação do socket...
-		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(), params.getPassword(), TypeSend.REPOSITORY, params.getRepName(),
-				TypeOperation.PULL, 0,  0);
-		
+
+		// Message to use when we want to send or receive a file. Used in PULL
+		// fileName and PUSH fileName
+		// serverAddress não será necessário, já está presente na criação do
+		// socket...
+		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(),
+				params.getPassword(), TypeSend.REPOSITORY, params.getRepName(), TypeOperation.PULL, 0, 0);
+
 		try {
-			out.writeObject((Object)mp);
+			out.writeObject((Object) mp);
 		} catch (IOException e) {
 			e.printStackTrace();
-		}		
-		
-		String result="";
+		}
+
+		String result = null;
 		try {
 			result = (String) in.readObject();
 		} catch (ClassNotFoundException | IOException e) {
@@ -233,66 +232,87 @@ public class MessagePHandler extends MessageHandler {
 
 		if (result.contentEquals("OK")) {
 			// receive the files
-			receiveFiles(params.getRepName(), in, out);	
-			System.out.println("O  repositorio "+params.getRepName()+" foi copiado do servidor");
-		}
-		else if (result.contentEquals("NOK")) {
-			String error="";
+			receiveFilesPushRep(params.getRepName(), in, out);
+			System.out.println("O  repositorio " + params.getRepName() + " foi copiado do servidor");
+		} else if (result.contentEquals("NOK")) {
+			String error = "";
 			try {
 				error = (String) in.readObject();
 			} catch (ClassNotFoundException | IOException e) {
 				e.printStackTrace();
 			}
 			System.out.println(error);
-		}
-		else 
+		} else
 			System.out.println("Something happened...");
 
-		
-
-		
 		return "MessagePHandler:sendPullRepMessage";
 	}
-	
 
-	private void receiveFiles (String repoName, ObjectInputStream in, ObjectOutputStream out) {
-		
+	private void receiveFiles(String repoName, ObjectInputStream in, ObjectOutputStream out) {
+
 		// mesmmo protocolo do servidor, receber primeiro o numero de ficheiros,
 		// ler depois os ficheiros
 		int sizeList = 0;
 		try {
 			sizeList = (Integer) in.readObject();
-			//System.out.println("sizelist: " + sizeList);
+			// System.out.println("sizelist: " + sizeList);
 		} catch (ClassNotFoundException | IOException e) {
 			e.printStackTrace();
 		}
 
 		for (int i = 0; i < sizeList; i++) {
 			try {
-				String path = "CLIENT" + File.separator + repoName + File.separator;									
-
+				//Long receivedTimeStamp = (Long) in.readObject();
+				String path = "CLIENT" + File.separator + repoName + File.separator;
 				File received = ReadWriteUtil.receiveFile(path, in, out);
+//				received.setLastModified(receivedTimeStamp);
+
 			} catch (ClassNotFoundException | IOException e) {
 				e.printStackTrace();
 			}
 			// do timestamp check and reject or accept the file;
 		}
-		
+
 	}
-	
-	
+	private void receiveFilesPushRep(String repoName, ObjectInputStream in, ObjectOutputStream out) {
+
+		// mesmmo protocolo do servidor, receber primeiro o numero de ficheiros,
+		// ler depois os ficheiros
+		int sizeList = 0;
+		try {
+			sizeList = (Integer) in.readObject();
+			// System.out.println("sizelist: " + sizeList);
+		} catch (ClassNotFoundException | IOException e) {
+			e.printStackTrace();
+		}
+
+		for (int i = 0; i < sizeList; i++) {
+			try {
+				Long receivedTimeStamp = (Long) in.readObject();
+				String path = "CLIENT" + File.separator + repoName + File.separator;
+				File received = ReadWriteUtil.receiveFile(path, in, out);
+				received.setLastModified(receivedTimeStamp);
+
+			} catch (ClassNotFoundException | IOException e) {
+				e.printStackTrace();
+			}
+			// do timestamp check and reject or accept the file;
+		}
+
+	}
+
 	private void loadRepoFiles(String repName) {
-		
-		try(Stream<Path> paths = Files.walk(Paths.get("CLIENT"+ File.separator+repName))) {
-		    paths.forEach(filePath -> {
-		        if (Files.isRegularFile(filePath)) {		            
-		            filesList.add(filePath);
-		            //System.out.println(filePath);
-		        }
-		    });
+
+		try (Stream<Path> paths = Files.walk(Paths.get("CLIENT" + File.separator + repName))) {
+			paths.forEach(filePath -> {
+				if (Files.isRegularFile(filePath)) {
+					filesList.add(filePath);
+					// System.out.println(filePath);
+				}
+			});
 		} catch (IOException e) {
 			e.printStackTrace();
-		} 
+		}
 	}
 
 }

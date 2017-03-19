@@ -21,11 +21,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import utilities.ReadWriteUtil;
+
 public class RemoteRepository {
 	private String owner;
 	private Long timestamp;
 	private String nameRepo;
-	// private Map<String, List<File>> mapFiles;
 	private List<File> listFiles;
 	private List<String> sharedUsers;
 
@@ -61,19 +62,11 @@ public class RemoteRepository {
 			}
 		}
 		setTimestamp(f.lastModified());
-		System.out.println(this);
 	}
 
 	public File getFile(String nameRepo, String nameFile) {
 
-		System.out.println("nameFile: " + nameFile);
-
-		System.out.println(SERVER + File.separator + nameRepo + File.separator + nameFile);
-
 		List<File> repoFiles = getListFiles();
-
-		System.out.println("repoFiles.size(): " + repoFiles.size());
-
 		for (File f : repoFiles) {
 			if (f != null && f.getName().equals(nameFile)) {
 				return f;
@@ -82,35 +75,53 @@ public class RemoteRepository {
 		return null;
 	}
 
-	public List<File> getFiles(String nameRepo) {
+	public Map sortList() {
+		Map<String, CopyOnWriteArrayList<File>> map = new ConcurrentHashMap<>();
+		Collections.sort(listFiles);
+		CopyOnWriteArrayList<File> tempList = null;
+		for (File f : getListFiles()) {
+			String uniqueName = ReadWriteUtil.getRealFileName(f.getName());
+			System.out.println(uniqueName);
+			if (map.get(uniqueName) == null) {
+				tempList = new CopyOnWriteArrayList<>();
+				tempList.add(f);
+				map.put(uniqueName, tempList);
+			} else if (map.get(uniqueName) != null) {
+				map.get(uniqueName).add(f);
+			}
+		}
+		getUniqueListFiles(map);
+		return map;
+	}
+	private CopyOnWriteArrayList<File> getUniqueListFiles(Map<String, CopyOnWriteArrayList<File>> m){
+		CopyOnWriteArrayList<File> sortedList = new CopyOnWriteArrayList<>();
+		
+		for (Map.Entry<String,CopyOnWriteArrayList<File>> pair : m.entrySet()) {
+		    System.out.println(pair.getKey());
+		    System.out.println(pair.getValue());
+		}
+		return null;
+	}
 
+	public List<File> getFiles(String nameRepo) {
+		sortList();
+		
 		return getListFiles();
 
 	}
 
-	// Ver porque um mapa com apenas uma entrada e uma lista de ficheiros...
 	public boolean fileExists(String repoName, String fileName) {
-		for (File f : listFiles) {	
+		for (File f : listFiles) {
 			if (f.getName().equals(fileName)) {
-				System.out.println("YES");
 				return true;
 			}
 		}
 		return false;
 	}
 
-	//
 	public void addFile(String repoName, File received) {
-
 		listFiles.add(received);
 	}
-
-	/**
-	 * method to give the size of the unique values present in the map This
-	 * exclude the files that have different versions in the repository.
-	 * 
-	 * @return size of set
-	 */
 
 	public String getOwner() {
 		return owner;
@@ -144,18 +155,6 @@ public class RemoteRepository {
 		this.listFiles = listFiles;
 	}
 
-	/*
-	 * public Map<String, List<File>> getListFiles() { return mapFiles; }
-	 * 
-	 * 
-	 * public Map<String, List<File>> getMapFiles() { return mapFiles; }
-	 * 
-	 * public void setMapFiles(Map<String, List<File>> mapFiles) { this.mapFiles
-	 * = mapFiles; }
-	 * 
-	 * public void addFilesToRepo(String repoName, List<File> listFiles) {
-	 * this.mapFiles.put(repoName, listFiles); }
-	 */
 	public void addFilesToRepo(String repoName, List<File> listFiles) {
 		this.listFiles = listFiles;
 	}
