@@ -251,7 +251,8 @@ public class ServerSkell {
 
 									String path = SERVER + File.separator + mp.getRepoName() + File.separator;
 									Long timestampReceivedFile = (Long) in.readObject();
-									File received = ReadWriteUtil.receiveFile(in, out);
+									File received = ReadWriteUtil.receiveFile(SERVER + File.separator, in, out);
+									System.out.println(received.getAbsolutePath());
 									received.setLastModified(timestampReceivedFile);
 									File fileInRepo = rr.getFile(mp.getRepoName(), received.getName());
 									if (fileInRepo == null) {

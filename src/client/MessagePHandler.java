@@ -277,10 +277,9 @@ public class MessagePHandler extends MessageHandler {
 			try {
 				Long receivedTimeStamp = (Long) in.readObject();
 				String path = "CLIENT" + File.separator + repoName + File.separator;
-				String tempPath = "CLIENT";
-				File received = ReadWriteUtil.receiveFile(tempPath, in, out);
+				File received = ReadWriteUtil.receiveFile(path, in, out);
 				received.setLastModified(receivedTimeStamp);
-				System.out.println(received.getName());
+				
 
 			} catch (ClassNotFoundException | IOException e) {
 				e.printStackTrace();

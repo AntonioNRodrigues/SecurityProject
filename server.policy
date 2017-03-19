@@ -8,5 +8,6 @@ grant codeBase "file:bin/*"{
     permission java.io.FilePermission "${java.io.tmpdir}", "read,write,delete";
     permission java.io.FilePermission "SERVER", "read,write";
     permission java.io.FilePermission "SERVER/-", "read, write, delete";
+    
 };
 
