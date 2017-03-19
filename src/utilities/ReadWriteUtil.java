@@ -90,6 +90,7 @@ public class ReadWriteUtil {
 
 		return fileReceived;
 	}
+
 	public static File receiveFile(ObjectInputStream inStream, ObjectOutputStream outStream)
 			throws ClassNotFoundException, IOException {
 
@@ -121,6 +122,10 @@ public class ReadWriteUtil {
 
 	public static String random() {
 		return " (" + (new Random().nextInt(900) + 100) + ")";
+	}
+
+	public static String timestamp(Long timestamp) {
+		return " (" + timestamp + ")";
 	}
 
 	public static String getRealFileName(String f) {

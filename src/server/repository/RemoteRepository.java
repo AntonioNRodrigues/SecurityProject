@@ -94,22 +94,41 @@ public class RemoteRepository {
 				map.get(uniqueName).add(f);
 			}
 		}
-		getUniqueListFiles(map);
 		return map;
 	}
-	private CopyOnWriteArrayList<File> getUniqueListFiles(Map<String, CopyOnWriteArrayList<File>> m){
-		CopyOnWriteArrayList<File> sortedList = new CopyOnWriteArrayList<>();
+
+	public CopyOnWriteArrayList<File> getUniqueListFiles() {
+		Map<String, CopyOnWriteArrayList<File>> m = sortList();
+		CopyOnWriteArrayList<File> uniqueList = new CopyOnWriteArrayList<>();
 		
-		for (Map.Entry<String,CopyOnWriteArrayList<File>> pair : m.entrySet()) {
-		    System.out.println(pair.getKey());
-		    System.out.println(pair.getValue());
+		for (Map.Entry<String, CopyOnWriteArrayList<File>> pair : m.entrySet()) {
+			System.out.println(pair.getKey());
+			System.out.println(pair.getValue());
+
+			Collections.sort(pair.getValue(), new Comparator<File>() {
+
+				@Override
+				public int compare(File file1, File file2) {
+					int value = 0;
+					if (file1.lastModified() < file2.lastModified()) {
+						value = 1;
+					}
+					if (file1.lastModified() > file2.lastModified()) {
+						value = -1;
+					}
+					if (file1.lastModified() == file2.lastModified()) {
+						value = 0;
+					}
+					return value;
+				}
+			});
+			System.out.println("sorted list" + pair.getValue());
+			uniqueList.add(pair.getValue().get(0));
 		}
-		return null;
+		return uniqueList;
 	}
 
 	public List<File> getFiles(String nameRepo) {
-		sortList();
-		
 		return getListFiles();
 
 	}
@@ -206,7 +225,7 @@ public class RemoteRepository {
 	 * method to check is the user is already in the list os shared users
 	 */
 	private boolean isSharedUser(String userName) {
-				
+
 		return sharedUsers.contains(userName) ? true : false;
 	}
 
@@ -234,35 +253,36 @@ public class RemoteRepository {
 	}
 
 	private void removeUserFromSharedRepo(String userId) {
-		
+
 		UUID uuid = UUID.randomUUID();
-		String uuidString = SERVER + File.separator+uuid.toString();    
+		String uuidString = SERVER + File.separator + uuid.toString();
 		String fileName = SERVER + File.separator + this.nameRepo + File.separator + SHARED;
-		File inputFile = new File(fileName);		
+		File inputFile = new File(fileName);
 		File tempFile = null;
 		try {
 			tempFile = File.createTempFile(uuidString, ".txt");
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-	
-		try ( BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+
+		try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
 				BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));) {
 
 			String line;
-			while((line = reader.readLine()) != null) {
-				if(line.equals(userId)) continue;
+			while ((line = reader.readLine()) != null) {
+				if (line.equals(userId))
+					continue;
 				writer.write(line + System.getProperty("line.separator"));
 			}
 
 			if (inputFile.delete())
 				if (tempFile.renameTo(inputFile))
-					System.out.println("O utilizador "+userId+" foi removido do ficheiro "+fileName);
-			  
+					System.out.println("O utilizador " + userId + " foi removido do ficheiro " + fileName);
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 	}
 
 	public List<String> getSharedUsers() {

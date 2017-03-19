@@ -1,15 +1,14 @@
 package server;
 
 import static utilities.ReadWriteUtil.SERVER;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.sql.Timestamp;
 import java.util.List;
-import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import enums.TypeOperation;
 import enums.TypeSend;
@@ -191,17 +190,18 @@ public class ServerSkell {
 						}
 
 						if (!error) {
-							List<File> filesList = rr.getFiles(mp.getRepoName());
+
+							CopyOnWriteArrayList<File> uniqueList = rr.getUniqueListFiles();
 
 							// System.out.println("filesList.size():
 							// "+filesList.size());
-							if (filesList.size() > 0) {
+							if (uniqueList.size() > 0) {
 								try {
 									out.writeObject((Object) "OK");
 									// Enviar o numero de ficheiros
-									out.writeObject((Integer) filesList.size());
+									out.writeObject((Integer) uniqueList.size());
 
-									for (File f : filesList) {
+									for (File f : uniqueList) {
 										out.writeObject((Object) f.lastModified());
 										ReadWriteUtil.sendFile(SERVER + File.separator + mp.getRepoName()
 												+ File.separator + f.getName(), in, out);
@@ -292,7 +292,8 @@ public class ServerSkell {
 									} else if (fileInRepo != null) {
 										long timeStampFileInRepo = fileInRepo.lastModified();
 										if (timeStampFileInRepo < received.lastModified()) {
-											File f = new File(path + received.getName() + ReadWriteUtil.random());
+											File f = new File(path + received.getName()
+													+ ReadWriteUtil.timestamp(timestampReceivedFile));
 											received.renameTo(f);
 											f.setLastModified(timestampReceivedFile);
 											rr.getListFiles().add(f);
@@ -420,6 +421,7 @@ public class ServerSkell {
 									System.out.println(received);
 									received.setLastModified(mp.getTimestamp());
 									File fileInRepo = rr.getFile(mp.getRepoName(), mp.getFileName());
+
 									// file does not exist add it to list
 									if (fileInRepo == null) {
 										// new file inside the repo
@@ -431,13 +433,15 @@ public class ServerSkell {
 										// File f = new
 										// File(ReadWriteUtil.getRealFileName(received.getName()));
 										rr.getListFiles().add(f);
-										// Files.deleteIfExists(received.toPath());
+										System.out.println("fileInrepo == null");
 									} else if (fileInRepo != null) {
 										Long timeStampFileInRepo = fileInRepo.lastModified();
+										System.out.println("fileInrepo != null");
 										if (timeStampFileInRepo < received.lastModified()) {
 											// add a new version
 
-											File f = new File(path + mp.getFileName() + ReadWriteUtil.random());
+											File f = new File(path + mp.getFileName()
+													+ ReadWriteUtil.timestamp(mp.getTimestamp()));
 											System.out.println(f.getName());
 											// pass the received file to repo
 											// folder
@@ -449,6 +453,7 @@ public class ServerSkell {
 										} else {
 											Files.deleteIfExists(received.toPath());
 										}
+										System.out.println("fileInrepo != null");
 									}
 
 								} catch (ClassNotFoundException e) {
