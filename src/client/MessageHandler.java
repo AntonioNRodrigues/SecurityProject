@@ -37,7 +37,7 @@ public abstract class MessageHandler implements IMessageTypes {
 
 	public String sendAuthMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
 
-		// Mensagem de autenticação
+		// Mensagem de autenticacao
 		Message m = new MessageA(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(),
 				params.getPassword());
 

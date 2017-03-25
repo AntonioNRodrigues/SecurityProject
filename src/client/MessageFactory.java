@@ -6,6 +6,7 @@ import java.util.Set;
 
 import client.MessagePHandler;
 import client.MessageRSHandler;
+import enums.TypeOperation;
 
 public enum MessageFactory {
 
@@ -26,11 +27,11 @@ public enum MessageFactory {
 	 */
 	private void loadmsgTypes() {
 
-		msgTypes.put("AUTH", new MessageAHandler());
-		msgTypes.put("PUSH", new MessagePHandler());
-		msgTypes.put("PULL", new MessagePHandler());
-		msgTypes.put("SHARE", new MessageRSHandler());
-		msgTypes.put("REMOVE", new MessageRSHandler());
+		msgTypes.put(TypeOperation.AUTH.toString(), new MessageAHandler());
+		msgTypes.put(TypeOperation.PUSH.toString(), new MessagePHandler());
+		msgTypes.put(TypeOperation.PULL.toString(), new MessagePHandler());
+		msgTypes.put(TypeOperation.SHARE.toString(), new MessageRSHandler());
+		msgTypes.put(TypeOperation.REMOVE.toString(), new MessageRSHandler());
 
 	}
 

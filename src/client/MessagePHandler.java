@@ -29,7 +29,7 @@ public class MessagePHandler extends MessageHandler {
 	@Override
 	public String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
 
-		if (params.getOperation().contentEquals("PUSH")) {
+		if (params.getOperation().contentEquals(TypeOperation.PUSH.toString())) {
 
 			if (params.getTypeSend().contentEquals("FILE"))
 				sendPushFileMessage(in, out, params);
@@ -146,7 +146,8 @@ public class MessagePHandler extends MessageHandler {
 
 	private String sendPullFileMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
 
-		// Se o ficheiro a que se está a fazer pull já existe então armazenar e
+		// Se o ficheiro a que se está a fazer pull já existe então armazenar
+		// e
 		// enviar a data da última modificação
 		Path path = Paths.get("CLIENT" + File.separator + params.getRepOrFileName());
 		boolean exists = Files.exists(path);
@@ -199,7 +200,8 @@ public class MessagePHandler extends MessageHandler {
 
 		// Message to use when we want to send or receive a file. Used in PULL
 		// fileName and PUSH fileName
-		// serverAddress não será necessário, já está presente na criação do
+		// serverAddress não será necessário, já está presente na criação
+		// do
 		// socket...
 		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(),
 				params.getPassword(), TypeSend.REPOSITORY, params.getRepName(), TypeOperation.PULL, 0, 0);

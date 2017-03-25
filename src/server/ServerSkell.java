@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import enums.TypeOperation;
@@ -166,11 +167,11 @@ public class ServerSkell {
 
 				MessageP mp = ((MessageP) msg);
 				TypeSend ts = mp.getTypeSend();
-				TypeOperation op = mp.getOperation();
+				TypeOperation operation = mp.getOperation();
 
 				switch (ts) {
 				case REPOSITORY:
-					switch (op) {
+					switch (operation) {
 					case PULL:
 
 						boolean error = false;
@@ -197,20 +198,18 @@ public class ServerSkell {
 
 						if (!error) {
 
-							CopyOnWriteArrayList<File> uniqueList = rr.getUniqueListFiles();
+							CopyOnWriteArrayList<Path> uniqueList = rr.getUniqueList();
 
-							// System.out.println("filesList.size():
-							// "+filesList.size());
 							if (uniqueList.size() > 0) {
 								try {
 									out.writeObject((Object) "OK");
 									// Enviar o numero de ficheiros
 									out.writeObject((Integer) uniqueList.size());
 
-									for (File f : uniqueList) {
-										out.writeObject((Object) f.lastModified());
+									for (Path f : uniqueList) {
+										out.writeObject((Object) f.toFile().lastModified());
 										ReadWriteUtil.sendFile(SERVER + File.separator + mp.getRepoName()
-												+ File.separator + f.getName(), in, out);
+												+ File.separator + f.toFile().getName(), in, out);
 									}
 								} catch (IOException e) {
 									e.printStackTrace();
@@ -252,14 +251,17 @@ public class ServerSkell {
 									String path = SERVER + File.separator + mp.getRepoName() + File.separator;
 									Long timestampReceivedFile = (Long) in.readObject();
 									File received = ReadWriteUtil.receiveFile(SERVER + File.separator, in, out);
-									System.out.println(received.getAbsolutePath());
+
 									received.setLastModified(timestampReceivedFile);
-									File fileInRepo = rr.getFile(mp.getRepoName(), received.getName());
+									// most recent file in repository
+									File fileInRepo = rr.getFile(received.getName());
+
 									if (fileInRepo == null) {
-										File f = new File(path + received.getName());
+										File f = new File(path + received.getName()
+												+ ReadWriteUtil.timestamp(timestampReceivedFile));
 										received.renameTo(f);
 										f.setLastModified(timestampReceivedFile);
-										rr.getListFiles().add(f);
+										rr.addFile(f.getName().split(" ")[0], f);
 									} else if (fileInRepo != null) {
 										long timeStampFileInRepo = fileInRepo.lastModified();
 										if (timeStampFileInRepo < received.lastModified()) {
@@ -267,7 +269,7 @@ public class ServerSkell {
 													+ ReadWriteUtil.timestamp(timestampReceivedFile));
 											received.renameTo(f);
 											f.setLastModified(timestampReceivedFile);
-											rr.getListFiles().add(f);
+											rr.addFile(f.getName().split(" ")[0], f);
 										} else {
 											Files.deleteIfExists(received.toPath());
 										}
@@ -291,7 +293,7 @@ public class ServerSkell {
 					break;
 
 				case FILE:
-					switch (op) {
+					switch (operation) {
 					case PULL:
 						// System.out.println("-PULL FILE");
 						long lastModifiedDate = mp.getTimestamp();
@@ -319,14 +321,15 @@ public class ServerSkell {
 						}
 
 						// Validar se o ficheiro existe
-						if (!error && !rr.fileExists(mp.getRepoName(), mp.getFileName())) {
-							// System.out.println("Erro: O ficheiro indicado não
+						if (!error && !rr.fileExists(mp.getFileName())) {
+							// System.out.println("Erro: O ficheiro indicado
+							// não
 							// existe");
 							out.writeObject((Object) "NOK");
 							out.writeObject((Object) "Erro: O ficheiro indicado não existe");
 						} else {
 
-							File inRepo = rr.getFile(mp.getRepoName(), mp.getFileName());
+							File inRepo = rr.getFile( mp.getFileName());
 
 							// client does not have the recent file so send it
 							if (lastModifiedDate < inRepo.lastModified()) {
@@ -360,14 +363,14 @@ public class ServerSkell {
 						if (!catRepo.repoExists(mp.getRepoName())) {
 
 							out.writeObject((Object) "NOK");
-							out.writeObject((Object) "Erro: O repositório não existe");
+							out.writeObject((Object) "Erro: O repositorio nao existe");
 
 						} else {
 							// Repositorio existe
 
 							rr = catRepo.getRemRepository(mp.getRepoName());
 
-							// Validar se o utilizador é dono ou tem acesso
+							// Validar se o utilizador eh dono ou tem acesso
 							// partilhado ao repositorio
 							if (rr.getOwner().equals(mp.getLocalUser().getName())
 									|| rr.getSharedUsers().contains(mp.getLocalUser().getName())) {
@@ -379,38 +382,30 @@ public class ServerSkell {
 									String path = SERVER + File.separator + mp.getRepoName() + File.separator;
 									String tempPath = SERVER + File.separator;
 									File received = ReadWriteUtil.receiveFile(tempPath, in, out);
-									System.out.println(received);
 									received.setLastModified(mp.getTimestamp());
-									File fileInRepo = rr.getFile(mp.getRepoName(), mp.getFileName());
-
+									File fileInRepo = rr.getFile(mp.getFileName());
 									// file does not exist add it to list
 									if (fileInRepo == null) {
 										// new file inside the repo
-										File f = new File(path + mp.getFileName());
+										File f = new File(
+												path + mp.getFileName() + ReadWriteUtil.timestamp(mp.getTimestamp()));
 										// copy the received file inside the
 										// server to the repoName
 										received.renameTo(f);
 										f.setLastModified(mp.getTimestamp());
-										// File f = new
-										// File(ReadWriteUtil.getRealFileName(received.getName()));
-										rr.getListFiles().add(f);
-										System.out.println("fileInrepo == null");
+										CopyOnWriteArrayList<Path> tempL = new CopyOnWriteArrayList<>();
+										tempL.add(f.toPath());
+										rr.getMapVersions().put(mp.getFileName(), tempL);
 									} else if (fileInRepo != null) {
 										Long timeStampFileInRepo = fileInRepo.lastModified();
-										System.out.println("fileInrepo != null");
 										if (timeStampFileInRepo < received.lastModified()) {
-											// add a new version
-
 											File f = new File(path + mp.getFileName()
 													+ ReadWriteUtil.timestamp(mp.getTimestamp()));
-											System.out.println(f.getName());
 											// pass the received file to repo
 											// folder
 											received.renameTo(f);
 											f.setLastModified(mp.getTimestamp());
-											rr.getListFiles().add(f);
-											System.out.println(rr.getListFiles());
-											// Files.deleteIfExists(received.toPath());
+											rr.getMapVersions().get(mp.getFileName()).add(f.toPath());
 										} else {
 											Files.deleteIfExists(received.toPath());
 										}

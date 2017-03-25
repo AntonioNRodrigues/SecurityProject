@@ -14,6 +14,7 @@ import java.util.Random;
 public class ReadWriteUtil {
 	private static final int VALUE = 1024;
 	public static final String SERVER = "SERVER";
+	public static final String CLIENT = "CLIENT";
 	public static final String OWNER = "owner.txt";
 	public static final String SHARED = "shared.txt";
 	public static final String USERS = "users.txt";

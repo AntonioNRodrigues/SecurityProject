@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import user.User;
 
@@ -40,25 +41,27 @@ public class RepositoryCatalog {
 	 * Repository and populate the mapFiles with each Repository and its files.
 	 */
 	private void readFolder() {
-		System.out.println("READ FOLDER");
 		RemoteRepository rr = null;
 		// list of files inside Server
 		for (String strFolder : new File(SERVER).list()) {
 			// repositories folders
 
-			System.out.println("Repository folder: " + strFolder);
-
-			File f = new File(SERVER + File.separator + strFolder);
-			if (f.isDirectory()) {
+			File folder = new File(SERVER + File.separator + strFolder);
+			if (folder.isDirectory()) {
 				// build a repository
 
-				rr = new RemoteRepository(f.getName());
-				rr.addFilesToRepo(rr.getNameRepo(), new ArrayList(Arrays.asList(f.listFiles())));
+				rr = new RemoteRepository(folder.getName());
+
+				for (File file : folder.listFiles()) {
+					String[] a = file.getName().split(" ");
+					String nameWithoutTimestamp = a[0];
+					rr.addFile(nameWithoutTimestamp, file);
+				}
 
 				// inside each folder/repository exists a owner.txt file
 				String owner = null;
 				try {
-					owner = getOwner(f);
+					owner = getOwner(folder);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -69,7 +72,7 @@ public class RepositoryCatalog {
 
 				// inside each folder/repository may exists a shared.txt file
 				try {
-					owner = getSharedWith(f, rr);
+					owner = getSharedWith(folder, rr);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -89,14 +92,9 @@ public class RepositoryCatalog {
 	 * @throws IOException
 	 */
 	private String getOwner(File f) throws IOException {
-		System.out.println("GET OWNER FOLDER");
 		String str = null;
 
-		System.out.println("f.getCanonicalPath(): " + f.getCanonicalPath());
-
 		File repFolder = new File(f.getCanonicalPath() + File.separator);
-
-		System.out.println("repFolder.isDirectory(): " + repFolder.isDirectory());
 
 		if (repFolder.isDirectory()) {
 			// list all its files
@@ -119,15 +117,8 @@ public class RepositoryCatalog {
 	 * @throws IOException
 	 */
 	private String getSharedWith(File f, RemoteRepository rr) throws IOException {
-		System.out.println("GET SHARED WITH INFO");
 		String str = null;
-
-		System.out.println("f.getCanonicalPath(): " + f.getCanonicalPath());
-
 		File repFolder = new File(f.getCanonicalPath() + File.separator);
-
-		System.out.println("repFolder.isDirectory(): " + repFolder.isDirectory());
-
 		if (repFolder.isDirectory()) {
 			// list all its files
 			for (String fileInFolder : repFolder.list()) {

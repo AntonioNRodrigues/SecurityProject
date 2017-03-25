@@ -31,13 +31,16 @@ public class RemoteRepository {
 	private String owner;
 	private Long timestamp;
 	private String nameRepo;
-	private List<File> listFiles;
+	/**
+	 * For each file we have its list of versions
+	 */
+	private Map<String, CopyOnWriteArrayList<Path>> mapVersions;
 	private List<String> sharedUsers;
 
 	public RemoteRepository(String nameRepo) {
 		super();
 		this.nameRepo = nameRepo;
-		this.listFiles = new CopyOnWriteArrayList<File>();
+		this.mapVersions = initMap();
 		this.sharedUsers = new CopyOnWriteArrayList<String>();
 		persisteRemRepo();
 	}
@@ -46,9 +49,42 @@ public class RemoteRepository {
 		super();
 		this.owner = onwer;
 		this.nameRepo = nameRepo;
-		this.listFiles = new CopyOnWriteArrayList<File>();
+		this.mapVersions = initMap();
 		this.sharedUsers = new CopyOnWriteArrayList<String>();
 		persisteRemRepo();
+	}
+
+	private Map<String, CopyOnWriteArrayList<Path>> initMap() {
+		Map<String, CopyOnWriteArrayList<Path>> map = new ConcurrentHashMap<>();
+		for (Map.Entry<String, CopyOnWriteArrayList<Path>> pair : mapVersions.entrySet()) {
+			Collections.sort(pair.getValue(), new Comparator<Path>() {
+
+				public int compare(Path file1, Path file2) {
+
+					int value = 0;
+					if (file1.toFile().lastModified() < file2.toFile().lastModified()) {
+						value = 1;
+					}
+					if (file1.toFile().lastModified() > file2.toFile().lastModified()) {
+						value = -1;
+					}
+					if (file1.toFile().lastModified() == file2.toFile().lastModified()) {
+						value = 0;
+					}
+					return value;
+				}
+			});
+		}
+		return map;
+	}
+
+	public CopyOnWriteArrayList<Path> getUniqueList() {
+		CopyOnWriteArrayList<Path> uniqueList = new CopyOnWriteArrayList<>();
+
+		for (Map.Entry<String, CopyOnWriteArrayList<Path>> pair : mapVersions.entrySet()) {
+			uniqueList.add(pair.getValue().get(0));
+		}
+		return uniqueList;
 	}
 
 	private void persisteRemRepo() {
@@ -68,82 +104,16 @@ public class RemoteRepository {
 		setTimestamp(f.lastModified());
 	}
 
-	public File getFile(String nameRepo, String nameFile) {
-
-		List<File> repoFiles = getListFiles();
-		for (File f : repoFiles) {
-			if (f != null && f.getName().equals(nameFile)) {
-				return f;
-			}
-		}
-		return null;
+	public File getFile(String nameFile) {
+		return mapVersions.get(nameFile).get(0).toFile();
 	}
 
-	public Map<String, CopyOnWriteArrayList<File>> sortList() {
-		Map<String, CopyOnWriteArrayList<File>> map = new ConcurrentHashMap<>();
-		Collections.sort(listFiles);
-		CopyOnWriteArrayList<File> tempList = null;
-		for (File f : getListFiles()) {
-			String uniqueName = ReadWriteUtil.getRealFileName(f.getName());
-			System.out.println(uniqueName);
-			if (map.get(uniqueName) == null) {
-				tempList = new CopyOnWriteArrayList<>();
-				tempList.add(f);
-				map.put(uniqueName, tempList);
-			} else if (map.get(uniqueName) != null) {
-				map.get(uniqueName).add(f);
-			}
-		}
-		return map;
+	public boolean fileExists(String fileName) {
+		return (this.getMapVersions().get(fileName) == null) ? false : true;
 	}
 
-	public CopyOnWriteArrayList<File> getUniqueListFiles() {
-		Map<String, CopyOnWriteArrayList<File>> m = sortList();
-		CopyOnWriteArrayList<File> uniqueList = new CopyOnWriteArrayList<>();
-		
-		for (Map.Entry<String, CopyOnWriteArrayList<File>> pair : m.entrySet()) {
-			System.out.println(pair.getKey());
-			System.out.println(pair.getValue());
-
-			Collections.sort(pair.getValue(), new Comparator<File>() {
-
-				@Override
-				public int compare(File file1, File file2) {
-					int value = 0;
-					if (file1.lastModified() < file2.lastModified()) {
-						value = 1;
-					}
-					if (file1.lastModified() > file2.lastModified()) {
-						value = -1;
-					}
-					if (file1.lastModified() == file2.lastModified()) {
-						value = 0;
-					}
-					return value;
-				}
-			});
-			System.out.println("sorted list" + pair.getValue());
-			uniqueList.add(pair.getValue().get(0));
-		}
-		return uniqueList;
-	}
-
-	public List<File> getFiles(String nameRepo) {
-		return getListFiles();
-
-	}
-
-	public boolean fileExists(String repoName, String fileName) {
-		for (File f : listFiles) {
-			if (f.getName().equals(fileName)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public void addFile(String repoName, File received) {
-		listFiles.add(received);
+	public void addFile(String nameFile, File received) {
+		this.getMapVersions().get(received.getName()).add(received.toPath());
 	}
 
 	public String getOwner() {
@@ -168,18 +138,6 @@ public class RemoteRepository {
 
 	public void setNameRepo(String nameRepo) {
 		this.nameRepo = nameRepo;
-	}
-
-	public List<File> getListFiles() {
-		return listFiles;
-	}
-
-	public void setListFiles(List<File> listFiles) {
-		this.listFiles = listFiles;
-	}
-
-	public void addFilesToRepo(String repoName, List<File> listFiles) {
-		this.listFiles = listFiles;
 	}
 
 	/**
@@ -293,6 +251,14 @@ public class RemoteRepository {
 	public String toString() {
 		return "RemoteRepository [onwer=" + owner + ", timestamp=" + timestamp + ", nameRepo=" + nameRepo
 				+ ", shared with=" + sharedUsers + "]";
+	}
+
+	public Map<String, CopyOnWriteArrayList<Path>> getMapVersions() {
+		return mapVersions;
+	}
+
+	public void setMapVersions(Map<String, CopyOnWriteArrayList<Path>> mapVersions) {
+		this.mapVersions = mapVersions;
 	}
 
 }
