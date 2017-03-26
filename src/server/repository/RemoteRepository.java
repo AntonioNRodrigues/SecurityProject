@@ -40,7 +40,7 @@ public class RemoteRepository {
 	public RemoteRepository(String nameRepo) {
 		super();
 		this.nameRepo = nameRepo;
-		this.mapVersions = initMap();
+		this.mapVersions = new ConcurrentHashMap<>();
 		this.sharedUsers = new CopyOnWriteArrayList<String>();
 		persisteRemRepo();
 	}
@@ -49,42 +49,47 @@ public class RemoteRepository {
 		super();
 		this.owner = onwer;
 		this.nameRepo = nameRepo;
-		this.mapVersions = initMap();
+		this.mapVersions = new ConcurrentHashMap<>();
 		this.sharedUsers = new CopyOnWriteArrayList<String>();
 		persisteRemRepo();
 	}
 
-	private Map<String, CopyOnWriteArrayList<Path>> initMap() {
-		Map<String, CopyOnWriteArrayList<Path>> map = new ConcurrentHashMap<>();
-		for (Map.Entry<String, CopyOnWriteArrayList<Path>> pair : mapVersions.entrySet()) {
-			Collections.sort(pair.getValue(), new Comparator<Path>() {
-
-				public int compare(Path file1, Path file2) {
-
-					int value = 0;
-					if (file1.toFile().lastModified() < file2.toFile().lastModified()) {
-						value = 1;
-					}
-					if (file1.toFile().lastModified() > file2.toFile().lastModified()) {
-						value = -1;
-					}
-					if (file1.toFile().lastModified() == file2.toFile().lastModified()) {
-						value = 0;
-					}
-					return value;
-				}
-			});
-		}
-		return map;
+	private CopyOnWriteArrayList<Path> getSortedList() {
+		CopyOnWriteArrayList<Path> cp = new CopyOnWriteArrayList<>();
+		cp.sort(myComparator());
+		return cp;
 	}
 
 	public CopyOnWriteArrayList<Path> getUniqueList() {
 		CopyOnWriteArrayList<Path> uniqueList = new CopyOnWriteArrayList<>();
 
 		for (Map.Entry<String, CopyOnWriteArrayList<Path>> pair : mapVersions.entrySet()) {
+			pair.getValue().sort(myComparator());
 			uniqueList.add(pair.getValue().get(0));
 		}
 		return uniqueList;
+	}
+
+	private Comparator<Path> myComparator() {
+		Comparator<Path> myComparator = new Comparator<Path>() {
+
+			@Override
+			public int compare(Path file1, Path file2) {
+
+				int value = 0;
+				if (file1.toFile().lastModified() < file2.toFile().lastModified()) {
+					value = 1;
+				}
+				if (file1.toFile().lastModified() > file2.toFile().lastModified()) {
+					value = -1;
+				}
+				if (file1.toFile().lastModified() == file2.toFile().lastModified()) {
+					value = 0;
+				}
+				return value;
+			}
+		};
+		return myComparator;
 	}
 
 	private void persisteRemRepo() {
@@ -105,7 +110,7 @@ public class RemoteRepository {
 	}
 
 	public File getFile(String nameFile) {
-		return mapVersions.get(nameFile).get(0).toFile();
+		return (mapVersions.get(nameFile) != null) ? mapVersions.get(nameFile).get(0).toFile() : null;
 	}
 
 	public boolean fileExists(String fileName) {
@@ -113,7 +118,17 @@ public class RemoteRepository {
 	}
 
 	public void addFile(String nameFile, File received) {
-		this.getMapVersions().get(received.getName()).add(received.toPath());
+		CopyOnWriteArrayList<Path> l = getMapVersions().get(nameFile);
+		if (l == null) {
+			CopyOnWriteArrayList<Path> cp = getSortedList();
+			cp.add(received.toPath());
+			this.getMapVersions().put(nameFile, cp);
+			System.out.println(this.getMapVersions());
+		} else {
+			this.getMapVersions().get(nameFile).add(received.toPath());
+			System.out.println(this.getMapVersions());
+		}
+
 	}
 
 	public String getOwner() {

@@ -42,14 +42,13 @@ public class RepositoryCatalog {
 	 */
 	private void readFolder() {
 		RemoteRepository rr = null;
-		// list of files inside Server
-		for (String strFolder : new File(SERVER).list()) {
+		// list of repos inside Server
+		for (String repoFolder : new File(SERVER).list()) {
 			// repositories folders
 
-			File folder = new File(SERVER + File.separator + strFolder);
+			File folder = new File(SERVER + File.separator + repoFolder);
 			if (folder.isDirectory()) {
 				// build a repository
-
 				rr = new RemoteRepository(folder.getName());
 
 				for (File file : folder.listFiles()) {
@@ -212,6 +211,7 @@ public class RepositoryCatalog {
 		// adiciona-lo ao catalogo de repositorios mapRemRepos
 
 		RemoteRepository rr = new RemoteRepository(localUser.getName(), repoFileName);
+		System.out.println(rr);
 		mapRemRepos.put(rr.getNameRepo(), rr);
 
 		return rr;

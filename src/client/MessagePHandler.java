@@ -1,5 +1,7 @@
 package client;
 
+import static utilities.ReadWriteUtil.CLIENT;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -180,7 +182,7 @@ public class MessagePHandler extends MessageHandler {
 
 		if (result.contentEquals("OK")) {
 			// receive the files
-			receiveFiles(params.getRepName(), in, out);
+			receiveFilesPullRep(params.getRepName(), in, out);
 			System.out.println("O  ficheiro " + params.getFileName() + " foi copiado do servidor");
 		} else if (result.contentEquals("NOK")) {
 			String error = "";
@@ -278,9 +280,21 @@ public class MessagePHandler extends MessageHandler {
 		for (int i = 0; i < sizeList; i++) {
 			try {
 				Long receivedTimeStamp = (Long) in.readObject();
-				String path = "CLIENT" + File.separator + repoName + File.separator;
+				String path = CLIENT + File.separator + repoName + File.separator;
 				File received = ReadWriteUtil.receiveFile(path, in, out);
 				received.setLastModified(receivedTimeStamp);
+				File inRepo = new  File (CLIENT + File.separator + repoName + File.separator + received.getName().split(" ")[0]);
+				if (inRepo.exists()){
+					if(received.lastModified() <= inRepo.lastModified()){
+						Files.deleteIfExists(received.toPath());
+					}else if (received.lastModified() > inRepo.lastModified()){
+						received.renameTo(inRepo);
+					}
+				}else if (!(inRepo.exists())){
+					received.renameTo(inRepo);
+				}
+
+			
 			} catch (ClassNotFoundException | IOException e) {
 				e.printStackTrace();
 			}

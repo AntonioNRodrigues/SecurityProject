@@ -166,10 +166,10 @@ public class ServerSkell {
 			} else if (msg instanceof MessageP) {
 
 				MessageP mp = ((MessageP) msg);
-				TypeSend ts = mp.getTypeSend();
+				TypeSend typeSend = mp.getTypeSend();
 				TypeOperation operation = mp.getOperation();
 
-				switch (ts) {
+				switch (typeSend) {
 				case REPOSITORY:
 					switch (operation) {
 					case PULL:
@@ -178,8 +178,6 @@ public class ServerSkell {
 						// Validar se o repositorio existe
 						if (!catRepo.repoExists(mp.getRepoName())) {
 							error = true;
-							// System.out.println("Erro: O repositório indicado
-							// não existe");
 							out.writeObject((Object) "NOK");
 							out.writeObject((Object) "Erro: O repositório indicado não existe");
 						} else
@@ -190,8 +188,6 @@ public class ServerSkell {
 						if (!error && !(rr.getOwner().equals(mp.getLocalUser().getName())
 								|| rr.getSharedUsers().contains(mp.getLocalUser().getName()))) {
 							error = true;
-							// System.out.println("Erro: o utilizador não tem
-							// acesso ao repositório");
 							out.writeObject((Object) "NOK");
 							out.writeObject((Object) "Erro: o utilizador não tem acesso ao repositório");
 						}
@@ -217,9 +213,6 @@ public class ServerSkell {
 									out.writeObject((Object) "SERVER ERROR");
 								}
 							} else {
-								// falta tratar do versionamento...
-								// System.out.println("THE SERVER HAS NOT A
-								// RECENT VERSION FOR U");
 								out.writeObject((Object) "NOK");
 								out.writeObject((Object) "THE SERVER HAS NOT A RECENT VERSION FOR U");
 							}
@@ -255,6 +248,7 @@ public class ServerSkell {
 									received.setLastModified(timestampReceivedFile);
 									// most recent file in repository
 									File fileInRepo = rr.getFile(received.getName());
+									System.out.println(fileInRepo == null);
 
 									if (fileInRepo == null) {
 										File f = new File(path + received.getName()
@@ -295,15 +289,12 @@ public class ServerSkell {
 				case FILE:
 					switch (operation) {
 					case PULL:
-						// System.out.println("-PULL FILE");
 						long lastModifiedDate = mp.getTimestamp();
 
 						boolean error = false;
 						// Validar se o repositorio existe
 						if (!catRepo.repoExists(mp.getRepoName())) {
 							error = true;
-							// System.out.println("Erro: O repositório indicado
-							// não existe");
 							out.writeObject((Object) "NOK");
 							out.writeObject((Object) "Erro: O repositório indicado não existe");
 						} else
@@ -314,23 +305,17 @@ public class ServerSkell {
 						if (!error && !(rr.getOwner().equals(mp.getLocalUser().getName())
 								|| rr.getSharedUsers().contains(mp.getLocalUser().getName()))) {
 							error = true;
-							// System.out.println("Erro: o utilizador não tem
-							// acesso ao repositório");
 							out.writeObject((Object) "NOK");
 							out.writeObject((Object) "Erro: o utilizador não tem acesso ao repositório");
 						}
 
 						// Validar se o ficheiro existe
 						if (!error && !rr.fileExists(mp.getFileName())) {
-							// System.out.println("Erro: O ficheiro indicado
-							// não
-							// existe");
 							out.writeObject((Object) "NOK");
 							out.writeObject((Object) "Erro: O ficheiro indicado não existe");
 						} else {
 
-							File inRepo = rr.getFile( mp.getFileName());
-
+							File inRepo = rr.getFile(mp.getFileName());
 							// client does not have the recent file so send it
 							if (lastModifiedDate < inRepo.lastModified()) {
 								try {
@@ -340,7 +325,7 @@ public class ServerSkell {
 									out.writeObject((Integer) 1);
 									// Enviar o ficheiro
 									ReadWriteUtil.sendFile(SERVER + File.separator + mp.getRepoName() + File.separator
-											+ mp.getFileName(), in, out);
+											+ inRepo.getName(), in, out);
 
 								} catch (IOException e) {
 									e.printStackTrace();
@@ -348,8 +333,6 @@ public class ServerSkell {
 									out.writeObject((Object) "SERVER ERROR");
 								}
 							} else {
-								// System.out.println("THE SERVER HAS NOT A
-								// RECENT VERSION FOR U");
 								out.writeObject((Object) "NOK");
 								out.writeObject((Object) "THE SERVER HAS NOT A RECENT VERSION FOR U");
 							}
