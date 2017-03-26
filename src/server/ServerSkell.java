@@ -289,8 +289,6 @@ public class ServerSkell {
 				case FILE:
 					switch (operation) {
 					case PULL:
-						long lastModifiedDate = mp.getTimestamp();
-
 						boolean error = false;
 						// Validar se o repositorio existe
 						if (!catRepo.repoExists(mp.getRepoName())) {
@@ -317,13 +315,14 @@ public class ServerSkell {
 
 							File inRepo = rr.getFile(mp.getFileName());
 							// client does not have the recent file so send it
-							if (lastModifiedDate < inRepo.lastModified()) {
+							if (mp.getTimestamp() <= inRepo.lastModified()) {
 								try {
 
 									out.writeObject((Object) "OK");
 									// Enviar o numero de ficheiros
-									out.writeObject((Integer) 1);
-									// Enviar o ficheiro
+									out.writeObject((Object) 1);
+									// Enviar timeststamp
+									out.writeObject((Object) inRepo.lastModified());
 									ReadWriteUtil.sendFile(SERVER + File.separator + mp.getRepoName() + File.separator
 											+ inRepo.getName(), in, out);
 

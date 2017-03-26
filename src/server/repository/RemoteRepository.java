@@ -25,6 +25,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import com.sun.xml.internal.ws.config.management.policy.ManagementPolicyValidator;
+
 import utilities.ReadWriteUtil;
 
 public class RemoteRepository {
@@ -110,7 +112,11 @@ public class RemoteRepository {
 	}
 
 	public File getFile(String nameFile) {
-		return (mapVersions.get(nameFile) != null) ? mapVersions.get(nameFile).get(0).toFile() : null;
+		if (mapVersions.get(nameFile) != null) {
+			mapVersions.get(nameFile).sort(myComparator());
+			return mapVersions.get(nameFile).get(0).toFile();
+		}
+		return null;
 	}
 
 	public boolean fileExists(String fileName) {

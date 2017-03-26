@@ -179,10 +179,11 @@ public class MessagePHandler extends MessageHandler {
 		} catch (ClassNotFoundException | IOException e) {
 			e.printStackTrace();
 		}
-
+		System.out.println(result);
 		if (result.contentEquals("OK")) {
 			// receive the files
 			receiveFilesPullRep(params.getRepName(), in, out);
+				
 			System.out.println("O  ficheiro " + params.getFileName() + " foi copiado do servidor");
 		} else if (result.contentEquals("NOK")) {
 			String error = "";
@@ -253,15 +254,26 @@ public class MessagePHandler extends MessageHandler {
 
 		for (int i = 0; i < sizeList; i++) {
 			try {
-				// Long receivedTimeStamp = (Long) in.readObject();
-				String path = "CLIENT" + File.separator + repoName + File.separator;
+				Long receivedTimeStamp = (Long) in.readObject();
+				String path = CLIENT + File.separator + repoName + File.separator;
 				File received = ReadWriteUtil.receiveFile(path, in, out);
-				// received.setLastModified(receivedTimeStamp);
+				received.setLastModified(receivedTimeStamp);
+				File inRepo = new  File (CLIENT + File.separator + repoName + File.separator + received.getName().split(" ")[0]);
+				if (inRepo.exists()){
+					if(received.lastModified() <= inRepo.lastModified()){
+						Files.deleteIfExists(received.toPath());
+					}else if (received.lastModified() > inRepo.lastModified()){
+						received.renameTo(inRepo);
+					}
+				}else if (!(inRepo.exists())){
+					received.renameTo(inRepo);
+				}
 
+			
 			} catch (ClassNotFoundException | IOException e) {
 				e.printStackTrace();
 			}
-			// do timestamp check and reject or accept the file;
+
 		}
 
 	}

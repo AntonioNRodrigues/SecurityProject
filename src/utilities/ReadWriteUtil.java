@@ -65,7 +65,7 @@ public class ReadWriteUtil {
 
 	public static File receiveFile(String path, ObjectInputStream inStream, ObjectOutputStream outStream)
 			throws ClassNotFoundException, IOException {
-
+		System.out.println("received File");
 		Long sizeFile = (Long) inStream.readObject();
 		String filename = (String) inStream.readObject();
 
