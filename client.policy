@@ -3,6 +3,6 @@ grant codeBase "file:bin/*"{
     permission java.util.PropertyPermission "user.home", "read"; 
     permission java.util.PropertyPermission "user.dir", "read";    
     permission java.io.FilePermission "${user.dir}", "read";
-    permission java.io.FilePermission "CLIENT", "read, write";
-    permission java.io.FilePermission "CLIENT/-", "read, write";
+    permission java.io.FilePermission "CLIENT", "read, write, delete";
+    permission java.io.FilePermission "CLIENT/-", "read, write, delete";
 };
