@@ -1,10 +1,13 @@
 package utilities;
 
+import static utilities.ReadWriteUtil.SERVER;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.file.Files;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -114,9 +117,12 @@ public class SecurityUtil {
 		return c;
 	}
 
-	public static void persisteKey(SecretKey sk, String name) {
+	public static void persisteKey(SecretKey sk, String path) {
 		byte[] keyEncoded = sk.getEncoded();
-		try (ObjectOutputStream oo = new ObjectOutputStream(new FileOutputStream(new File(name)))) {
+		if (!(new File("SERVER").exists())) {
+			new File("SERVER").mkdirs();
+		}
+		try (ObjectOutputStream oo = new ObjectOutputStream(new FileOutputStream(new File(path)))) {
 			oo.write(keyEncoded);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -158,13 +164,15 @@ public class SecurityUtil {
 		// read file
 		FileInputStream fis = new FileInputStream(f);
 		// write file to c.cif
-		CipherOutputStream cos = new CipherOutputStream(new FileOutputStream(new File("a.cif")), c);
+		CipherOutputStream cos = new CipherOutputStream(
+				new FileOutputStream(new File(SERVER + File.separator + "users.cif")), c);
 		byte[] b = new byte[16];
 		int i = fis.read(b);
 		while (i != -1) {
 			cos.write(b, 0, i);
 			i = fis.read(b);
 		}
+		Files.deleteIfExists(f.toPath());
 		cos.close();
 		fis.close();
 	}
@@ -184,6 +192,19 @@ public class SecurityUtil {
 		}
 		cis.close();
 		fis.close();
+	}
+
+	public static SecretKey getKeyFromServer() {
+		byte[] secretKeyBytes = new byte[16];
+		try (ObjectInputStream out = new ObjectInputStream(
+				new FileInputStream(new File(SERVER + File.separator + SERVER_KEY)))) {
+			out.read(secretKeyBytes);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		SecretKey sk = new SecretKeySpec(secretKeyBytes, AES);
+		return sk;
+
 	}
 
 }
