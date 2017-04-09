@@ -1,17 +1,31 @@
 package utilities;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 public class SecurityUtil {
 	public static final String AES = "AES";
+	public static final String RSA = "RSA";
+	public static final int bits_RSA = 2048;
+	public static final int bits_AES = 128;
+	public static final String SERVER_KEY = "Server.key";
 
 	/**
 	 * 
@@ -79,7 +93,7 @@ public class SecurityUtil {
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
-		k.init(128);
+		k.init(bits_AES);
 		SecretKey sk = k.generateKey();
 		return sk;
 	}
@@ -98,6 +112,78 @@ public class SecurityUtil {
 			e.printStackTrace();
 		}
 		return c;
+	}
+
+	public static void persisteKey(SecretKey sk, String name) {
+		byte[] keyEncoded = sk.getEncoded();
+		try (ObjectOutputStream oo = new ObjectOutputStream(new FileOutputStream(new File(name)))) {
+			oo.write(keyEncoded);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * method to get a pair of asymmetric keys
+	 * 
+	 * @return
+	 */
+	public static KeyPair getKeyPair() {
+		KeyPair kp = null;
+		try {
+			KeyPairGenerator kpg = KeyPairGenerator.getInstance(RSA);
+			kpg.initialize(bits_RSA);
+			kp = kpg.generateKeyPair();
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+		return kp;
+	}
+
+	/**
+	 * method to generate a symmetric key through a string
+	 * 
+	 * @param str
+	 */
+	public static void generateKeyFromPass(String str) {
+		byte[] pass = str.getBytes();
+		SecretKey sk = new SecretKeySpec(pass, AES);
+		persisteKey(sk, ReadWriteUtil.SERVER + File.separator + SERVER_KEY);
+	}
+
+	public static void encriptFile(File f, SecretKey sk) throws NoSuchAlgorithmException, NoSuchPaddingException,
+			InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
+		Cipher c = getCipher();
+		c.init(Cipher.ENCRYPT_MODE, sk);
+		// read file
+		FileInputStream fis = new FileInputStream(f);
+		// write file to c.cif
+		CipherOutputStream cos = new CipherOutputStream(new FileOutputStream(new File("a.cif")), c);
+		byte[] b = new byte[16];
+		int i = fis.read(b);
+		while (i != -1) {
+			cos.write(b, 0, i);
+			i = fis.read(b);
+		}
+		cos.close();
+		fis.close();
+	}
+
+	public static void decriptFile(File f, SecretKey sk) throws NoSuchAlgorithmException, NoSuchPaddingException,
+			InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
+		Cipher c = getCipher();
+		c.init(Cipher.DECRYPT_MODE, sk);
+		// get ciphered file
+		CipherInputStream cis = new CipherInputStream(new FileInputStream("a.cif"), c);
+		FileOutputStream fis = new FileOutputStream(new File("new.txt"));
+		byte[] b = new byte[16];
+		int i = cis.read(b);
+		while (i != -1) {
+			fis.write(b, 0, i);
+			i = cis.read(b);
+		}
+		cis.close();
+		fis.close();
 	}
 
 }
