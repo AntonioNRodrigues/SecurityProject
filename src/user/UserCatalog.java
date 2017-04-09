@@ -11,6 +11,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.crypto.SecretKey;
+
+import utilities.SecurityUtil;
+
 import static utilities.ReadWriteUtil.SERVER;
 import static utilities.ReadWriteUtil.USERS;
 
@@ -28,9 +33,7 @@ public class UserCatalog {
 	private void readFile() {
 		
 		Path usersFile = Paths.get(SERVER + File.separator + USERS);
-		//decipher file to read its content
-		//dechiperUsersFile(usersFile);
-		
+		//decipher file and read content --> to do
 		try (BufferedReader b = new BufferedReader(new FileReader(usersFile.toFile()))){
 			String str = b.readLine();
 			while (str != null) {
@@ -60,6 +63,9 @@ public class UserCatalog {
 		if (!userFile.exists()) {
 			try {
 				create = userFile.createNewFile();
+				//GET key an chiper this file with server.key
+				SecretKey sk = SecurityUtil.getKeyFromServer();
+				SecurityUtil.encriptFile(userFile, sk);
 			} catch (Exception e) {
 				System.err.println("THE FILE CAN NOT BE CREATED:: CHECK PERMISSIONS");
 			}
@@ -86,6 +92,7 @@ public class UserCatalog {
 
 	public void persisteUser(String name, String password) {
 		System.out.println("PERSISTING USER");
+		//decipher file,  write content, cipher again --> to do
 		try (FileWriter fw = new FileWriter(new File(SERVER + File.separator + USERS), true);
 				BufferedWriter bf = new BufferedWriter(fw);
 				PrintWriter out = new PrintWriter(bf)) {
