@@ -11,12 +11,14 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import message.Message;
 import server.repository.RepositoryCatalog;
 import user.UserCatalog;
+import utilities.SecurityUtil;
 
 public class MyGitServer {
 	private static final int MAX_THREADS = 5;
@@ -40,7 +42,11 @@ public class MyGitServer {
 			System.out.println("MyGitServer requires port number");
 			System.exit(-1);
 		}
-		System.out.println("MyGitServer is Running:");
+		System.out.println("MyGitServer:: Please fill up the password");
+		Scanner sc = new Scanner(System.in);
+		String pass = sc.nextLine();
+		System.out.println("MyGitServer is Running with password");
+		SecurityUtil.generateKeyFromPass(pass);
 		MyGitServer myGitServer = new MyGitServer();
 		sk = new ServerSkell(myGitServer);
 		myGitServer.startServer(args);
@@ -56,15 +62,15 @@ public class MyGitServer {
 			System.err.println(e.getMessage());
 			System.exit(-1);
 		}
-		// ExecutorService executorService =
-		// Executors.newFixedThreadPool(MAX_THREADS);
+		 ExecutorService executorService =
+		 Executors.newFixedThreadPool(MAX_THREADS);
 		System.out.println("MyGitServer Waiting for clients:");
 		while (true) {
 			try {
 				Socket inSoc = sSoc.accept();
 				ServerThread newServerThread = new ServerThread(inSoc);
-				newServerThread.start();
-				// executorService.execute(newServerThread);
+				//newServerThread.start();
+				 executorService.execute(newServerThread);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
