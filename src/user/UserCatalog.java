@@ -7,6 +7,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import static utilities.ReadWriteUtil.SERVER;
@@ -23,18 +25,18 @@ public class UserCatalog {
 		}
 		System.out.println(mapUsers);
 	}
-
 	private void readFile() {
-		File f = new File(SERVER + File.separator + USERS);
-
-		try {
-			BufferedReader b = new BufferedReader(new FileReader(f));
+		
+		Path usersFile = Paths.get(SERVER + File.separator + USERS);
+		//decipher file to read its content
+		//dechiperUsersFile(usersFile);
+		
+		try (BufferedReader b = new BufferedReader(new FileReader(usersFile.toFile()))){
 			String str = b.readLine();
 			while (str != null) {
 				splitLine(str);
 				str = b.readLine();
 			}
-			b.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
