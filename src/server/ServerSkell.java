@@ -214,7 +214,7 @@ public class ServerSkell {
 								}
 							} else {
 								out.writeObject((Object) "NOK");
-								out.writeObject((Object) "THE SERVER HAS NOT A RECENT VERSION FOR U");
+								out.writeObject((Object) "O repositório local está sincronizado, não existe nenhuma versão mais recente dos ficheiros.");
 							}
 						}
 						break;
@@ -333,7 +333,7 @@ public class ServerSkell {
 								}
 							} else {
 								out.writeObject((Object) "NOK");
-								out.writeObject((Object) "THE SERVER HAS NOT A RECENT VERSION FOR U");
+								out.writeObject((Object) "Não existe nenhuma versão mais recente do ficheiro.");
 							}
 						}
 
