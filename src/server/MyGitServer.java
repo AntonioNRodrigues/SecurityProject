@@ -45,6 +45,7 @@ public class MyGitServer {
 		System.out.println("MyGitServer:: Please fill up the password");
 		Scanner sc = new Scanner(System.in);
 		String pass = sc.nextLine();
+		//check && validate pass length > 6 and < 10 ex::: -----> TO DO
 		System.out.println("MyGitServer is Running with password");
 		SecurityUtil.generateKeyFromPass(pass);
 		MyGitServer myGitServer = new MyGitServer();
