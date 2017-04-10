@@ -7,11 +7,17 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
 import utilities.SecurityUtil;
@@ -22,6 +28,9 @@ import static utilities.ReadWriteUtil.USERS;
 public class UserCatalog {
 	private Map<String, User> mapUsers;
 
+	/**
+	 * 
+	 */
 	public UserCatalog() {
 		super();
 		this.mapUsers = new ConcurrentHashMap<>();
@@ -30,22 +39,38 @@ public class UserCatalog {
 		}
 		System.out.println(mapUsers);
 	}
+
+	/**
+	 * Read the file users.txt and populates the map with user:password
+	 */
 	private void readFile() {
-		
+		System.out.println("READFILE");
 		Path usersFile = Paths.get(SERVER + File.separator + USERS);
-		//decipher file and read content --> to do
-		try (BufferedReader b = new BufferedReader(new FileReader(usersFile.toFile()))){
+		Path temp = Paths.get(SERVER + File.separator + "temp.txt");
+		// decipher file and read content
+		SecretKey sk = SecurityUtil.getKeyFromServer();
+		try {
+			SecurityUtil.decipherFile(usersFile, sk, temp);
+			BufferedReader b = new BufferedReader(new FileReader(temp.toFile()));
 			String str = b.readLine();
 			while (str != null) {
+				System.out.println("READFILE" + str);
 				splitLine(str);
 				str = b.readLine();
 			}
-		} catch (IOException e) {
+			b.close();
+			Files.deleteIfExists(temp);
+		} catch (IOException | InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException
+				| IllegalBlockSizeException | BadPaddingException e) {
 			e.printStackTrace();
 		}
-
 	}
 
+	/**
+	 * split a line by : and separate user from password
+	 * 
+	 * @param str
+	 */
 	private void splitLine(String str) {
 		String[] userPass = str.split(":");
 		User u = null;
@@ -57,16 +82,29 @@ public class UserCatalog {
 		mapUsers.put(u.getName(), u);
 	}
 
+	/**
+	 * method to build a ciphered users.txt file
+	 * 
+	 * @return true is the file was created and false if the file already exists
+	 *         in the server
+	 */
 	private boolean buildUsers() {
-		File userFile = new File(SERVER + File.separator + USERS);
+		System.out.println("BUILDUSERS");
+		File users = new File(SERVER + File.separator + USERS);
+		File temp = new File(SERVER + File.separator + "temp.txt");
 		boolean create = false;
-		if (!userFile.exists()) {
+		// if users.txt does not exist create
+		if (!users.exists()) {
 			try {
-				create = userFile.createNewFile();
-				//GET key an chiper this file with server.key
+				System.out.println("BUILDUSERS::TRY");
+				create = temp.createNewFile();
+				System.out.println("BUILDUSERS::TRY + CREATE = " + create);
+				// GET key an chiper this file with server.key
 				SecretKey sk = SecurityUtil.getKeyFromServer();
-				SecurityUtil.encriptFile(userFile, sk);
+				SecurityUtil.cipherFile(temp.toPath(), sk, users.toPath());
+				System.out.println("BUILDUSERS:: AFTER ENCRIPT");
 			} catch (Exception e) {
+				e.printStackTrace();
 				System.err.println("THE FILE CAN NOT BE CREATED:: CHECK PERMISSIONS");
 			}
 		}
@@ -81,19 +119,52 @@ public class UserCatalog {
 		this.mapUsers = mapUsers;
 	}
 
+	/**
+	 * method to register a user in the map
+	 * 
+	 * @param name
+	 *            of the user
+	 * @param password
+	 *            of the user
+	 * @return
+	 */
 	public boolean registerUser(String name, String password) {
 		System.out.println("REGISTER USER");
+		Path users = Paths.get(SERVER + File.separator + USERS);
+		Path temp = Paths.get(SERVER + File.separator + "temp.txt");
+
 		mapUsers.put(name, new User(name, password));
-		persisteUser(name, password);
+		// get secretKey of the server
+		SecretKey sk = SecurityUtil.getKeyFromServer();
+
+		try {
+			// decript file of users
+			SecurityUtil.decipherFile(users, sk, temp);
+			persisteUser(name, password);
+			// encript file of users
+			SecurityUtil.cipherFile(temp, sk, users);
+
+		} catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException
+				| BadPaddingException | IOException e) {
+			e.printStackTrace();
+		}
+
 		System.out.println(mapUsers);
 		return true;
 
 	}
 
+	/**
+	 * Method to persist the user in a temp.txt file
+	 * 
+	 * @param name
+	 *            of the user
+	 * @param password
+	 *            of the user
+	 */
 	public void persisteUser(String name, String password) {
 		System.out.println("PERSISTING USER");
-		//decipher file,  write content, cipher again --> to do
-		try (FileWriter fw = new FileWriter(new File(SERVER + File.separator + USERS), true);
+		try (FileWriter fw = new FileWriter(new File(SERVER + File.separator + "temp.txt"), true);
 				BufferedWriter bf = new BufferedWriter(fw);
 				PrintWriter out = new PrintWriter(bf)) {
 			out.println(name + ":" + password);
@@ -103,6 +174,12 @@ public class UserCatalog {
 		System.out.println(mapUsers);
 	}
 
+	/**
+	 * method to check if the user already exists
+	 * 
+	 * @param user
+	 * @return
+	 */
 	public boolean userExists(String user) {
 		return mapUsers.containsKey(user);
 	}
