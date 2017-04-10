@@ -1,13 +1,17 @@
 package utilities;
 
 import static utilities.ReadWriteUtil.SERVER;
+
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -116,7 +120,11 @@ public class SecurityUtil {
 		}
 		return c;
 	}
-
+	/**
+	 * 
+	 * @param sk
+	 * @param path
+	 */
 	public static void persisteKey(SecretKey sk, String path) {
 		byte[] keyEncoded = sk.getEncoded();
 		if (!(new File("SERVER").exists())) {
@@ -156,34 +164,56 @@ public class SecurityUtil {
 		SecretKey sk = new SecretKeySpec(pass, AES);
 		persisteKey(sk, ReadWriteUtil.SERVER + File.separator + SERVER_KEY);
 	}
-
-	public static void encriptFile(File f, SecretKey sk) throws NoSuchAlgorithmException, NoSuchPaddingException,
-			InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
+	/**
+	 * 
+	 * @param temp
+	 * @param sk
+	 * @param encriptedFile
+	 * @throws NoSuchAlgorithmException
+	 * @throws NoSuchPaddingException
+	 * @throws InvalidKeyException
+	 * @throws IllegalBlockSizeException
+	 * @throws BadPaddingException
+	 * @throws IOException
+	 */
+	public static void cipherFile(Path temp, SecretKey sk, Path encriptedFile) throws NoSuchAlgorithmException,
+			NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
 		Cipher c = getCipher();
 		c.init(Cipher.ENCRYPT_MODE, sk);
 		// read file
-		FileInputStream fis = new FileInputStream(f);
-		// write file to c.cif
-		CipherOutputStream cos = new CipherOutputStream(
-				new FileOutputStream(new File(SERVER + File.separator + "users.cif")), c);
+		FileInputStream fis = new FileInputStream(temp.toFile());
+		// write encrypted file
+		CipherOutputStream cos = new CipherOutputStream(new FileOutputStream(encriptedFile.toFile()), c);
 		byte[] b = new byte[16];
 		int i = fis.read(b);
 		while (i != -1) {
 			cos.write(b, 0, i);
 			i = fis.read(b);
 		}
-		Files.deleteIfExists(f.toPath());
 		cos.close();
 		fis.close();
-	}
+		Files.deleteIfExists(temp);
 
-	public static void decriptFile(File f, SecretKey sk) throws NoSuchAlgorithmException, NoSuchPaddingException,
-			InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
+	}
+	/**
+	 * method to decipher a file 
+	 * @param fileToDecript
+	 * @param sk
+	 * @param temp
+	 * @throws NoSuchAlgorithmException
+	 * @throws NoSuchPaddingException
+	 * @throws InvalidKeyException
+	 * @throws IllegalBlockSizeException
+	 * @throws BadPaddingException
+	 * @throws IOException
+	 */
+	public static void decipherFile(Path fileToDecript, SecretKey sk, Path temp) throws NoSuchAlgorithmException,
+			NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
 		Cipher c = getCipher();
 		c.init(Cipher.DECRYPT_MODE, sk);
 		// get ciphered file
-		CipherInputStream cis = new CipherInputStream(new FileInputStream("a.cif"), c);
-		FileOutputStream fis = new FileOutputStream(new File("new.txt"));
+		CipherInputStream cis = new CipherInputStream(new FileInputStream(fileToDecript.toFile()), c);
+		FileOutputStream fis = new FileOutputStream(temp.toFile());
 		byte[] b = new byte[16];
 		int i = cis.read(b);
 		while (i != -1) {
@@ -193,7 +223,64 @@ public class SecurityUtil {
 		cis.close();
 		fis.close();
 	}
-
+	/**
+	 * 
+	 * @param f
+	 * @param sk
+	 * @throws NoSuchAlgorithmException
+	 * @throws NoSuchPaddingException
+	 * @throws InvalidKeyException
+	 * @throws IllegalBlockSizeException
+	 * @throws BadPaddingException
+	 * @throws IOException
+	 */
+	public static void decipherFileToMemory(File f, SecretKey sk) throws NoSuchAlgorithmException,
+			NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
+		Cipher c = getCipher();
+		c.init(Cipher.DECRYPT_MODE, sk);
+		// get ciphered file
+		CipherInputStream cis = new CipherInputStream(new FileInputStream(f), c);
+		BufferedOutputStream bf = new BufferedOutputStream(System.out);
+		byte[] b = new byte[16];
+		int i = cis.read(b);
+		while (i != -1) {
+			bf.write(b, 0, i);
+			i = cis.read(b);
+		}
+		cis.close();
+		bf.close();
+	}
+	/**
+	 * 
+	 * @param f
+	 * @param sk
+	 * @throws NoSuchAlgorithmException
+	 * @throws NoSuchPaddingException
+	 * @throws InvalidKeyException
+	 * @throws IllegalBlockSizeException
+	 * @throws BadPaddingException
+	 * @throws IOException
+	 */
+	public static void cipherFileToMemory(File f, SecretKey sk) throws NoSuchAlgorithmException,
+			NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
+		Cipher c = getCipher();
+		c.init(Cipher.DECRYPT_MODE, sk);
+		// get ciphered file
+		CipherInputStream cis = new CipherInputStream(new FileInputStream(f), c);
+		BufferedOutputStream bf = new BufferedOutputStream(System.out);
+		byte[] b = new byte[16];
+		int i = cis.read(b);
+		while (i != -1) {
+			bf.write(b, 0, i);
+			i = cis.read(b);
+		}
+		cis.close();
+		bf.close();
+	}
+	/**
+	 * method to get the key of the server
+	 * @return the secretKey
+	 */
 	public static SecretKey getKeyFromServer() {
 		byte[] secretKeyBytes = new byte[16];
 		try (ObjectInputStream out = new ObjectInputStream(
