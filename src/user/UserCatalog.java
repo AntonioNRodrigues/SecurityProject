@@ -183,5 +183,4 @@ public class UserCatalog {
 	public boolean userExists(String user) {
 		return mapUsers.containsKey(user);
 	}
-
 }
