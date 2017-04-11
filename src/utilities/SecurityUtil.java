@@ -16,6 +16,7 @@ import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
+import java.util.UUID;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -26,6 +27,8 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+
+import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 
 public class SecurityUtil {
 	public static final String AES = "AES";
@@ -120,6 +123,7 @@ public class SecurityUtil {
 		}
 		return c;
 	}
+
 	/**
 	 * 
 	 * @param sk
@@ -164,6 +168,7 @@ public class SecurityUtil {
 		SecretKey sk = new SecretKeySpec(pass, AES);
 		persisteKey(sk, ReadWriteUtil.SERVER + File.separator + SERVER_KEY);
 	}
+
 	/**
 	 * 
 	 * @param temp
@@ -195,8 +200,10 @@ public class SecurityUtil {
 		Files.deleteIfExists(temp);
 
 	}
+
 	/**
-	 * method to decipher a file 
+	 * method to decipher a file
+	 * 
 	 * @param fileToDecript
 	 * @param sk
 	 * @param temp
@@ -223,6 +230,7 @@ public class SecurityUtil {
 		cis.close();
 		fis.close();
 	}
+
 	/**
 	 * 
 	 * @param f
@@ -250,6 +258,7 @@ public class SecurityUtil {
 		cis.close();
 		bf.close();
 	}
+
 	/**
 	 * 
 	 * @param f
@@ -261,8 +270,8 @@ public class SecurityUtil {
 	 * @throws BadPaddingException
 	 * @throws IOException
 	 */
-	public static void cipherFileToMemory(File f, SecretKey sk) throws NoSuchAlgorithmException,
-			NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
+	public static void cipherFileToMemory(File f, SecretKey sk) throws NoSuchAlgorithmException, NoSuchPaddingException,
+			InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
 		Cipher c = getCipher();
 		c.init(Cipher.DECRYPT_MODE, sk);
 		// get ciphered file
@@ -277,8 +286,10 @@ public class SecurityUtil {
 		cis.close();
 		bf.close();
 	}
+
 	/**
 	 * method to get the key of the server
+	 * 
 	 * @return the secretKey
 	 */
 	public static SecretKey getKeyFromServer() {
@@ -293,5 +304,12 @@ public class SecurityUtil {
 		return sk;
 
 	}
-
+	/**
+	 * method to generate a NONCE
+	 * @return
+	 */
+	public String generateNonce() {
+		byte[] binaryData = UUID.randomUUID().toString().getBytes();
+		return Base64.encode(binaryData);
+	}
 }
