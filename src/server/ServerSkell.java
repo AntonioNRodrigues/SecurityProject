@@ -34,6 +34,7 @@ public class ServerSkell {
 	private ObjectInputStream in;
 	private RepositoryCatalog catRepo;
 	private UserCatalog catUsers;
+	private String nonce ;
 
 	public ServerSkell(MyGitServer my) {
 		this.catRepo = my.getCatRepo();
@@ -214,7 +215,8 @@ public class ServerSkell {
 								}
 							} else {
 								out.writeObject((Object) "NOK");
-								out.writeObject((Object) "O repositório local está sincronizado, não existe nenhuma versão mais recente dos ficheiros.");
+								out.writeObject(
+										(Object) "O repositório local está sincronizado, não existe nenhuma versão mais recente dos ficheiros.");
 							}
 						}
 						break;
@@ -413,8 +415,6 @@ public class ServerSkell {
 		{
 			out.writeObject((Object) "NOK");
 			out.writeObject((Object) "YOU DOT NOT HAVE PREMISSIONS TO KEEP GOING PLEASE CHECK PASSWORD");
-			// System.out.println("YOU DOT NOT HAVE PREMISSIONS TO KEEP GOING
-			// PLEASE CHECK PASSWORD");
 		}
 	}
 
@@ -423,9 +423,11 @@ public class ServerSkell {
 		if (msg instanceof MessageA) {
 			// caso de uso: "java myGit pedro 127.0.0.1:23456 -p badpwd1"
 			MessageA m = (MessageA) msg;
-
+			
 			User u = catUsers.getMapUsers().get(m.getLocalUser().getName());
 			// user does not exist, register user
+			// in this case since there is no pass in the system there is no way to check
+			// the messageDigest is good or not
 			if (u == null) {
 				catUsers.registerUser(m.getLocalUser().getName(), m.getPassword());
 				try {
@@ -491,6 +493,14 @@ public class ServerSkell {
 			}
 			return false;
 		}
+	}
+
+	public String getNonce() {
+		return nonce;
+	}
+
+	public void setNonce(String nonce) {
+		this.nonce = nonce;
 	}
 
 }
