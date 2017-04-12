@@ -45,7 +45,7 @@ public class MyGitServer {
 		System.out.println("MyGitServer:: Please fill up the password");
 		Scanner sc = new Scanner(System.in);
 		String pass = sc.nextLine();
-		//check && validate pass length > 6 and < 10 ex::: -----> TO DO
+		// check && validate pass length > 6 and < 10 ex::: -----> TO DO
 		System.out.println("MyGitServer is Running with password");
 		SecurityUtil.generateKeyFromPass(pass);
 		MyGitServer myGitServer = new MyGitServer();
@@ -63,15 +63,14 @@ public class MyGitServer {
 			System.err.println(e.getMessage());
 			System.exit(-1);
 		}
-		 ExecutorService executorService =
-		 Executors.newFixedThreadPool(MAX_THREADS);
+		ExecutorService executorService = Executors.newFixedThreadPool(MAX_THREADS);
 		System.out.println("MyGitServer Waiting for clients:");
 		while (true) {
 			try {
 				Socket inSoc = sSoc.accept();
 				ServerThread newServerThread = new ServerThread(inSoc);
-				//newServerThread.start();
-				 executorService.execute(newServerThread);
+				// newServerThread.start();
+				executorService.execute(newServerThread);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -109,8 +108,11 @@ public class MyGitServer {
 			try {
 				ObjectOutputStream outStream = new ObjectOutputStream(socket.getOutputStream());
 				ObjectInputStream inStream = new ObjectInputStream(socket.getInputStream());
+				String nonce = SecurityUtil.generateNonce();
+				outStream.writeObject((Object) nonce);
 				sk.setIn(inStream);
 				sk.setOut(outStream);
+				sk.setNonce(nonce);
 				Message m = null;
 
 				// receive message
