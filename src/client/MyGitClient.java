@@ -24,6 +24,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import enums.TypeOperation;
+import enums.TypeSend;
+import utilities.ReadWriteUtil;
 
 public class MyGitClient {
 
@@ -40,7 +42,7 @@ public class MyGitClient {
 	private Path file;
 	private String repName;
 	private String repOrFileName;
-
+	static String nonce;
 	public MyGitClient(String[] args) {
 
 		if (!validateArgs(args))
@@ -67,6 +69,11 @@ public class MyGitClient {
 			Socket socket = new Socket(myGitClient.getHost(), myGitClient.getPort());
 			ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
 			ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+			try {
+				nonce = (String) in.readObject();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
 
 			// Create the message handler
 			IMessageTypes mTypes = MessageFactory.INSTANCE.getmsgType(op);
@@ -84,7 +91,7 @@ public class MyGitClient {
 	}
 
 	private static void createLocalRepo(String repName) {
-		
+
 		Path path = Paths.get("CLIENT" + File.separator + repName);
 		boolean exists = Files.exists(path);
 		boolean isDirectory = Files.isDirectory(path);
@@ -326,7 +333,7 @@ public class MyGitClient {
 			ind = lArgs.indexOf("-push");
 			// System.out.println("ind: " + ind);
 
-			this.operation = "PUSH";
+			this.operation = TypeOperation.PUSH.toString();
 
 			if (lArgs.size() >= ind + 1) {
 				this.repOrFileName = lArgs.get(ind + 1);
@@ -343,7 +350,7 @@ public class MyGitClient {
 		} else if (lArgs.contains("-pull")) {
 			ind = lArgs.indexOf("-pull");
 
-			this.operation = "PULL";
+			this.operation = TypeOperation.PULL.toString();
 
 			if (lArgs.size() >= ind + 1) {
 				this.repOrFileName = lArgs.get(ind + 1);
@@ -359,7 +366,7 @@ public class MyGitClient {
 
 		} else if (lArgs.contains("-share")) {
 			ind = lArgs.indexOf("-share");
-			this.operation = "SHARE";
+			this.operation = TypeOperation.SHARE.toString();
 
 			if (lArgs.size() >= ind + 2) {
 				this.repName = lArgs.get(ind + 1);
@@ -373,7 +380,7 @@ public class MyGitClient {
 
 		} else if (lArgs.contains("-remove")) {
 			ind = lArgs.indexOf("-remove");
-			this.operation = "REMOVE";
+			this.operation = TypeOperation.REMOVE.toString();
 
 			if (lArgs.size() >= ind + 2) {
 				this.repName = lArgs.get(ind + 1);
@@ -388,7 +395,7 @@ public class MyGitClient {
 		} else {
 
 			if (lArgs.size() == 4) {
-				this.operation = "AUTH";
+				this.operation = TypeOperation.AUTH.toString();
 				if (valConnArgs(lArgs, 4))
 					validated = true;
 			} else
@@ -411,7 +418,7 @@ public class MyGitClient {
 			this.repName = repFile[1];
 			this.fileName = repFile[2];
 
-			Path path = Paths.get("CLIENT" + File.separator + repFile[1] + File.separator + repFile[2]); // owner/repo/file
+			Path path = Paths.get(ReadWriteUtil.CLIENT + File.separator + repFile[1] + File.separator + repFile[2]); // owner/repo/file
 			boolean exists = Files.exists(path);
 			boolean isFolder = Files.isDirectory(path);
 			boolean isFile = Files.isRegularFile(path);
@@ -428,7 +435,7 @@ public class MyGitClient {
 		else if (repFile.length == 2) {
 
 			// owner/repo
-			Path path1 = Paths.get("CLIENT" + File.separator + repFile[1]);
+			Path path1 = Paths.get(ReadWriteUtil.CLIENT + File.separator + repFile[1]);
 			boolean exists = Files.exists(path1);
 			boolean isFolder = Files.isDirectory(path1);
 			boolean isFile = Files.isRegularFile(path1);
@@ -436,13 +443,13 @@ public class MyGitClient {
 			if (exists && isFolder) {
 				this.userId = repFile[0];
 				this.repName = repFile[1];
-				this.setTypeSend("REPOSITORY");
+				this.setTypeSend(TypeSend.REPOSITORY.toString());
 				this.setFile(path1);
 				return true;
 			}
 
 			// repo/file
-			Path path2 = Paths.get("CLIENT" + File.separator + repFile[0] + File.separator + repFile[1]);
+			Path path2 = Paths.get(ReadWriteUtil.CLIENT + File.separator + repFile[0] + File.separator + repFile[1]);
 			exists = Files.exists(path2);
 			isFolder = Files.isDirectory(path2);
 			isFile = Files.isRegularFile(path2);
@@ -450,7 +457,7 @@ public class MyGitClient {
 			if (exists && isFile) {
 				this.repName = repFile[0];
 				this.fileName = repFile[1];
-				this.setTypeSend("FILE");
+				this.setTypeSend(TypeSend.FILE.toString());
 				this.setFile(path2);
 				return true;
 			}
