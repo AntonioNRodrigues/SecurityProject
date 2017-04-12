@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
 
@@ -26,13 +27,17 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.PBEParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 
+import sun.security.provider.SHA;
+
 public class SecurityUtil {
 	public static final String AES = "AES";
 	public static final String RSA = "RSA";
+	public static final String SHA_256 = "SHA-256";
 	public static final int bits_RSA = 2048;
 	public static final int bits_AES = 128;
 	public static final String SERVER_KEY = "Server.key";
@@ -304,12 +309,48 @@ public class SecurityUtil {
 		return sk;
 
 	}
+
 	/**
 	 * method to generate a NONCE
+	 * 
 	 * @return
 	 */
-	public String generateNonce() {
+	public static String generateNonce() {
 		byte[] binaryData = UUID.randomUUID().toString().getBytes();
 		return Base64.encode(binaryData);
+	}
+
+	/**
+	 * method to produce a sintese with a password and a nonce
+	 * 
+	 * @param pass
+	 *            use password
+	 * @param nonce
+	 *            UUID produce
+	 * @return MessageDigest
+	 */
+	public static MessageDigest calcSintese(String pass, String nonce) {
+		byte[] nonceBy = nonce.getBytes();
+		byte[] passBy = pass.getBytes();
+		MessageDigest md = null;
+		try {
+			md = MessageDigest.getInstance(SHA_256);
+			md.update(nonceBy);
+			md.update(passBy);
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+		return md;
+	}
+
+	/**
+	 * method to check is two message digest are equal
+	 * 
+	 * @param md1
+	 * @param md2
+	 * @return true is they are equal or false otherwise
+	 */
+	public static boolean isEqual(MessageDigest md1, MessageDigest md2) {
+		return MessageDigest.isEqual(md1.digest(), md2.digest());
 	}
 }
