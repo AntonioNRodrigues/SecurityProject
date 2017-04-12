@@ -2,6 +2,8 @@ package user;
 
 import java.io.Serializable;
 
+import utilities.SecurityUtil;
+
 public class User implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private String name;
@@ -16,7 +18,12 @@ public class User implements Serializable {
 	public User(String name, String password) {
 		super();
 		this.name = name;
-		this.password = password;
+	}
+
+	public User(String name, String password, String nonce) {
+		super();
+		this.name = name;
+		this.password = SecurityUtil.calcSintese(password, nonce).digest().toString();
 	}
 
 	public String getName() {
