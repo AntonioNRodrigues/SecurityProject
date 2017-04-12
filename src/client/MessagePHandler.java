@@ -57,9 +57,9 @@ public class MessagePHandler extends MessageHandler {
 
 		BasicFileAttributes attributes = getFileAttributes(params.getFile());
 
-		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(),
-				params.getPassword(), TypeSend.FILE, params.getRepName(), params.getFileName(), TypeOperation.PUSH, 1,
-				attributes.lastModifiedTime().toMillis());
+		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword(), MyGitClient.nonce),
+				params.getServerAddress(), params.getPassword(), TypeSend.FILE, params.getRepName(),
+				params.getFileName(), TypeOperation.PUSH, 1, attributes.lastModifiedTime().toMillis());
 
 		try {
 			out.writeObject((Object) mp);
@@ -101,9 +101,9 @@ public class MessagePHandler extends MessageHandler {
 
 		loadRepoFiles(params.getRepName());
 
-		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(),
-				params.getPassword(), TypeSend.REPOSITORY, params.getRepName(), TypeOperation.PUSH, filesList.size(),
-				0);
+		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword(), MyGitClient.nonce),
+				params.getServerAddress(), params.getPassword(), TypeSend.REPOSITORY, params.getRepName(),
+				TypeOperation.PUSH, filesList.size(), 0);
 
 		try {
 			out.writeObject((Object) mp);
@@ -163,9 +163,9 @@ public class MessagePHandler extends MessageHandler {
 			lastModifiedTime = attributes.lastModifiedTime().toMillis();
 		}
 
-		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(),
-				params.getPassword(), TypeSend.FILE, params.getRepName(), params.getFileName(), TypeOperation.PULL, 1,
-				lastModifiedTime);
+		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword(), MyGitClient.nonce),
+				params.getServerAddress(), params.getPassword(), TypeSend.FILE, params.getRepName(),
+				params.getFileName(), TypeOperation.PULL, 1, lastModifiedTime);
 
 		try {
 			out.writeObject((Object) mp);
@@ -183,7 +183,7 @@ public class MessagePHandler extends MessageHandler {
 		if (result.contentEquals("OK")) {
 			// receive the files
 			receiveFilesPullRep(params.getRepName(), in, out);
-				
+
 			System.out.println("O  ficheiro " + params.getFileName() + " foi copiado do servidor");
 		} else if (result.contentEquals("NOK")) {
 			String error = "";
@@ -206,7 +206,7 @@ public class MessagePHandler extends MessageHandler {
 		// serverAddress não será necessário, já está presente na criação
 		// do
 		// socket...
-		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(),
+		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword(), MyGitClient.nonce), params.getServerAddress(),
 				params.getPassword(), TypeSend.REPOSITORY, params.getRepName(), TypeOperation.PULL, 0, 0);
 
 		try {
@@ -258,18 +258,18 @@ public class MessagePHandler extends MessageHandler {
 				String path = CLIENT + File.separator + repoName + File.separator;
 				File received = ReadWriteUtil.receiveFile(path, in, out);
 				received.setLastModified(receivedTimeStamp);
-				File inRepo = new  File (CLIENT + File.separator + repoName + File.separator + received.getName().split(" ")[0]);
-				if (inRepo.exists()){
-					if(received.lastModified() <= inRepo.lastModified()){
+				File inRepo = new File(
+						CLIENT + File.separator + repoName + File.separator + received.getName().split(" ")[0]);
+				if (inRepo.exists()) {
+					if (received.lastModified() <= inRepo.lastModified()) {
 						Files.deleteIfExists(received.toPath());
-					}else if (received.lastModified() > inRepo.lastModified()){
+					} else if (received.lastModified() > inRepo.lastModified()) {
 						received.renameTo(inRepo);
 					}
-				}else if (!(inRepo.exists())){
+				} else if (!(inRepo.exists())) {
 					received.renameTo(inRepo);
 				}
 
-			
 			} catch (ClassNotFoundException | IOException e) {
 				e.printStackTrace();
 			}
@@ -295,18 +295,18 @@ public class MessagePHandler extends MessageHandler {
 				String path = CLIENT + File.separator + repoName + File.separator;
 				File received = ReadWriteUtil.receiveFile(path, in, out);
 				received.setLastModified(receivedTimeStamp);
-				File inRepo = new  File (CLIENT + File.separator + repoName + File.separator + received.getName().split(" ")[0]);
-				if (inRepo.exists()){
-					if(received.lastModified() <= inRepo.lastModified()){
+				File inRepo = new File(
+						CLIENT + File.separator + repoName + File.separator + received.getName().split(" ")[0]);
+				if (inRepo.exists()) {
+					if (received.lastModified() <= inRepo.lastModified()) {
 						Files.deleteIfExists(received.toPath());
-					}else if (received.lastModified() > inRepo.lastModified()){
+					} else if (received.lastModified() > inRepo.lastModified()) {
 						received.renameTo(inRepo);
 					}
-				}else if (!(inRepo.exists())){
+				} else if (!(inRepo.exists())) {
 					received.renameTo(inRepo);
 				}
 
-			
 			} catch (ClassNotFoundException | IOException e) {
 				e.printStackTrace();
 			}

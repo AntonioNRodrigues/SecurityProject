@@ -6,11 +6,13 @@ import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.security.MessageDigest;
 
 import message.Message;
 import message.MessageA;
 import user.User;
 import utilities.ReadWriteUtil;
+import utilities.SecurityUtil;
 
 public abstract class MessageHandler implements IMessageTypes {
 
@@ -36,10 +38,9 @@ public abstract class MessageHandler implements IMessageTypes {
 	}
 
 	public String sendAuthMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
-
 		// Mensagem de autenticacao
-		Message m = new MessageA(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(),
-				params.getPassword());
+		Message m = new MessageA(new User(params.getLocalUser(), params.getPassword(), MyGitClient.nonce),
+				params.getServerAddress(), params.getPassword());
 
 		try {
 			out.writeObject((Object) m);
