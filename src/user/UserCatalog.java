@@ -76,9 +76,12 @@ public class UserCatalog {
 		User u = null;
 		if (userPass.length == 1) {
 			u = new User(userPass[0]);
+			System.out.println(u);
 		} else {
 			u = new User(userPass[0], userPass[1]);
+			System.out.println(u);
 		}
+		System.out.println(mapUsers);
 		mapUsers.put(u.getName(), u);
 	}
 
@@ -99,7 +102,7 @@ public class UserCatalog {
 				System.out.println("BUILDUSERS::TRY");
 				create = temp.createNewFile();
 				System.out.println("BUILDUSERS::TRY + CREATE = " + create);
-				// GET key an chiper this file with server.key
+				// GET key an cipher this file with server.key
 				SecretKey sk = SecurityUtil.getKeyFromServer();
 				SecurityUtil.cipherFile(temp.toPath(), sk, users.toPath());
 				System.out.println("BUILDUSERS:: AFTER ENCRIPT");
