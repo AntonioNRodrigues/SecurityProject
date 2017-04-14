@@ -15,6 +15,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import enums.TypeOperation;
@@ -28,13 +29,14 @@ import server.repository.RepositoryCatalog;
 import user.User;
 import user.UserCatalog;
 import utilities.ReadWriteUtil;
+import utilities.SecurityUtil;
 
 public class ServerSkell {
 	private ObjectOutputStream out;
 	private ObjectInputStream in;
 	private RepositoryCatalog catRepo;
 	private UserCatalog catUsers;
-	private String nonce ;
+	private String nonce;
 
 	public ServerSkell(MyGitServer my) {
 		this.catRepo = my.getCatRepo();
@@ -423,10 +425,11 @@ public class ServerSkell {
 		if (msg instanceof MessageA) {
 			// caso de uso: "java myGit pedro 127.0.0.1:23456 -p badpwd1"
 			MessageA m = (MessageA) msg;
-			
+
 			User u = catUsers.getMapUsers().get(m.getLocalUser().getName());
 			// user does not exist, register user
-			// in this case since there is no pass in the system there is no way to check
+			// in this case since there is no pass in the system there is no way
+			// to check
 			// the messageDigest is good or not
 			if (u == null) {
 				catUsers.registerUser(m.getLocalUser().getName(), m.getPassword());
@@ -439,7 +442,23 @@ public class ServerSkell {
 			}
 			// user exists check permissions
 			if (u != null) {
+				
+				byte [] mdUser = m.getLocalUser().getB();
+				String str = u.getPassword()+getNonce();
+				byte [] mdServer = SecurityUtil.calcSintese(str);
+
+				boolean mdCompare = MessageDigest.isEqual(mdUser, mdServer);
+				System.out.println(mdCompare);
+				if(mdCompare){
+					try {
+						out.writeObject((Object) "OK");
+						out.writeObject((Object) "-- O  utilizador " + m.getLocalUser().getName() + " foi autenticado");
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
 				// user has password filled and its the same
+
 				if (u.getPassword().equals(m.getLocalUser().getPassword())) {
 					try {
 						out.writeObject((Object) "OK");
