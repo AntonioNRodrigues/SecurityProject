@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.InvalidKeyException;
@@ -319,38 +320,20 @@ public class SecurityUtil {
 		byte[] binaryData = UUID.randomUUID().toString().getBytes();
 		return Base64.encode(binaryData);
 	}
-
 	/**
-	 * method to produce a sintese with a password and a nonce
-	 * 
-	 * @param pass
-	 *            use password
-	 * @param nonce
-	 *            UUID produce
-	 * @return MessageDigest
+	 * method to calculate a sintes
+	 * @param passNonce
+	 * @return
 	 */
-	public static MessageDigest calcSintese(String pass, String nonce) {
-		byte[] nonceBy = nonce.getBytes();
-		byte[] passBy = pass.getBytes();
-		MessageDigest md = null;
+	public static byte [] calcSintese(String passNonce) {
+		byte [] message = null;
 		try {
-			md = MessageDigest.getInstance(SHA_256);
-			md.update(nonceBy);
-			md.update(passBy);
-		} catch (NoSuchAlgorithmException e) {
+			byte[] auxMessage = passNonce.getBytes("UTF-8");
+			MessageDigest messageDigest = MessageDigest.getInstance(SHA_256);
+			message = messageDigest.digest(auxMessage);
+		} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
-		return md;
-	}
-
-	/**
-	 * method to check is two message digest are equal
-	 * 
-	 * @param md1
-	 * @param md2
-	 * @return true is they are equal or false otherwise
-	 */
-	public static boolean isEqual(MessageDigest md1, MessageDigest md2) {
-		return MessageDigest.isEqual(md1.digest(), md2.digest());
+		return message;
 	}
 }
