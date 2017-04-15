@@ -2,6 +2,7 @@ package utilities;
 
 import static utilities.ReadWriteUtil.SERVER;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -9,7 +10,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,7 +18,11 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.util.Formatter;
+import java.util.Random;
 import java.util.UUID;
 
 import javax.crypto.BadPaddingException;
@@ -30,20 +34,20 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.PBEParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
-
-import sun.security.provider.SHA;
 
 public class SecurityUtil {
 	public static final String AES = "AES";
 	public static final String RSA = "RSA";
 	public static final String SHA_256 = "SHA-256";
+	public static final String SHA_256_RSA = SHA_256 + "with" + RSA;
 	public static final int bits_RSA = 2048;
 	public static final int bits_AES = 128;
 	public static final String SERVER_KEY = "Server.key";
+	public static final String EXT_SIG = ".sig";
+	public static final String EXT_KEY_SERVER = ".key.server";
 
 	/**
 	 * 
@@ -322,13 +326,15 @@ public class SecurityUtil {
 		byte[] binaryData = UUID.randomUUID().toString().getBytes();
 		return Base64.encode(binaryData);
 	}
+
 	/**
 	 * method to calculate a sintes
+	 * 
 	 * @param passNonce
 	 * @return
 	 */
-	public static byte [] calcSintese(String passNonce) {
-		byte [] message = null;
+	public static byte[] calcSintese(String passNonce) {
+		byte[] message = null;
 		try {
 			byte[] auxMessage = passNonce.getBytes("UTF-8");
 			MessageDigest messageDigest = MessageDigest.getInstance(SHA_256);
@@ -338,24 +344,87 @@ public class SecurityUtil {
 		}
 		return message;
 	}
-	
+
 	public static String calcHMAC(Path path, String key, String algorithm)
-			throws NoSuchAlgorithmException, InvalidKeyException, IOException
-	{
-		//usar como algoritmo "HmacSHA256"
+			throws NoSuchAlgorithmException, InvalidKeyException, IOException {
+		// usar como algoritmo "HmacSHA256"
 		SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(), algorithm);
 		Mac mac = Mac.getInstance(algorithm);
 		mac.init(secretKey);
-		//Note that this method is intended for simple cases where it is convenient to read all bytes into a byte array. It is not intended for reading in large files.
+		// Note that this method is intended for simple cases where it is
+		// convenient to read all bytes into a byte array. It is not intended
+		// for reading in large files.
 		return hexString(mac.doFinal(Files.readAllBytes(path)));
 	}
-	
+
 	private static String hexString(byte[] bytes) {
-		Formatter formatter = new Formatter();	
+		Formatter formatter = new Formatter();
 		for (byte b : bytes)
 			formatter.format("%02x", b);
 		return formatter.toString();
-	}	
+	}
 
-	
+	/**
+	 * method to get a assinatura digital (Signature)
+	 * 
+	 * @param pk
+	 */
+	public static Signature getSignature(PrivateKey pk) {
+		Signature s = null;
+		try {
+			s = Signature.getInstance(SHA_256_RSA);
+			s.initSign(pk);
+		} catch (NoSuchAlgorithmException | InvalidKeyException e) {
+			e.printStackTrace();
+		}
+		return s;
+	}
+
+	/**
+	 * method to read the content of the file and update its signature
+	 * 
+	 * @param file
+	 *            the file to read and to generate the signature
+	 * @param pk
+	 *            private key to cipher the signature
+	 * @return the signature of that specific file
+	 * @throws SignatureException
+	 */
+	public static byte[] generateSignatureOfFile(Path file, PrivateKey pk) throws SignatureException {
+		Signature s = getSignature(pk);
+
+		try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file.toFile()))) {
+
+			byte[] b = new byte[16];
+			int i = bis.read(b);
+
+			while (i != -1) {
+				s.update(b, 0, i);
+				i = bis.read(b);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return s.sign();
+	}
+
+	/**
+	 * method to read the content of the file and update its signature
+	 * 
+	 * @param file
+	 *            the file to read and to generate the signature
+	 * @param pk
+	 *            private key to cipher the signature
+	 * @return the signature of that specific file
+	 * @throws SignatureException
+	 */
+	public static void persistSignToFile(byte[] data, String nameFile, String nameRepo) throws SignatureException {
+		File signature = new File(SERVER + File.separator + nameRepo + File.separator + nameFile + EXT_SIG);
+		try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(signature))) {
+			bos.write(data);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 }
