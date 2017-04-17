@@ -3,6 +3,9 @@ package utilities;
 import static utilities.ReadWriteUtil.SERVER;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -228,15 +231,15 @@ public class SecurityUtil {
 		c.init(Cipher.DECRYPT_MODE, sk);
 		// get ciphered file
 		CipherInputStream cis = new CipherInputStream(new FileInputStream(fileToDecript.toFile()), c);
-		FileOutputStream fis = new FileOutputStream(temp.toFile());
+		FileOutputStream fos = new FileOutputStream(temp.toFile());
 		byte[] b = new byte[16];
 		int i = cis.read(b);
 		while (i != -1) {
-			fis.write(b, 0, i);
+			fos.write(b, 0, i);
 			i = cis.read(b);
 		}
 		cis.close();
-		fis.close();
+		fos.close();
 	}
 
 	/**
@@ -250,21 +253,27 @@ public class SecurityUtil {
 	 * @throws BadPaddingException
 	 * @throws IOException
 	 */
-	public static void decipherFileToMemory(File f, SecretKey sk) throws NoSuchAlgorithmException,
+	public static String decipherFileToMemory(File f, SecretKey sk) throws NoSuchAlgorithmException,
 			NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
 		Cipher c = getCipher();
 		c.init(Cipher.DECRYPT_MODE, sk);
+
+		byte[] fileInBytes = new byte[(int) f.length()];
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		// get ciphered file
 		CipherInputStream cis = new CipherInputStream(new FileInputStream(f), c);
-		BufferedOutputStream bf = new BufferedOutputStream(System.out);
+		
 		byte[] b = new byte[16];
 		int i = cis.read(b);
 		while (i != -1) {
-			bf.write(b, 0, i);
+			bos.write(b, 0, i);
 			i = cis.read(b);
 		}
+		fileInBytes = bos.toByteArray();
 		cis.close();
-		bf.close();
+		bos.close();
+
+		return new String(fileInBytes, "UTF-8");
 	}
 
 	/**
@@ -322,13 +331,15 @@ public class SecurityUtil {
 		byte[] binaryData = UUID.randomUUID().toString().getBytes();
 		return Base64.encode(binaryData);
 	}
+
 	/**
 	 * method to calculate a sintes
+	 * 
 	 * @param passNonce
 	 * @return
 	 */
-	public static byte [] calcSintese(String passNonce) {
-		byte [] message = null;
+	public static byte[] calcSintese(String passNonce) {
+		byte[] message = null;
 		try {
 			byte[] auxMessage = passNonce.getBytes("UTF-8");
 			MessageDigest messageDigest = MessageDigest.getInstance(SHA_256);
@@ -338,24 +349,24 @@ public class SecurityUtil {
 		}
 		return message;
 	}
-	
+
 	public static String calcHMAC(Path path, String key, String algorithm)
-			throws NoSuchAlgorithmException, InvalidKeyException, IOException
-	{
-		//usar como algoritmo "HmacSHA256"
+			throws NoSuchAlgorithmException, InvalidKeyException, IOException {
+		// usar como algoritmo "HmacSHA256"
 		SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(), algorithm);
 		Mac mac = Mac.getInstance(algorithm);
 		mac.init(secretKey);
-		//Note that this method is intended for simple cases where it is convenient to read all bytes into a byte array. It is not intended for reading in large files.
+		// Note that this method is intended for simple cases where it is
+		// convenient to read all bytes into a byte array. It is not intended
+		// for reading in large files.
 		return hexString(mac.doFinal(Files.readAllBytes(path)));
 	}
-	
+
 	private static String hexString(byte[] bytes) {
-		Formatter formatter = new Formatter();	
+		Formatter formatter = new Formatter();
 		for (byte b : bytes)
 			formatter.format("%02x", b);
 		return formatter.toString();
-	}	
+	}
 
-	
 }
