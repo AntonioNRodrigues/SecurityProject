@@ -306,6 +306,7 @@ public class SecurityUtil {
 			InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
 		Cipher c = getCipher();
 		c.init(Cipher.ENCRYPT_MODE, sk);
+		
 		// get ciphered file
 		CipherInputStream cis = new CipherInputStream(new FileInputStream(f), c);
 		BufferedOutputStream bf = new BufferedOutputStream(System.out);
