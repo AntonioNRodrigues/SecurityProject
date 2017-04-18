@@ -259,6 +259,39 @@ public class ServerSkell {
 								try {
 
 									String path = SERVER + File.separator + mp.getRepoName() + File.separator;
+									
+									//Recebe assinatura do ficheiro
+									byte[] signature = (byte[]) in.readObject();
+									//Guarda-a com a extensão .sig
+									FileOutputStream ass = new FileOutputStream(path + mp.getFileName() + ".sig");
+									ass.write(signature);
+									
+									//Recebe chave key para depois cifrá-la usando a sua chave pública
+									SecretKey key = (SecretKey) in.readObject();
+									
+									//TODO: CORRIGIR ESTA PARTE: Cifra a chave com a chave pública, usando uma keytool (ATENÇAO... AS KEYTOOLS foram criadas antes?!)
+								    //cifrar chave AES com chave publica
+								    /*
+								     * 1- buscar chave publica -> keystore
+								     * 2 - cifrar chave publica 
+								     */
+								    FileInputStream kfile = new FileInputStream("keystore.dd");  //keystore
+								    KeyStore kstore = KeyStore.getInstance("JKS");
+								    kstore.load(kfile, "serverpass".toCharArray());           //TODO: PASSWORD DO SERVIDOR
+								    Certificate cert =kstore.getCertificate("server");       //TODO: alias do utilizador
+								    
+								    Cipher cif = Cipher.getInstance("RSA");
+								    cif.init(Cipher.WRAP_MODE, cert);
+								    byte [] chaveCifrada = cif.wrap(key);
+								    
+								    
+								    byte[] keyEncoded = key.getEncoded();
+								    FileOutputStream kos = new FileOutputStream(path + mp.getFileName() + ".key.server");
+								    kos.write(chaveCifrada);
+								    kos.close();
+									
+									
+									
 									Long timestampReceivedFile = (Long) in.readObject();
 									File received = ReadWriteUtil.receiveFile(SERVER + File.separator, in, out);
 
@@ -287,6 +320,12 @@ public class ServerSkell {
 									}
 
 								} catch (ClassNotFoundException e) {
+									e.printStackTrace();
+								} catch (InvalidKeyException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								} catch (IllegalBlockSizeException e) {
+									// TODO Auto-generated catch block
 									e.printStackTrace();
 								}
 							}

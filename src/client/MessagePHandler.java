@@ -162,9 +162,34 @@ public class MessagePHandler extends MessageHandler {
 			for (Path path : filesList) {
 				try {
 					File f = path.toFile();
+					
+					//Gera chave privada através da password do utilizador - 
+					//TODO: VERIFICAR COMO É QUE O UTILIZADOR OBTEM A CHAVE PRIVADA / COMO É PARTILHADA?!
+					PrivateKey pk = SecurityUtil.generatePrivateKeyFromPass(params.getPassword());
+					
+					//Cliente gera a assinatura digital do ficheiro em claro
+					byte[] signature = SecurityUtil.generateSignatureOfFile(params.getFile(), pk);
+					//Envia a assinatura
+					out.writeObject(signature);
+					
+					 //gerar uma chave aleatória para utilizar com o AES
+				    SecretKey key = SecurityUtil.getKey();
+				    
+				    Path cifrado = Paths.get(params.getFile().getFileName() + ".cif");
+				    
+				    //Cifrar o ficheiro com a chave criada
+				    SecurityUtil.cipherFile(params.getFile(), key, cifrado);
+					
+				    //Envia a chave para o Servidor
+				    out.writeObject(key);
+				    
+					//Prepara e envia o ficheiro
 					out.writeObject((Object) f.lastModified());
-					ReadWriteUtil.sendFile(path, in, out);
+					ReadWriteUtil.sendFile(cifrado, in, out);
 				} catch (IOException e) {
+					e.printStackTrace();
+				} catch (GeneralSecurityException e) {
+					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				System.out.println("-- O  repositÃ³rio " + params.getRepName() + " foi copiado  para o  servidor");
