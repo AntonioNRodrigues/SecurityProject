@@ -6,21 +6,34 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.security.GeneralSecurityException;
+import java.security.PrivateKey;
+import java.security.Signature;
+import java.security.SignatureException;
+import java.security.SignedObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
+
+
 import enums.TypeOperation;
 import enums.TypeSend;
 import message.MessageP;
 import user.User;
 import utilities.ReadWriteUtil;
+import utilities.SecurityUtil;
 
 public class MessagePHandler extends MessageHandler {
 
+	/**
+	 * 
+	 */
+	
 	private List<Path> filesList;
 
 	public MessagePHandler() {
@@ -29,7 +42,7 @@ public class MessagePHandler extends MessageHandler {
 	}
 
 	@Override
-	public String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
+	public String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) throws GeneralSecurityException {
 
 		if (params.getOperation().contentEquals(TypeOperation.PUSH.toString())) {
 
@@ -50,7 +63,7 @@ public class MessagePHandler extends MessageHandler {
 				+ " " + params.getRepOrFileName();
 	}
 
-	private String sendPushFileMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
+	private String sendPushFileMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) throws GeneralSecurityException {
 
 		// o tipo do timestamp Ã© FileTime que Ã© timezone independent!
 		// LocalDateTime timestamp = LocalDateTime.now();
@@ -77,8 +90,21 @@ public class MessagePHandler extends MessageHandler {
 		if (result.contentEquals("OK")) {
 			// Enviar o ficheiro
 			try {
+				//Gera chave privada através da password do utilizador - 
+				//TODO: Integrar num SecurityUtil de forma a ser direccionado para os clientes
+				//TODO: VERIFICAR COMO É QUE O UTILIZADOR OBTEM A CHAVE PRIVADA / COMO É PARTILHADA?!
+				PrivateKey pk = SecurityUtil.generatePrivateKeyFromPass(params.getPassword());
+				
+				//Cliente gera a assinatura digital do ficheiro em claro
+				byte[] signature = SecurityUtil.generateSignatureOfFile(params.getFile(), pk);
+				//Envia a assinatura
+				out.writeObject((Object) signature);
+				
+				//Prepara e envia o ficheiro
 				ReadWriteUtil.sendFile(params.getFile(), in, out);
 			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (SignatureException e) {
 				e.printStackTrace();
 			}
 			System.out.println("-- O  ficheiro " + params.getFileName() + " foi copiado  para o servidor");

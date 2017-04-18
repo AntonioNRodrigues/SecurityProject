@@ -13,7 +13,9 @@ import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
@@ -21,6 +23,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.Arrays;
 import java.util.Formatter;
 import java.util.Random;
 import java.util.UUID;
@@ -35,6 +39,7 @@ import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import javax.xml.bind.DatatypeConverter;
 
 import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 
@@ -137,7 +142,7 @@ public class SecurityUtil {
 	}
 
 	/**
-	 * 
+	 * Do lado do servidor
 	 * @param sk
 	 * @param path
 	 */
@@ -179,6 +184,21 @@ public class SecurityUtil {
 		byte[] pass = str.getBytes();
 		SecretKey sk = new SecretKeySpec(pass, AES);
 		persisteKey(sk, ReadWriteUtil.SERVER + File.separator + SERVER_KEY);
+	}
+	
+	/**
+	 * Gera uma Private Key a partir de uma password
+	 * @author pedro
+	 * @param pass
+	 * @return
+	 */
+	public static PrivateKey generatePrivateKeyFromPass(String pass) throws GeneralSecurityException{
+		byte[] clear = DatatypeConverter.parseBase64Binary(pass);
+	    PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(clear);
+	    KeyFactory fact = KeyFactory.getInstance("RSA");
+	    PrivateKey priv = fact.generatePrivate(keySpec);
+	    Arrays.fill(clear, (byte) 0);
+	    return priv;
 	}
 
 	/**
@@ -285,7 +305,7 @@ public class SecurityUtil {
 	public static void cipherFileToMemory(File f, SecretKey sk) throws NoSuchAlgorithmException, NoSuchPaddingException,
 			InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
 		Cipher c = getCipher();
-		c.init(Cipher.DECRYPT_MODE, sk);
+		c.init(Cipher.ENCRYPT_MODE, sk);
 		// get ciphered file
 		CipherInputStream cis = new CipherInputStream(new FileInputStream(f), c);
 		BufferedOutputStream bf = new BufferedOutputStream(System.out);
@@ -328,7 +348,7 @@ public class SecurityUtil {
 	}
 
 	/**
-	 * method to calculate a sintes
+	 * method to calculate a sintese
 	 * 
 	 * @param passNonce
 	 * @return

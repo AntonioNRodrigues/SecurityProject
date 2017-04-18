@@ -11,6 +11,7 @@ import java.io.ObjectOutputStream;
 import java.nio.file.Path;
 import java.util.Random;
 
+
 public class ReadWriteUtil {
 	private static final int VALUE = 1024;
 	public static final String SERVER = "SERVER";
@@ -18,9 +19,11 @@ public class ReadWriteUtil {
 	public static final String OWNER = "owner.txt";
 	public static final String SHARED = "shared.txt";
 	public static final String USERS = "users.txt";
-
+	
 	public static void sendFile(Path path, ObjectInputStream inStream, ObjectOutputStream outStream)
 			throws IOException {
+		
+		//envia ficheiro
 		File f = path.toFile();
 
 		BufferedInputStream inputFileStream = new BufferedInputStream(new FileInputStream(f));
@@ -28,7 +31,8 @@ public class ReadWriteUtil {
 		// send size of file
 		outStream.writeObject((Object) sizeFile);
 		System.out.println(f.getName());
-		// send the filename
+		
+		// send the filename + assinatura
 		outStream.writeObject((Object) f.getName());
 
 		byte buffer[] = new byte[VALUE];
@@ -65,6 +69,7 @@ public class ReadWriteUtil {
 
 	public static File receiveFile(String path, ObjectInputStream inStream, ObjectOutputStream outStream)
 			throws ClassNotFoundException, IOException {
+		
 		System.out.println("received File");
 		Long sizeFile = (Long) inStream.readObject();
 		String filename = (String) inStream.readObject();
@@ -132,4 +137,6 @@ public class ReadWriteUtil {
 	public static String getRealFileName(String f) {
 		return f.split(" ")[0];
 	}
+
+	
 }

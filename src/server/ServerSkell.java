@@ -367,6 +367,14 @@ public class ServerSkell {
 								try {
 									String path = SERVER + File.separator + mp.getRepoName() + File.separator;
 									String tempPath = SERVER + File.separator;
+									
+									//Recebe assinatura do ficheiro
+									byte[] signature = (byte[]) in.readObject();
+									
+									//Guarda-a com a extensão .sig
+									File ass = new File(path + mp.getFileName() + ".sig");
+									
+									
 									File received = ReadWriteUtil.receiveFile(tempPath, in, out);
 									received.setLastModified(mp.getTimestamp());
 									File fileInRepo = rr.getFile(mp.getFileName());
