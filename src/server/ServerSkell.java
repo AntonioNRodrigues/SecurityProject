@@ -266,6 +266,8 @@ public class ServerSkell {
 									FileOutputStream ass = new FileOutputStream(path + mp.getFileName() + ".sig");
 									ass.write(signature);
 									
+									ass.close();
+									
 									//Recebe chave key para depois cifrá-la usando a sua chave pública
 									SecretKey key = (SecretKey) in.readObject();
 									
@@ -422,11 +424,13 @@ public class ServerSkell {
 									String path = SERVER + File.separator + mp.getRepoName() + File.separator;
 									String tempPath = SERVER + File.separator;
 									
+									
 									//Recebe assinatura do ficheiro
 									byte[] signature = (byte[]) in.readObject();
 									//Guarda-a com a extensão .sig
 									FileOutputStream ass = new FileOutputStream(path + mp.getFileName() + ".sig");
 									ass.write(signature);
+									ass.close();
 									
 									//Recebe chave key para depois cifrá-la usando a sua chave pública
 									SecretKey key = (SecretKey) in.readObject();
