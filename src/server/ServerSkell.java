@@ -10,13 +10,26 @@ package server;
 import static utilities.ReadWriteUtil.SERVER;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.InvalidKeyException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
 
 import enums.TypeOperation;
 import enums.TypeSend;
@@ -64,7 +77,7 @@ public class ServerSkell {
 		this.in = in;
 	}
 
-	public void receiveMsg(Message msg) throws ClassNotFoundException, IOException {
+	public void receiveMsg(Message msg) throws ClassNotFoundException, IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException, NoSuchPaddingException {
 		catRepo.listRepos();
 
 		RemoteRepository rr = null;
@@ -365,16 +378,44 @@ public class ServerSkell {
 
 								// Receber ficheiro
 								try {
+									
+									//Prepara caminhos para o ficheiro
 									String path = SERVER + File.separator + mp.getRepoName() + File.separator;
 									String tempPath = SERVER + File.separator;
 									
 									//Recebe assinatura do ficheiro
 									byte[] signature = (byte[]) in.readObject();
-									
 									//Guarda-a com a extensão .sig
-									File ass = new File(path + mp.getFileName() + ".sig");
+									FileOutputStream ass = new FileOutputStream(path + mp.getFileName() + ".sig");
+									ass.write(signature);
 									
+									//Recebe chave key para depois cifrá-la usando a sua chave pública
+									SecretKey key = (SecretKey) in.readObject();
 									
+									//TODO: CORRIGIR ESTA PARTE: Cifra a chave com a chave pública, usando uma keytool (ATENÇAO... AS KEYTOOLS foram criadas antes?!)
+								    //cifrar chave AES com chave publica
+								    /*
+								     * 1- buscar chave publica -> keystore
+								     * 2 - cifrar chave publica 
+								     */
+								    FileInputStream kfile = new FileInputStream("keystore.dd");  //keystore
+								    KeyStore kstore = KeyStore.getInstance("JKS");
+								    kstore.load(kfile, "serverpass".toCharArray());           //TODO: PASSWORD DO SERVIDOR
+								    Certificate cert =kstore.getCertificate("server");       //TODO: alias do utilizador
+								    
+								    Cipher cif = Cipher.getInstance("RSA");
+								    cif.init(Cipher.WRAP_MODE, cert);
+								    byte [] chaveCifrada = cif.wrap(key);
+								    
+								    
+								    byte[] keyEncoded = key.getEncoded();
+								    FileOutputStream kos = new FileOutputStream("a.key");
+								    ObjectOutputStream oos = new ObjectOutputStream(kos);
+								    oos.write(chaveCifrada);
+								    oos.close();
+								    
+								    
+								    //Recebe ficheiro
 									File received = ReadWriteUtil.receiveFile(tempPath, in, out);
 									received.setLastModified(mp.getTimestamp());
 									File fileInRepo = rr.getFile(mp.getFileName());
@@ -407,6 +448,12 @@ public class ServerSkell {
 									}
 
 								} catch (ClassNotFoundException e) {
+									e.printStackTrace();
+								} catch (InvalidKeyException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								} catch (IllegalBlockSizeException e) {
+									// TODO Auto-generated catch block
 									e.printStackTrace();
 								}
 

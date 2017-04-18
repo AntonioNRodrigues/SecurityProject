@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 
 import enums.TypeOperation;
 import enums.TypeSend;
@@ -91,17 +93,27 @@ public class MessagePHandler extends MessageHandler {
 			// Enviar o ficheiro
 			try {
 				//Gera chave privada através da password do utilizador - 
-				//TODO: Integrar num SecurityUtil de forma a ser direccionado para os clientes
 				//TODO: VERIFICAR COMO É QUE O UTILIZADOR OBTEM A CHAVE PRIVADA / COMO É PARTILHADA?!
 				PrivateKey pk = SecurityUtil.generatePrivateKeyFromPass(params.getPassword());
 				
 				//Cliente gera a assinatura digital do ficheiro em claro
 				byte[] signature = SecurityUtil.generateSignatureOfFile(params.getFile(), pk);
 				//Envia a assinatura
-				out.writeObject((Object) signature);
+				out.writeObject(signature);
 				
+				 //gerar uma chave aleatória para utilizar com o AES
+			    SecretKey key = SecurityUtil.getKey();
+			    
+			    Path cifrado = Paths.get(params.getFile().getFileName() + ".cif");
+			    
+			    //Cifrar o ficheiro com a chave criada
+			    SecurityUtil.cipherFile(params.getFile(), key, cifrado);
+				
+			    //Envia a chave para o Servidor
+			    out.writeObject(key);
+			    
 				//Prepara e envia o ficheiro
-				ReadWriteUtil.sendFile(params.getFile(), in, out);
+				ReadWriteUtil.sendFile(cifrado, in, out);
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (SignatureException e) {

@@ -11,6 +11,8 @@ import java.io.ObjectOutputStream;
 import java.nio.file.Path;
 import java.util.Random;
 
+import javax.crypto.SecretKey;
+
 
 public class ReadWriteUtil {
 	private static final int VALUE = 1024;
@@ -23,7 +25,7 @@ public class ReadWriteUtil {
 	public static void sendFile(Path path, ObjectInputStream inStream, ObjectOutputStream outStream)
 			throws IOException {
 		
-		//envia ficheiro
+		//envia ficheiro cifrado
 		File f = path.toFile();
 
 		BufferedInputStream inputFileStream = new BufferedInputStream(new FileInputStream(f));
