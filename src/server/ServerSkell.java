@@ -409,10 +409,9 @@ public class ServerSkell {
 								    
 								    
 								    byte[] keyEncoded = key.getEncoded();
-								    FileOutputStream kos = new FileOutputStream("a.key");
-								    ObjectOutputStream oos = new ObjectOutputStream(kos);
-								    oos.write(chaveCifrada);
-								    oos.close();
+								    FileOutputStream kos = new FileOutputStream(path + mp.getFileName() + ".key.server");
+								    kos.write(chaveCifrada);
+								    kos.close();
 								    
 								    
 								    //Recebe ficheiro
