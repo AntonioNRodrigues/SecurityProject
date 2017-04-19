@@ -20,9 +20,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-
-import com.sun.org.apache.bcel.internal.util.ByteSequence;
-
+import java.util.Iterator;
 import utilities.SecurityUtil;
 import utilities.SecurityUtil2;
 
@@ -48,24 +46,17 @@ public class UserCatalog {
 	 * Read the file users.txt and populates the map with user:password
 	 */
 	private void readFile() {
-		System.out.println("READFILE");
 		Path usersFile = Paths.get(SERVER + File.separator + USERS);
-		Path temp = Paths.get(SERVER + File.separator + "temp.txt");
 		// decipher file and read content
 		SecretKey sk = SecurityUtil.getKeyFromServer();
 		try {
-			SecurityUtil.decipherFile(usersFile, sk, temp);
-			BufferedReader b = new BufferedReader(new FileReader(temp.toFile()));
-			String str = b.readLine();
-			while (str != null) {
-				System.out.println("READFILE" + str);
-				splitLine(str);
-				str = b.readLine();
+			String content = SecurityUtil.decipherFileToMemory(usersFile.toFile(), sk);
+			String[] array = content.split("\n");
+			for (String s : array) {
+				splitLine(s);
 			}
-			b.close();
-			Files.deleteIfExists(temp);
 		} catch (IOException | InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException
-				| IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException e) {
+				| IllegalBlockSizeException | BadPaddingException e) {
 			e.printStackTrace();
 		}
 	}
@@ -79,11 +70,9 @@ public class UserCatalog {
 		String[] userPass = str.split(":");
 		User u = null;
 		if (userPass.length == 1) {
-			u = new User(userPass[0]);
-			System.out.println(u);
+			u = new User(userPass[0].trim());
 		} else {
-			u = new User(userPass[0], userPass[1]);
-			System.out.println(u);
+			u = new User(userPass[0].trim(), userPass[1].trim());
 		}
 		System.out.println(mapUsers);
 		mapUsers.put(u.getName(), u);
@@ -103,13 +92,10 @@ public class UserCatalog {
 		// if users.txt does not exist create
 		if (!users.exists()) {
 			try {
-				System.out.println("BUILDUSERS::TRY");
 				create = temp.createNewFile();
-				System.out.println("BUILDUSERS::TRY + CREATE = " + create);
 				// GET key an cipher this file with server.key
 				SecretKey sk = SecurityUtil.getKeyFromServer();
 				SecurityUtil.cipherFile(temp.toPath(), sk, users.toPath());
-				System.out.println("BUILDUSERS:: AFTER ENCRIPT");
 			} catch (Exception e) {
 				e.printStackTrace();
 				System.err.println("THE FILE CAN NOT BE CREATED:: CHECK PERMISSIONS");

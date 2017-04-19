@@ -214,45 +214,42 @@ public class SecurityUtil {
 		cos.close();
 		fis.close();
 		Files.deleteIfExists(temp);
-
 	}
-
+	
 	/**
-	 * method to decipher a file
-	 * 
-	 * @param fileToDecript
-	 * @param sk
-	 * @param temp
-	 * @throws NoSuchAlgorithmException
-	 * @throws NoSuchPaddingException
-	 * @throws InvalidKeyException
-	 * @throws IllegalBlockSizeException
-	 * @throws BadPaddingException
-	 * @throws IOException
+	* method to decipher a file
+	*
+	* @param fileToDecript
+	* @param sk
+	* @param temp
+	* @throws NoSuchAlgorithmException
+	* @throws NoSuchPaddingException
+	* @throws InvalidKeyException
+	* @throws IllegalBlockSizeException
+	* @throws BadPaddingException
+	* @throws IOException
 	 * @throws InvalidAlgorithmParameterException 
-	 */
+	*/
 	public static void decipherFile(Path fileToDecript, SecretKey sk, Path temp) throws NoSuchAlgorithmException,
-			NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException, InvalidAlgorithmParameterException {
-		Cipher c = getCipher();
-		//c.init(Cipher.DECRYPT_MODE, sk);
-		// Change for CBC mode
-		        
-	    IvParameterSpec ivParameterSpec = new IvParameterSpec(sk.getEncoded());
-	    c.init(Cipher.DECRYPT_MODE, sk, ivParameterSpec);
+	NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException, InvalidAlgorithmParameterException {
+	Cipher c = getCipher();
+	//c.init(Cipher.DECRYPT_MODE, sk);
+	// Change for CBC mode
 
-		// get ciphered file
-		CipherInputStream cis = new CipherInputStream(new FileInputStream(fileToDecript.toFile()), c);
-		FileOutputStream fis = new FileOutputStream(temp.toFile());
-		
-		//String asB64 = Base64.getEncoder().encodeToString(data.getBytes("utf-8")); 
-		
-		byte[] b = new byte[16];
-		int length;
-		while ((length = cis.read(b)) != -1)
-			fis.write(b, 0, length);
-		
-		cis.close();
-		fis.close();
+    IvParameterSpec ivParameterSpec = new IvParameterSpec(sk.getEncoded());
+    c.init(Cipher.DECRYPT_MODE, sk, ivParameterSpec);
+
+	// get ciphered file
+	CipherInputStream cis = new CipherInputStream(new FileInputStream(fileToDecript.toFile()), c);
+	FileOutputStream fos = new FileOutputStream(temp.toFile());
+
+	byte[] b = new byte[16];
+	int length;
+	while ((length = cis.read(b)) != -1)
+		fos.write(b, 0, length);
+	
+	cis.close();
+	fos.close();
 	}
 
 	/**
@@ -266,21 +263,27 @@ public class SecurityUtil {
 	 * @throws BadPaddingException
 	 * @throws IOException
 	 */
-	public static void decipherFileToMemory(File f, SecretKey sk) throws NoSuchAlgorithmException,
+	public static String decipherFileToMemory(File f, SecretKey sk) throws NoSuchAlgorithmException,
 			NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
 		Cipher c = getCipher();
 		c.init(Cipher.DECRYPT_MODE, sk);
+
+		byte[] fileInBytes = new byte[(int) f.length()];
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		// get ciphered file
 		CipherInputStream cis = new CipherInputStream(new FileInputStream(f), c);
-		BufferedOutputStream bf = new BufferedOutputStream(System.out);
+		
 		byte[] b = new byte[16];
 		int i = cis.read(b);
 		while (i != -1) {
-			bf.write(b, 0, i);
+			bos.write(b, 0, i);
 			i = cis.read(b);
 		}
+		fileInBytes = bos.toByteArray();
 		cis.close();
-		bf.close();
+		bos.close();
+
+		return new String(fileInBytes, "UTF-8");
 	}
 
 	/**
@@ -310,7 +313,6 @@ public class SecurityUtil {
 		cis.close();
 		bf.close();
 	}
-
 	/**
 	 * method to get the key of the server
 	 * 
