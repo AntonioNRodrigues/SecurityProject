@@ -1,19 +1,17 @@
 package user;
 
-import java.io.BufferedReader;
+import static utilities.ReadWriteUtil.SERVER;
+import static utilities.ReadWriteUtil.USERS;
+
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -21,12 +19,9 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import java.util.Iterator;
+
 import utilities.SecurityUtil;
 import utilities.SecurityUtil2;
-
-import static utilities.ReadWriteUtil.SERVER;
-import static utilities.ReadWriteUtil.USERS;
 
 public class UserCatalog {
 	private Map<String, User> mapUsers;
@@ -142,7 +137,7 @@ public class UserCatalog {
 			
 
 		} catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException
-				| BadPaddingException | IOException | InvalidAlgorithmParameterException e) {
+				| BadPaddingException | IOException e) {
 			e.printStackTrace();
 		}
 
