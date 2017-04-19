@@ -10,6 +10,7 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
@@ -20,7 +21,10 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
+import com.sun.org.apache.bcel.internal.util.ByteSequence;
+
 import utilities.SecurityUtil;
+import utilities.SecurityUtil2;
 
 import static utilities.ReadWriteUtil.SERVER;
 import static utilities.ReadWriteUtil.USERS;
@@ -61,7 +65,7 @@ public class UserCatalog {
 			b.close();
 			Files.deleteIfExists(temp);
 		} catch (IOException | InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException
-				| IllegalBlockSizeException | BadPaddingException e) {
+				| IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException e) {
 			e.printStackTrace();
 		}
 	}
@@ -139,22 +143,56 @@ public class UserCatalog {
 		mapUsers.put(name, new User(name, password));
 		// get secretKey of the server
 		SecretKey sk = SecurityUtil.getKeyFromServer();
-
+		
+		//
 		try {
 			// decript file of users
+			// TODO: doesn't check if file exists
 			SecurityUtil.decipherFile(users, sk, temp);
+			
+			
 			persisteUser(name, password);
+			
+			
 			// encript file of users
 			SecurityUtil.cipherFile(temp, sk, users);
+			
 
 		} catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException
-				| BadPaddingException | IOException e) {
+				| BadPaddingException | IOException | InvalidAlgorithmParameterException e) {
 			e.printStackTrace();
 		}
 
 		System.out.println(mapUsers);
 		return true;
 
+	}
+	
+	
+	/*
+	 * register user with user's file integrity check
+	 */
+	public boolean registerUser2(String name, String password) {
+		System.out.println("REGISTER USER");
+				
+		Path users = Paths.get(SERVER + File.separator + USERS);
+		SecretKey sk = SecurityUtil.getKeyFromServer();
+		byte[] b = (name + ":" + password).getBytes();
+
+		try {
+			if (SecurityUtil2.checkFileIntegrity(users, sk))				
+				SecurityUtil2.appendToFile(users, sk, b);
+			else
+				return false;
+		} catch (InvalidKeyException | NoSuchAlgorithmException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
+
+		mapUsers.put(name, new User(name, password));
+		System.out.println(mapUsers);
+		return true;
 	}
 
 	/**
@@ -186,4 +224,5 @@ public class UserCatalog {
 	public boolean userExists(String user) {
 		return mapUsers.containsKey(user);
 	}
+
 }

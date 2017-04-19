@@ -1,3 +1,5 @@
+//keystore ".myGitClientKeyStore";
+
 grant codeBase "file:bin/*"{
     permission java.net.SocketPermission "*:23456", "connect";
     permission java.util.PropertyPermission "user.home", "read"; 
@@ -5,4 +7,13 @@ grant codeBase "file:bin/*"{
     permission java.io.FilePermission "${user.dir}", "read";
     permission java.io.FilePermission "CLIENT", "read, write, delete";
     permission java.io.FilePermission "CLIENT/-", "read, write, delete";
+    permission java.util.PropertyPermission "javax.net.ssl.trustStore", "read, write";
+	permission java.util.PropertyPermission "javax.net.ssl.trustStorePassword", "read, write";
+	permission java.util.PropertyPermission "javax.net.ssl.keyStore", "read, write";
+	permission java.util.PropertyPermission "javax.net.ssl.keyStorePassword", "read, write";
+	permission java.util.PropertyPermission "javax.net.debug", "read, write";
+};    
+
+grant codeBase "file:${java.home}/lib/ext/*" { 
+	permission java.security.AllPermission; 
 };

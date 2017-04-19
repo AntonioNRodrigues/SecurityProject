@@ -20,9 +20,25 @@ import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+
+import javax.net.SocketFactory;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.ManagerFactoryParameters;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
+
 import enums.TypeOperation;
 import enums.TypeSend;
 import utilities.ReadWriteUtil;
@@ -50,7 +66,7 @@ public class MyGitClient {
 
 	}
 
-	public static void main(String[] args) throws UnknownHostException, IOException {
+	public static void main(String[] args) throws UnknownHostException, IOException, NoSuchAlgorithmException, KeyManagementException, InvalidAlgorithmParameterException {
 
 		MyGitClient myGitClient = new MyGitClient(args);
 		String op = myGitClient.getOperation();
@@ -66,9 +82,62 @@ public class MyGitClient {
 
 		} else if (TypeOperation.contains(op)) {
 
-			Socket socket = new Socket(myGitClient.getHost(), myGitClient.getPort());
+			System.setProperty("javax.net.ssl.keyStore", ".myGitClientKeyStore");
+			System.setProperty("javax.net.ssl.trustStore", ".myGitClientTrustStore");
+			System.setProperty("javax.net.ssl.keyStorePassword", "badpassword2");
+			System.setProperty("javax.net.debug","all");
+
+			String trustStore = System.getProperty("javax.net.ssl.trustStore");
+			if (trustStore == null) {
+				System.out.println("javax.net.ssl.trustStore is not defined");
+			} else {
+				System.out.println("javax.net.ssl.trustStore = " + trustStore);
+			}	
+
+		    /*class DefaultTrustManager implements X509TrustManager {
+
+		        @Override
+		        public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {}
+
+		        @Override
+		        public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {}
+
+		        @Override
+		        public X509Certificate[] getAcceptedIssuers() {
+		            return null;
+		        }
+		    }*/
+			
+			SocketFactory sf = SSLSocketFactory.getDefault( );
+			Socket socket = sf.createSocket(myGitClient.getHost(), myGitClient.getPort());
+			//Socket socket = new Socket(myGitClient.getHost(), myGitClient.getPort());
+
+			
+			//System.out.println("Loading KeyStore " + file + "...");
+			//final InputStream in = new FileInputStream(file);
+	        //final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+	        //ks.load(in, passphrase);
+	        //in.close();
+	 
+	        /*final SSLContext context = SSLContext.getInstance("TLS");
+	        final TrustManagerFactory tmf =
+	                TrustManagerFactory.getInstance(TrustManagerFactory
+	                        .getDefaultAlgorithm());
+	        tmf.init(new ManagerFactoryParameters() {
+			});
+	        
+	        final X509TrustManager defaultTrustManager =
+	                (X509TrustManager) tmf.getTrustManagers()[0];
+	        final DefaultTrustManager tm = new DefaultTrustManager();
+	        context.init(null, new TrustManager[] { tm }, null);
+	        final SSLSocketFactory factory = context.getSocketFactory();
+			Socket socket = sf.createSocket(myGitClient.getHost(), myGitClient.getPort());
+*/
+	        
+			
+			
 			ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-			ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+			ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());			
 			try {
 				nonce = (String) in.readObject();
 			} catch (ClassNotFoundException e) {
