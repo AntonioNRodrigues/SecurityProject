@@ -125,12 +125,10 @@ public class UserCatalog {
 		//
 		try {
 			// decript file of users
-			// TODO: doesn't check if file exists
+			// TODO: doesn't check if file exists --> THIS CHECK IS MADE IN THE BUILDUSERS
 			SecurityUtil.decipherFile(users, sk, temp);
 			
-			
 			persisteUser(name, password);
-			
 			
 			// encript file of users
 			SecurityUtil.cipherFile(temp, sk, users);

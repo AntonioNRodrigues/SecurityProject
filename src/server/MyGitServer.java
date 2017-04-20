@@ -33,7 +33,6 @@ import message.Message;
 public class MyGitServer {
 	private static final int MAX_THREADS = 5;
 	private static ServerSkell sk;
-
 	private RepositoryCatalog catRepo;
 	private UserCatalog catUsers;
 
