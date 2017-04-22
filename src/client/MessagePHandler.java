@@ -92,20 +92,20 @@ public class MessagePHandler extends MessageHandler {
 		if (result.contentEquals("OK")) {
 			// Enviar o ficheiro
 			try {
-				// Gera chave privada através da password do utilizador -
-				// TODO: VERIFICAR COMO É QUE O UTILIZADOR OBTEM A CHAVE PRIVADA
-				// / COMO É PARTILHADA?!
+				// Gera chave privada atravï¿½s da password do utilizador -
+				// TODO: VERIFICAR COMO ï¿½ QUE O UTILIZADOR OBTEM A CHAVE PRIVADA
+				// / COMO ï¿½ PARTILHADA?!
 
 				Path p = Paths.get(".myGitClientKeyStore");
 
-				KeyPair kp = SecurityUtil.getKeyFromKS(p, "mygitclient", "badpassword2");
+				KeyPair kp = SecurityUtil.getKeyPairFromKS(p, "mygitclient", "badpassword2");
 
 				// Cliente gera a assinatura digital do ficheiro em claro
 				byte[] signature = SecurityUtil.generateSignatureOfFile(params.getFile(), kp.getPrivate());
 				// Envia a assinatura
 				out.writeObject(signature);
 
-				// gerar uma chave aleatória para utilizar com o AES
+				// gerar uma chave aleatï¿½ria para utilizar com o AES
 				SecretKey key = SecurityUtil.getKey();
 
 				Path cifrado = Paths.get(params.getFile().getFileName() + ".cif");
@@ -167,19 +167,19 @@ public class MessagePHandler extends MessageHandler {
 				try {
 					File f = path.toFile();
 
-					// Gera chave privada através da password do utilizador -
-					// TODO: VERIFICAR COMO É QUE O UTILIZADOR OBTEM A CHAVE
-					// PRIVADA / COMO É PARTILHADA?!
+					// Gera chave privada atravï¿½s da password do utilizador -
+					// TODO: VERIFICAR COMO ï¿½ QUE O UTILIZADOR OBTEM A CHAVE
+					// PRIVADA / COMO ï¿½ PARTILHADA?!
 					Path p = Paths.get(".myGitClientKeyStore");
 
-					KeyPair kp = SecurityUtil.getKeyFromKS(p, "mygitclient", "badpassword2");
+					KeyPair kp = SecurityUtil.getKeyPairFromKS(p, "mygitclient", "badpassword2");
 
 					// Cliente gera a assinatura digital do ficheiro em claro
 					byte[] signature = SecurityUtil.generateSignatureOfFile(params.getFile(), kp.getPrivate());
 					// Envia a assinatura
 					out.writeObject(signature);
 
-					// gerar uma chave aleatória para utilizar com o AES
+					// gerar uma chave aleatï¿½ria para utilizar com o AES
 					SecretKey key = SecurityUtil.getKey();
 
 					Path cifrado = Paths.get(params.getFile().getFileName() + ".cif");

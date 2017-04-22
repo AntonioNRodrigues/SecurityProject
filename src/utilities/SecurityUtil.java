@@ -444,13 +444,9 @@ public class SecurityUtil {
 
 	/**
 	 * method to get the keystore
-	 * 
-	 * @param keyStore
-	 *            path to the keystore
-	 * @param alias
-	 *            from the keystore
-	 * @param pass
-	 *            from the keystore
+	 * @param keyStore path to the keystore
+	 * @param alias from the keystore
+	 * @param pass from the keystore
 	 * @return the keystore
 	 */
 	public static KeyStore getKeyStore(Path keyStore, String alias, String pss) {
@@ -469,13 +465,9 @@ public class SecurityUtil {
 
 	/**
 	 * method to get the KeyPair from a specific keystore
-	 * 
-	 * @param keyStore
-	 *            path to the keystore
-	 * @param alias
-	 *            from the keystore
-	 * @param pass
-	 *            from the keystore
+	 * @param keyStore path to the keystore
+	 * @param alias from the keystore
+	 * @param pass from the keystore
 	 * @return the KeyPair
 	 */
 	public static KeyPair getKeyPairFromKS(Path keyStore, String alias, String pss) {
@@ -495,16 +487,11 @@ public class SecurityUtil {
 		}
 		return kpair;
 	}
-
 	/**
 	 * method to get the certificate from a specific keystore
-	 * 
-	 * @param keyStore
-	 *            path to the keystore
-	 * @param alias
-	 *            from the keystore
-	 * @param pass
-	 *            from the keystore
+	 * @param keyStore path to the keystore
+	 * @param alias from the keystore
+	 * @param pass from the keystore
 	 * @return the certifcate inside the keystore
 	 */
 	public static Certificate getCertFromKeyStore(Path keyStore, String alias, String pss) {
