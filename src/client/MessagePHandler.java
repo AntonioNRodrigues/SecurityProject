@@ -98,7 +98,7 @@ public class MessagePHandler extends MessageHandler {
 
 				Path p = Paths.get(".myGitClientKeyStore");
 
-				KeyPair kp = SecurityUtil.getKeyFromKS(p);
+				KeyPair kp = SecurityUtil.getKeyFromKS(p, "mygitclient", "badpassword2");
 
 				// Cliente gera a assinatura digital do ficheiro em claro
 				byte[] signature = SecurityUtil.generateSignatureOfFile(params.getFile(), kp.getPrivate());
@@ -172,7 +172,7 @@ public class MessagePHandler extends MessageHandler {
 					// PRIVADA / COMO É PARTILHADA?!
 					Path p = Paths.get(".myGitClientKeyStore");
 
-					KeyPair kp = SecurityUtil.getKeyFromKS(p);
+					KeyPair kp = SecurityUtil.getKeyFromKS(p, "mygitclient", "badpassword2");
 
 					// Cliente gera a assinatura digital do ficheiro em claro
 					byte[] signature = SecurityUtil.generateSignatureOfFile(params.getFile(), kp.getPrivate());
