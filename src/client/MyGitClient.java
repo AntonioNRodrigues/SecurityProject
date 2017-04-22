@@ -23,22 +23,14 @@ import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyManagementException;
+import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
 import javax.net.SocketFactory;
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.ManagerFactoryParameters;
-import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
 
 import enums.TypeOperation;
 import enums.TypeSend;
@@ -96,7 +88,6 @@ public class MyGitClient {
 			} else {
 				System.out.println("javax.net.ssl.trustStore = " + trustStore);
 			}
-
 			/*
 			 * class DefaultTrustManager implements X509TrustManager {
 			 * 

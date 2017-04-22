@@ -8,21 +8,30 @@ import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.util.Formatter;
 import java.util.UUID;
 
@@ -370,8 +379,6 @@ public class SecurityUtil {
 		return formatter.toString();
 	}
 
-
-
 	/**
 	 * method to get a assinatura digital (Signature)
 	 * 
@@ -435,4 +442,29 @@ public class SecurityUtil {
 		}
 	}
 
+	public static KeyPair getKeyFromKS(Path keyStore) {
+		KeyStore ks = null;
+		Key k = null;
+		KeyPair kpair = null;
+		String alias = "mygitserver";
+		final char[] pss = "badpassword1".toCharArray();
+		try {
+			InputStream is = new FileInputStream(keyStore.toFile());
+			ks = KeyStore.getInstance(KeyStore.getDefaultType());
+			try {
+				ks.load(is, pss);
+				k = ks.getKey(alias, pss);
+				if (k instanceof PrivateKey) {
+					Certificate cert = ks.getCertificate(alias);
+					PublicKey kk = cert.getPublicKey();
+					kpair = new KeyPair(kk, (PrivateKey) k);
+				}
+			} catch (NoSuchAlgorithmException | CertificateException | IOException | UnrecoverableKeyException e) {
+				e.printStackTrace();
+			}
+		} catch (FileNotFoundException | KeyStoreException e) {
+			e.printStackTrace();
+		}
+		return kpair;
+	}
 }

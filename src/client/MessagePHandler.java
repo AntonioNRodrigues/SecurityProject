@@ -6,21 +6,19 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.GeneralSecurityException;
+import java.security.Key;
+import java.security.KeyPair;
 import java.security.PrivateKey;
-import java.security.Signature;
 import java.security.SignatureException;
-import java.security.SignedObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
 import enums.TypeOperation;
@@ -35,7 +33,7 @@ public class MessagePHandler extends MessageHandler {
 	/**
 	 * 
 	 */
-	
+
 	private List<Path> filesList;
 
 	public MessagePHandler() {
@@ -44,7 +42,8 @@ public class MessagePHandler extends MessageHandler {
 	}
 
 	@Override
-	public String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) throws GeneralSecurityException {
+	public String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params)
+			throws GeneralSecurityException {
 
 		if (params.getOperation().contentEquals(TypeOperation.PUSH.toString())) {
 
@@ -65,7 +64,8 @@ public class MessagePHandler extends MessageHandler {
 				+ " " + params.getRepOrFileName();
 	}
 
-	private String sendPushFileMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) throws GeneralSecurityException {
+	private String sendPushFileMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params)
+			throws GeneralSecurityException {
 
 		// o tipo do timestamp Ã© FileTime que Ã© timezone independent!
 		// LocalDateTime timestamp = LocalDateTime.now();
@@ -92,27 +92,31 @@ public class MessagePHandler extends MessageHandler {
 		if (result.contentEquals("OK")) {
 			// Enviar o ficheiro
 			try {
-				//Gera chave privada através da password do utilizador - 
-				//TODO: VERIFICAR COMO É QUE O UTILIZADOR OBTEM A CHAVE PRIVADA / COMO É PARTILHADA?!
-				PrivateKey pk = SecurityUtil.generatePrivateKeyFromPass(params.getPassword());
-				
-				//Cliente gera a assinatura digital do ficheiro em claro
-				byte[] signature = SecurityUtil.generateSignatureOfFile(params.getFile(), pk);
-				//Envia a assinatura
+				// Gera chave privada através da password do utilizador -
+				// TODO: VERIFICAR COMO É QUE O UTILIZADOR OBTEM A CHAVE PRIVADA
+				// / COMO É PARTILHADA?!
+
+				Path p = Paths.get(".myGitClientKeyStore");
+
+				KeyPair kp = SecurityUtil.getKeyFromKS(p);
+
+				// Cliente gera a assinatura digital do ficheiro em claro
+				byte[] signature = SecurityUtil.generateSignatureOfFile(params.getFile(), kp.getPrivate());
+				// Envia a assinatura
 				out.writeObject(signature);
-				
-				 //gerar uma chave aleatória para utilizar com o AES
-			    SecretKey key = SecurityUtil.getKey();
-			    
-			    Path cifrado = Paths.get(params.getFile().getFileName() + ".cif");
-			    
-			    //Cifrar o ficheiro com a chave criada
-			    SecurityUtil.cipherFile(params.getFile(), key, cifrado);
-				
-			    //Envia a chave para o Servidor
-			    out.writeObject(key);
-			    
-				//Prepara e envia o ficheiro
+
+				// gerar uma chave aleatória para utilizar com o AES
+				SecretKey key = SecurityUtil.getKey();
+
+				Path cifrado = Paths.get(params.getFile().getFileName() + ".cif");
+
+				// Cifrar o ficheiro com a chave criada
+				SecurityUtil.cipherFile(params.getFile(), key, cifrado);
+
+				// Envia a chave para o Servidor
+				out.writeObject(key);
+
+				// Prepara e envia o ficheiro
 				ReadWriteUtil.sendFile(cifrado, in, out);
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -162,28 +166,31 @@ public class MessagePHandler extends MessageHandler {
 			for (Path path : filesList) {
 				try {
 					File f = path.toFile();
-					
-					//Gera chave privada através da password do utilizador - 
-					//TODO: VERIFICAR COMO É QUE O UTILIZADOR OBTEM A CHAVE PRIVADA / COMO É PARTILHADA?!
-					PrivateKey pk = SecurityUtil.generatePrivateKeyFromPass(params.getPassword());
-					
-					//Cliente gera a assinatura digital do ficheiro em claro
-					byte[] signature = SecurityUtil.generateSignatureOfFile(params.getFile(), pk);
-					//Envia a assinatura
+
+					// Gera chave privada através da password do utilizador -
+					// TODO: VERIFICAR COMO É QUE O UTILIZADOR OBTEM A CHAVE
+					// PRIVADA / COMO É PARTILHADA?!
+					Path p = Paths.get(".myGitClientKeyStore");
+
+					KeyPair kp = SecurityUtil.getKeyFromKS(p);
+
+					// Cliente gera a assinatura digital do ficheiro em claro
+					byte[] signature = SecurityUtil.generateSignatureOfFile(params.getFile(), kp.getPrivate());
+					// Envia a assinatura
 					out.writeObject(signature);
-					
-					 //gerar uma chave aleatória para utilizar com o AES
-				    SecretKey key = SecurityUtil.getKey();
-				    
-				    Path cifrado = Paths.get(params.getFile().getFileName() + ".cif");
-				    
-				    //Cifrar o ficheiro com a chave criada
-				    SecurityUtil.cipherFile(params.getFile(), key, cifrado);
-					
-				    //Envia a chave para o Servidor
-				    out.writeObject(key);
-				    
-					//Prepara e envia o ficheiro
+
+					// gerar uma chave aleatória para utilizar com o AES
+					SecretKey key = SecurityUtil.getKey();
+
+					Path cifrado = Paths.get(params.getFile().getFileName() + ".cif");
+
+					// Cifrar o ficheiro com a chave criada
+					SecurityUtil.cipherFile(params.getFile(), key, cifrado);
+
+					// Envia a chave para o Servidor
+					out.writeObject(key);
+
+					// Prepara e envia o ficheiro
 					out.writeObject((Object) f.lastModified());
 					ReadWriteUtil.sendFile(cifrado, in, out);
 				} catch (IOException e) {
@@ -269,8 +276,9 @@ public class MessagePHandler extends MessageHandler {
 		// serverAddress nÃ£o serÃ¡ necessÃ¡rio, jÃ¡ estÃ¡ presente na criaÃ§Ã£o
 		// do
 		// socket...
-		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword(), MyGitClient.nonce), params.getServerAddress(),
-				params.getPassword(), TypeSend.REPOSITORY, params.getRepName(), TypeOperation.PULL, 0, 0);
+		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword(), MyGitClient.nonce),
+				params.getServerAddress(), params.getPassword(), TypeSend.REPOSITORY, params.getRepName(),
+				TypeOperation.PULL, 0, 0);
 
 		try {
 			out.writeObject((Object) mp);
