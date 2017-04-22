@@ -17,7 +17,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.InvalidKeyException;
+import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.MessageDigest;
@@ -277,10 +279,13 @@ public class ServerSkell {
 								     * 1- buscar chave publica -> keystore
 								     * 2 - cifrar chave publica 
 								     */
-								    FileInputStream kfile = new FileInputStream("keystore.dd");  //keystore
-								    KeyStore kstore = KeyStore.getInstance("JKS");
-								    kstore.load(kfile, "serverpass".toCharArray());           //TODO: PASSWORD DO SERVIDOR
-								    Certificate cert =kstore.getCertificate("server");       //TODO: alias do utilizador
+									Path p = Paths.get(".myGitServerKeyStore");
+
+									KeyPair kp = SecurityUtil.getKeyFromKS(p, "mygitserver", "badpassword1");
+
+									//method to get the certificate from keystore
+									
+									Certificate cert =kstore.getCertificate("server");
 								    
 								    Cipher cif = Cipher.getInstance("RSA");
 								    cif.init(Cipher.WRAP_MODE, cert);

@@ -442,18 +442,16 @@ public class SecurityUtil {
 		}
 	}
 
-	public static KeyPair getKeyFromKS(Path keyStore) {
+	public static KeyPair getKeyFromKS(Path keyStore, String alias, String pss) {
 		KeyStore ks = null;
 		Key k = null;
 		KeyPair kpair = null;
-		String alias = "mygitserver";
-		final char[] pss = "badpassword1".toCharArray();
 		try {
 			InputStream is = new FileInputStream(keyStore.toFile());
 			ks = KeyStore.getInstance(KeyStore.getDefaultType());
 			try {
-				ks.load(is, pss);
-				k = ks.getKey(alias, pss);
+				ks.load(is, pss.toCharArray());
+				k = ks.getKey(alias, pss.toCharArray());
 				if (k instanceof PrivateKey) {
 					Certificate cert = ks.getCertificate(alias);
 					PublicKey kk = cert.getPublicKey();
