@@ -1,9 +1,11 @@
+
 package utilities;
 
 import static utilities.ReadWriteUtil.SERVER;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -13,9 +15,7 @@ import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
-import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
@@ -23,10 +23,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.Signature;
 import java.security.SignatureException;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.Arrays;
 import java.util.Formatter;
-import java.util.Random;
 import java.util.UUID;
 
 import javax.crypto.BadPaddingException;
@@ -39,7 +36,6 @@ import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import javax.xml.bind.DatatypeConverter;
 
 import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 
@@ -47,12 +43,11 @@ public class SecurityUtil {
 	public static final String AES = "AES";
 	public static final String RSA = "RSA";
 	public static final String SHA_256 = "SHA-256";
-	public static final String SHA_256_RSA = SHA_256 + "with" + RSA;
+	public static final String SHA_256_RSA = SHA_256 + RSA;
 	public static final int bits_RSA = 2048;
 	public static final int bits_AES = 128;
 	public static final String SERVER_KEY = "Server.key";
 	public static final String EXT_SIG = ".sig";
-	public static final String EXT_KEY_SERVER = ".key.server";
 
 	/**
 	 * 
@@ -142,7 +137,7 @@ public class SecurityUtil {
 	}
 
 	/**
-	 * Do lado do servidor
+	 * 
 	 * @param sk
 	 * @param path
 	 */
@@ -184,21 +179,6 @@ public class SecurityUtil {
 		byte[] pass = str.getBytes();
 		SecretKey sk = new SecretKeySpec(pass, AES);
 		persisteKey(sk, ReadWriteUtil.SERVER + File.separator + SERVER_KEY);
-	}
-	
-	/**
-	 * Gera uma Private Key a partir de uma password
-	 * @author pedro
-	 * @param pass
-	 * @return
-	 */
-	public static PrivateKey generatePrivateKeyFromPass(String pass) throws GeneralSecurityException{
-		byte[] clear = DatatypeConverter.parseBase64Binary(pass);
-	    PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(clear);
-	    KeyFactory fact = KeyFactory.getInstance("RSA");
-	    PrivateKey priv = fact.generatePrivate(keySpec);
-	    Arrays.fill(clear, (byte) 0);
-	    return priv;
 	}
 
 	/**
@@ -252,15 +232,15 @@ public class SecurityUtil {
 		c.init(Cipher.DECRYPT_MODE, sk);
 		// get ciphered file
 		CipherInputStream cis = new CipherInputStream(new FileInputStream(fileToDecript.toFile()), c);
-		FileOutputStream fis = new FileOutputStream(temp.toFile());
+		FileOutputStream fos = new FileOutputStream(temp.toFile());
 		byte[] b = new byte[16];
 		int i = cis.read(b);
 		while (i != -1) {
-			fis.write(b, 0, i);
+			fos.write(b, 0, i);
 			i = cis.read(b);
 		}
 		cis.close();
-		fis.close();
+		fos.close();
 	}
 
 	/**
@@ -274,21 +254,27 @@ public class SecurityUtil {
 	 * @throws BadPaddingException
 	 * @throws IOException
 	 */
-	public static void decipherFileToMemory(File f, SecretKey sk) throws NoSuchAlgorithmException,
+	public static String decipherFileToMemory(File f, SecretKey sk) throws NoSuchAlgorithmException,
 			NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
 		Cipher c = getCipher();
 		c.init(Cipher.DECRYPT_MODE, sk);
+
+		byte[] fileInBytes = new byte[(int) f.length()];
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		// get ciphered file
 		CipherInputStream cis = new CipherInputStream(new FileInputStream(f), c);
-		BufferedOutputStream bf = new BufferedOutputStream(System.out);
+
 		byte[] b = new byte[16];
 		int i = cis.read(b);
 		while (i != -1) {
-			bf.write(b, 0, i);
+			bos.write(b, 0, i);
 			i = cis.read(b);
 		}
+		fileInBytes = bos.toByteArray();
 		cis.close();
-		bf.close();
+		bos.close();
+
+		return new String(fileInBytes, "UTF-8");
 	}
 
 	/**
@@ -305,8 +291,7 @@ public class SecurityUtil {
 	public static void cipherFileToMemory(File f, SecretKey sk) throws NoSuchAlgorithmException, NoSuchPaddingException,
 			InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
 		Cipher c = getCipher();
-		c.init(Cipher.ENCRYPT_MODE, sk);
-		
+		c.init(Cipher.DECRYPT_MODE, sk);
 		// get ciphered file
 		CipherInputStream cis = new CipherInputStream(new FileInputStream(f), c);
 		BufferedOutputStream bf = new BufferedOutputStream(System.out);
@@ -349,7 +334,7 @@ public class SecurityUtil {
 	}
 
 	/**
-	 * method to calculate a sintese
+	 * method to calculate a sintes
 	 * 
 	 * @param passNonce
 	 * @return
@@ -384,6 +369,8 @@ public class SecurityUtil {
 			formatter.format("%02x", b);
 		return formatter.toString();
 	}
+
+
 
 	/**
 	 * method to get a assinatura digital (Signature)
