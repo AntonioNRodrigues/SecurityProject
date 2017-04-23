@@ -15,7 +15,6 @@ import utilities.ReadWriteUtil;
 import utilities.SecurityUtil;
 
 public abstract class MessageHandler implements IMessageTypes {
-
 	/**
 	 * The name of the message handler
 	 */
