@@ -386,7 +386,7 @@ public class ServerSkell {
 							
 							//Saca da chave do ficheiro que está guardada com a extensão .key.server
 							FileInputStream keyFile = new FileInputStream(mp.getFileName() + ".key.server");
-							byte[] key = new byte[16];
+							byte[] key = new byte[2048];
 							keyFile.read(key);
 							
 							//Vai à Keystore para buscar a sua chave privada e decripta a chave.
@@ -396,7 +396,7 @@ public class ServerSkell {
 							
 					        Cipher decrypt = Cipher.getInstance("AES");
 					        
-							byte[] chaveDecifrada = new byte[16];
+							byte[] chaveDecifrada = new byte[2048];
 					        try {
 								decrypt.init(Cipher.DECRYPT_MODE, chaveParaDecifrar);
 
