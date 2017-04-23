@@ -173,8 +173,7 @@ public class RemoteRepository {
 			sharedUsers.add(userName);
 			persisteSharedUser(userName, this);
 		}
-		System.out.println("addShareUserToRepo" + sharedUsers);
-
+		System.out.println("Current List of Shared Users for the " + this.nameRepo + ": " + sharedUsers);
 	}
 
 	/*
@@ -203,8 +202,8 @@ public class RemoteRepository {
 
 	public void removeUserFromRepo(String userId) {
 		sharedUsers.remove(userId);
-		System.out.println("SHARED USERS LIST::" + sharedUsers);
 		removeUserFromSharedRepo(userId);
+		System.out.println("Current List of Shared Users for the " + this.nameRepo + ": " + sharedUsers);
 	}
 
 	private void removeUserFromSharedRepo(String userId) {
