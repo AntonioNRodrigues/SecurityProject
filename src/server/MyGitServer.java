@@ -53,7 +53,7 @@ public class MyGitServer {
 		String pass = sc.nextLine();
 		// check && validate pass length > 6 and < 10 ex::: -----> TO DO
 		System.out.println("MyGitServer is Running with password");
-		SecurityUtil.generateKeyFromPass(pass);
+		SecurityUtil.generateSecretKeyFromPass(pass);
 
 		// Check password file integrity
 

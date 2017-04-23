@@ -183,7 +183,7 @@ public class SecurityUtil {
 	 * 
 	 * @param str
 	 */
-	public static void generateSecretKeyFromKey(String str) {
+	public static void generateSecretKeyFromPass(String str) {
 		byte[] pass = str.getBytes();
 		SecretKey sk = new SecretKeySpec(pass, AES);
 		persisteKey(sk, ReadWriteUtil.SERVER + File.separator + SERVER_KEY);
