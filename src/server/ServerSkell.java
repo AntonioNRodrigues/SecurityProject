@@ -414,6 +414,7 @@ public class ServerSkell {
 					        //TODO: Fazer a SecretKey from String (?) RESTO DO TRABALHO
 					        
 					        
+					        
 					        //Envia a chave K para o cliente
 					        out.writeObject(chaveDecifrada);
 							
