@@ -11,13 +11,20 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.GeneralSecurityException;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.stream.Stream;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 import enums.TypeOperation;
 import enums.TypeSend;
@@ -362,14 +369,17 @@ public class MessagePHandler extends MessageHandler {
 				//Recebe a chave K do servidor para decifrar o ficheiro
 				byte[] key = (byte[]) in.readObject();
 				
+				SecretKey secretKey = new SecretKeySpec(key, 0, key.length, "AES");
 				
 				Long receivedTimeStamp = (Long) in.readObject();
-				String path = CLIENT + File.separator + repoName + File.separator;
-				File receivedCifrado = ReadWriteUtil.receiveFile(path, in, out);
+				Path path = Paths.get(CLIENT + File.separator + repoName + File.separator);
+				File received = ReadWriteUtil.receiveFile(path.toString(), in, out);
 				
 				//Decifrar o ficheiro recebido com K
-				SecurityUtil.decipherFile(receivedCifrado, key, path);
+				SecurityUtil.decipherFile(received.toPath(), secretKey, path);
 				
+				
+				//TODO: FALTA RECEBER E VERIFICAR A ASSINATURA
 				
 				received.setLastModified(receivedTimeStamp);
 				File inRepo = new File(
@@ -385,6 +395,21 @@ public class MessagePHandler extends MessageHandler {
 				}
 
 			} catch (ClassNotFoundException | IOException e) {
+				e.printStackTrace();
+			} catch (InvalidKeyException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NoSuchAlgorithmException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NoSuchPaddingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalBlockSizeException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (BadPaddingException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
