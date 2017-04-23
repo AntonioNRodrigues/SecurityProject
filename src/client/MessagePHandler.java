@@ -177,9 +177,10 @@ public class MessagePHandler extends MessageHandler {
 					// gerar uma chave aleatoria para utilizar com o AES
 					SecretKey key = SecurityUtil.getKey();
 
+					System.out.println(params.getFileName());
 					Path cifrado = Paths.get(CLIENT + File.separator + params.getRepName() + File.separator
 							+ params.getFileName() + ".cif");
-
+					System.out.println(cifrado.toAbsolutePath());
 					// Cifrar o ficheiro com a chave criada
 					SecurityUtil.cipherFile(params.getFile(), key, cifrado);
 
@@ -358,9 +359,18 @@ public class MessagePHandler extends MessageHandler {
 
 		for (int i = 0; i < sizeList; i++) {
 			try {
+				//Recebe a chave K do servidor para decifrar o ficheiro
+				byte[] key = (byte[]) in.readObject();
+				
+				
 				Long receivedTimeStamp = (Long) in.readObject();
 				String path = CLIENT + File.separator + repoName + File.separator;
-				File received = ReadWriteUtil.receiveFile(path, in, out);
+				File receivedCifrado = ReadWriteUtil.receiveFile(path, in, out);
+				
+				//Decifrar o ficheiro recebido com K
+				SecurityUtil.decipherFile(receivedCifrado, key, path);
+				
+				
 				received.setLastModified(receivedTimeStamp);
 				File inRepo = new File(
 						CLIENT + File.separator + repoName + File.separator + received.getName().split(" ")[0]);
