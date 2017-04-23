@@ -425,7 +425,7 @@ public class MyGitClient {
 			if (!valConnArgs(lArgs, ind))
 				validated = false;
 
-			System.out.println("O repOrFileName é: " + repOrFileName);
+			System.out.println("O repOrFileName ï¿½: " + repOrFileName);
 			if (!valTypeSend2(this.repOrFileName))
 				validated = false;
 
@@ -508,6 +508,7 @@ public class MyGitClient {
 			if (exists && isFolder) {
 				this.userId = repFile[0];
 				this.repName = repFile[1];
+				System.out.println(repName);
 				this.setTypeSend(TypeSend.REPOSITORY.toString());
 				this.setFile(path1);
 				return true;

@@ -191,13 +191,13 @@ public class ServerSkell {
 				MessageP mp = ((MessageP) msg);
 				TypeSend typeSend = mp.getTypeSend();
 				TypeOperation operation = mp.getOperation();
-				RemoteRepository remoRepo = catRepo.getRemRepository(mp.getFileName());
+				//RemoteRepository remoRepo = catRepo.getRemRepository(mp.getFileName());
 				// if the user is not the owner of the repo and has permissions
 				// to do stuff to the repo
-				if (!(remoRepo.getOwner().equals(mp.getLocalUser().getName()))
+				/*if (!(remoRepo.getOwner().equals(mp.getLocalUser().getName()))
 						&& remoRepo.getSharedPublicKey().containsKey(mp.getLocalUser().getName())) {
 					receiveMsgDifferentOwner(mp);
-				}
+				}*/
 
 				switch (typeSend) {
 				case REPOSITORY:
