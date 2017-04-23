@@ -425,6 +425,7 @@ public class MyGitClient {
 			if (!valConnArgs(lArgs, ind))
 				validated = false;
 
+			System.out.println("O repOrFileName é: " + repOrFileName);
 			if (!valTypeSend2(this.repOrFileName))
 				validated = false;
 

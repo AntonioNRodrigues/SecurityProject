@@ -10,6 +10,7 @@ package server;
 import static utilities.ReadWriteUtil.SERVER;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -22,10 +23,12 @@ import java.security.KeyPair;
 import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
@@ -380,19 +383,53 @@ public class ServerSkell {
 							out.writeObject((Object) "NOK");
 							out.writeObject((Object) "Erro: O ficheiro indicado nÃ£o existe");
 						} else {
+							
+							//Saca da chave do ficheiro que está guardada com a extensão .key.server
+							FileInputStream keyFile = new FileInputStream(mp.getFileName() + ".key.server");
+							byte[] key = new byte[16];
+							keyFile.read(key);
+							
+							//Vai à Keystore para buscar a sua chave privada e decripta a chave.
+							Path p = Paths.get(".myGitServerKeyStore");
+							KeyPair kp = SecurityUtil.getKeyPairFromKS(p, "mygitserver", "badpassword1");
+							PrivateKey chaveParaDecifrar = kp.getPrivate();
+							
+					        Cipher decrypt = Cipher.getInstance("AES");
+					        
+							byte[] chaveDecifrada = new byte[16];
+					        try {
+								decrypt.init(Cipher.DECRYPT_MODE, chaveParaDecifrar);
 
-							File inRepo = rr.getFile(mp.getFileName());
+								chaveDecifrada = decrypt.doFinal(key);
+							} catch (InvalidKeyException e1) {
+								System.out.println("ERRO: NÃO FOI POSSÍVEL INICIALIZAR O DECRIPTADOR");
+							} catch (IllegalBlockSizeException e) {
+								System.out.println("ERRO: O TAMANHO DO ARRAY NÃO É O MAIS CORRECTO");
+							} catch (BadPaddingException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							
+					        //TODO: Fazer a SecretKey from String (?) RESTO DO TRABALHO
+					        
+					        
+					        //Envia a chave K para o cliente
+					        out.writeObject(chaveDecifrada);
+							
+							//Início do envio do ficheiro cifrado
+							File inRepoCifrado = rr.getFile(mp.getFileName());
+							
 							// client does not have the recent file so send it
-							if (mp.getTimestamp() <= inRepo.lastModified()) {
+							if (mp.getTimestamp() <= inRepoCifrado.lastModified()) {
 								try {
 
 									out.writeObject((Object) "OK");
 									// Enviar o numero de ficheiros
 									out.writeObject((Object) 1);
 									// Enviar timeststamp
-									out.writeObject((Object) inRepo.lastModified());
+									out.writeObject((Object) inRepoCifrado.lastModified());
 									ReadWriteUtil.sendFile(SERVER + File.separator + mp.getRepoName() + File.separator
-											+ inRepo.getName(), in, out);
+											+ inRepoCifrado.getName(), in, out);
 
 								} catch (IOException e) {
 									e.printStackTrace();
