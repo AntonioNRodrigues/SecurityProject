@@ -162,38 +162,15 @@ public class RemoteRepository {
 	}
 
 	/**
-	 * method to get the single name without the version
-	 * 
-	 * @param nameFile
-	 * @return nameFile without version
-	 */
-	public String getNameWithOutVersion(String nameFile) {
-		String namefile = null;
-		String[] a = nameFile.split(".");
-		if (a[0].length() == 3) {
-			namefile = a[0].substring(0, a[0].length() - 3) + a[1];
-		}
-		if (a[0].length() == 4) {
-			namefile = a[0].substring(0, a[0].length() - 4) + a[1];
-		}
-		if (a[0].length() == 5) {
-			namefile = a[0].substring(0, a[0].length() - 5) + a[1];
-		}
-		return nameFile;
-
-	}
-
-	/**
 	 * method to add the user to the shared list to this repository and persist
 	 * the user in the file if its not already there.
 	 * 
 	 * @param userName
 	 */
 	public void addShareUserToRepo(String userName) {
-		sharedUsers.add(userName);
-		System.out.println("addShareUserToRepo" + sharedUsers);
-		// if its not a shared user persist
-		if ((isSharedUser(userName))) {
+		// if the does not have access to the repo add it
+		if (!(existsInSharedList(userName))) {
+			sharedUsers.add(userName);
 			persisteSharedUser(userName, this);
 		}
 		System.out.println("addShareUserToRepo" + sharedUsers);
@@ -201,10 +178,9 @@ public class RemoteRepository {
 	}
 
 	/*
-	 * method to check is the user is already in the list os shared users
+	 * method to check is the user is already in the list of shared users
 	 */
-	private boolean isSharedUser(String userName) {
-
+	private boolean existsInSharedList(String userName) {
 		return sharedUsers.contains(userName) ? true : false;
 	}
 
