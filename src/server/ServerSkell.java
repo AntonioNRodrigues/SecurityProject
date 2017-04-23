@@ -134,7 +134,7 @@ public class ServerSkell {
 
 						if (!error) {
 							out.writeObject((Object) "OK");
-							rr.removeUserFromRepo(mrs.getUserId());
+							rr.removeSharedUserFromRepo(mrs.getUserId());
 						}
 					}
 
@@ -154,7 +154,7 @@ public class ServerSkell {
 						rr = catRepo.getRemRepository(mrs.getRepoName());
 
 						boolean error = false;
-						// Validar se o utilizador é dono
+						// Validar se o utilizador eh dono
 						if (!rr.getOwner().equals(mrs.getLocalUser().getName())) {
 							error = true;
 							out.writeObject((Object) "NOK");
