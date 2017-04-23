@@ -11,23 +11,14 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.security.PublicKey;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import com.sun.xml.internal.ws.config.management.policy.ManagementPolicyValidator;
-
-import utilities.ReadWriteUtil;
 
 public class RemoteRepository {
 	private String owner;
@@ -38,12 +29,17 @@ public class RemoteRepository {
 	 */
 	private Map<String, CopyOnWriteArrayList<Path>> mapVersions;
 	private List<String> sharedUsers;
+	/**
+	 * Map of the users that have shared access to the repository
+	 */
+	private Map<String, PublicKey> sharedPublicKey;
 
 	public RemoteRepository(String nameRepo) {
 		super();
 		this.nameRepo = nameRepo;
 		this.mapVersions = new ConcurrentHashMap<>();
-		this.sharedUsers = new CopyOnWriteArrayList<String>();
+		this.sharedUsers = new CopyOnWriteArrayList<>();
+		this.setSharedPublicKey(new ConcurrentHashMap<>());
 		persisteRemRepo();
 	}
 
@@ -52,7 +48,8 @@ public class RemoteRepository {
 		this.owner = onwer;
 		this.nameRepo = nameRepo;
 		this.mapVersions = new ConcurrentHashMap<>();
-		this.sharedUsers = new CopyOnWriteArrayList<String>();
+		this.sharedUsers = new CopyOnWriteArrayList<>();
+		this.setSharedPublicKey(new ConcurrentHashMap<>());
 		persisteRemRepo();
 	}
 
@@ -161,6 +158,26 @@ public class RemoteRepository {
 		this.nameRepo = nameRepo;
 	}
 
+	public List<String> getSharedUsers() {
+		return sharedUsers;
+	}
+
+	public Map<String, CopyOnWriteArrayList<Path>> getMapVersions() {
+		return mapVersions;
+	}
+
+	public void setMapVersions(Map<String, CopyOnWriteArrayList<Path>> mapVersions) {
+		this.mapVersions = mapVersions;
+	}
+
+	public Map<String, PublicKey> getSharedPublicKey() {
+		return sharedPublicKey;
+	}
+
+	public void setSharedPublicKey(Map<String, PublicKey> sharedPublicKey) {
+		this.sharedPublicKey = sharedPublicKey;
+	}
+
 	/**
 	 * method to add the user to the shared list to this repository and persist
 	 * the user in the file if its not already there.
@@ -171,6 +188,22 @@ public class RemoteRepository {
 		// if the does not have access to the repo add it
 		if (!(existsInSharedList(userName))) {
 			sharedUsers.add(userName);
+			sharedPublicKey.put(userName, null);
+			persisteSharedUser(userName, this);
+		}
+		System.out.println("Current List of Shared Users for the " + this.nameRepo + ": " + sharedUsers);
+	}
+
+	/**
+	 * method to add the user to the shared list to this repository and persist
+	 * the user in the file if its not already there.
+	 * 
+	 * @param userName
+	 */
+	public void addPublicKeytoShareUserToRepo(String userName) {
+		// if the does not have access to the repo add it
+		if (existsInSharedMap(userName)) {
+			sharedPublicKey.put(userName, null);
 			persisteSharedUser(userName, this);
 		}
 		System.out.println("Current List of Shared Users for the " + this.nameRepo + ": " + sharedUsers);
@@ -181,6 +214,25 @@ public class RemoteRepository {
 	 */
 	private boolean existsInSharedList(String userName) {
 		return sharedUsers.contains(userName) ? true : false;
+	}
+
+	/**
+	 * method to check if the user exists in the map of shared users
+	 * 
+	 * @param userName
+	 * @return
+	 */
+	private boolean existsInSharedMap(String userName) {
+		return sharedPublicKey.containsKey(userName) ? true : false;
+	}
+
+	public boolean addPublicKeySharedUser(String userName, PublicKey pk) {
+		// if the entry for the username exists and its value is null
+		if (existsInSharedMap(userName) && (sharedPublicKey.get(userName) == null)) {
+			sharedPublicKey.putIfAbsent(userName, pk);
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -196,12 +248,13 @@ public class RemoteRepository {
 				PrintWriter out = new PrintWriter(bf)) {
 			out.println(userName);
 		} catch (IOException e) {
-			System.err.println("PROBLEM ADDING THE USER TO THE SHARED FILE");
+			System.err.println("Existiu um problema a adicinar o user aos ficheiro");
 		}
 	}
 
-	public void removeUserFromRepo(String userId) {
+	public void removeSharedUserFromRepo(String userId) {
 		sharedUsers.remove(userId);
+		sharedPublicKey.remove(userId);
 		removeUserFromSharedRepo(userId);
 		System.out.println("Current List of Shared Users for the " + this.nameRepo + ": " + sharedUsers);
 	}
@@ -239,22 +292,10 @@ public class RemoteRepository {
 
 	}
 
-	public List<String> getSharedUsers() {
-		return sharedUsers;
-	}
-
-	public Map<String, CopyOnWriteArrayList<Path>> getMapVersions() {
-		return mapVersions;
-	}
-
-	public void setMapVersions(Map<String, CopyOnWriteArrayList<Path>> mapVersions) {
-		this.mapVersions = mapVersions;
-	}
-
 	@Override
 	public String toString() {
-		return "RemoteRepository [onwer=" + owner + ", timestamp=" + timestamp + ", nameRepo=" + nameRepo
-				+ ", shared with=" + sharedUsers + "]";
+		return "RemoteRepository [owner=" + owner + ", timestamp=" + timestamp + ", nameRepo=" + nameRepo
+				+ ", mapVersions=" + mapVersions + ", sharedUsers=" + sharedUsers + ", sharedPublicKey="
+				+ sharedPublicKey + "]";
 	}
-
 }
