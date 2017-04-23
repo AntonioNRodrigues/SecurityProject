@@ -123,7 +123,7 @@ public class MyGitServer {
 
 			ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
 			sSoc = (SSLServerSocket) ssf.createServerSocket(Integer.parseInt(args[0]));
-
+			
 			// Client authentication
 			// sSoc.setNeedClientAuth(true);
 
