@@ -243,18 +243,18 @@ public class RemoteRepository {
 		return sharedUsers;
 	}
 
-	@Override
-	public String toString() {
-		return "RemoteRepository [onwer=" + owner + ", timestamp=" + timestamp + ", nameRepo=" + nameRepo
-				+ ", shared with=" + sharedUsers + "]";
-	}
-
 	public Map<String, CopyOnWriteArrayList<Path>> getMapVersions() {
 		return mapVersions;
 	}
 
 	public void setMapVersions(Map<String, CopyOnWriteArrayList<Path>> mapVersions) {
 		this.mapVersions = mapVersions;
+	}
+
+	@Override
+	public String toString() {
+		return "RemoteRepository [onwer=" + owner + ", timestamp=" + timestamp + ", nameRepo=" + nameRepo
+				+ ", shared with=" + sharedUsers + "]";
 	}
 
 }
