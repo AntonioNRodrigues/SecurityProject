@@ -373,9 +373,12 @@ public class MessagePHandler extends MessageHandler {
 				
 				Long receivedTimeStamp = (Long) in.readObject();
 				Path path = Paths.get(CLIENT + File.separator + repoName + File.separator);
+				//Recebe o ficheiro cifrado.
 				File received = ReadWriteUtil.receiveFile(path.toString(), in, out);
 				
-				//Decifrar o ficheiro recebido com K
+				//Decifrar o ficheiro recebido com K //TODO: Falta verificar se com o ficheiro de destino sendo o mesmo,
+				//se o ficheiro fica bem 'descifrado'. A alternativa é mandar o ficheiro do servidor com o append de uma extensão e aqui retirar
+				//a extensão do ficheiro.
 				SecurityUtil.decipherFile(received.toPath(), secretKey, path);
 				
 				
