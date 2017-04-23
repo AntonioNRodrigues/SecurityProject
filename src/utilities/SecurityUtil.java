@@ -1,4 +1,4 @@
-
+ 
 package utilities;
 
 import static utilities.ReadWriteUtil.SERVER;
@@ -475,6 +475,7 @@ public class SecurityUtil {
 		Key k = null;
 		KeyPair kpair = null;
 		try {
+			
 			k = ks.getKey(alias, pss.toCharArray());
 			if (k instanceof PrivateKey) {
 				Certificate cert = ks.getCertificate(alias);
@@ -504,5 +505,28 @@ public class SecurityUtil {
 		}
 
 		return cert;
+	}
+	
+	
+	
+	/**
+	 * method to get the keystore
+	 * @param keyStore path to the keystore
+	 * @param alias from the keystore
+	 * @param pass from the keystore
+	 * @return the keystore
+	 */
+	public static KeyStore getTrustStore(Path trustStore, String alias, String pss) {
+		KeyStore ts = null;
+		InputStream is = null;
+		try {
+			is = new FileInputStream(trustStore.toFile());
+			ts = KeyStore.getInstance(KeyStore.getDefaultType());
+			ts.load(is, pss.toCharArray());
+		} catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException e) {
+			e.printStackTrace();
+		}
+
+		return ts;
 	}
 }
