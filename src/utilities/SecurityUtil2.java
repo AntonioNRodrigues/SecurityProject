@@ -1,12 +1,11 @@
 package utilities;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.CopyOption;
@@ -15,14 +14,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.Provider;
 import java.security.SecureRandom;
-import java.security.Security;
-import java.security.Provider.Service;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.Formatter;
-import java.util.Set;
 import java.util.UUID;
 
 import javax.crypto.Cipher;
@@ -32,9 +27,6 @@ import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
-
-import static java.nio.file.StandardCopyOption.*;
-import static utilities.ReadWriteUtil.SERVER;
 
 public class SecurityUtil2 {
 
