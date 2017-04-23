@@ -266,13 +266,16 @@ public class ServerSkell {
 									// Recebe assinatura do ficheiro
 									byte[] signature = (byte[]) in.readObject();
 									// Guarda-a com a extensao .sig
-									FileOutputStream ass = new FileOutputStream(path + mp.getFileName() + ".sig");
-									ass.write(signature);
+									System.out.println("--" + signature);
+									System.out.println("--" + mp.getFileName()); // this one is null
+									System.out.println("--" + path);
+									FileOutputStream fos = new FileOutputStream(path + mp.getFileName() + ".sig");
+									fos.write(signature);
 
-									ass.close();
+									fos.close();
 
-									// Recebe chave key para depois cifr�-la
-									// usando a sua chave p�blica
+									// Recebe chave key para depois cifra-la
+									// usando a sua chave publica
 									SecretKey key = (SecretKey) in.readObject();
 
 									// TODO: CORRIGIR ESTA PARTE: Cifra a chave
@@ -310,7 +313,6 @@ public class ServerSkell {
 									received.setLastModified(timestampReceivedFile);
 									// most recent file in repository
 									File fileInRepo = rr.getFile(received.getName());
-									System.out.println(fileInRepo == null);
 
 									if (fileInRepo == null) {
 										File f = new File(path + received.getName()
@@ -437,6 +439,10 @@ public class ServerSkell {
 									// Recebe assinatura do ficheiro
 									byte[] signature = (byte[]) in.readObject();
 									// Guarda-a com a extens�o .sig
+									System.out.println("--" + signature);
+									System.out.println("--" + mp.getFileName()); // this one is null
+									System.out.println("--" + path);
+
 									FileOutputStream ass = new FileOutputStream(path + mp.getFileName() + ".sig");
 									ass.write(signature);
 									ass.close();
@@ -454,16 +460,16 @@ public class ServerSkell {
 									 * 1- buscar chave publica -> keystore 2 -
 									 * cifrar chave publica
 									 */
-									FileInputStream kfile = new FileInputStream("keystore.dd"); // keystore
-									KeyStore kstore = KeyStore.getInstance("JKS");
-									kstore.load(kfile, "serverpass".toCharArray()); // TODO:
-																					// PASSWORD
-																					// DO
-																					// SERVIDOR
-									Certificate cert = kstore.getCertificate("server"); // TODO:
-																						// alias
-																						// do
-																						// utilizador
+									
+									Path p = Paths.get(".myGitServerKeyStore");
+
+									KeyPair kp = SecurityUtil.getKeyPairFromKS(p, "mygitserver", "badpassword1");
+
+									// method to get the certificate from
+									// keystore
+
+									Certificate cert = SecurityUtil.getCertFromKeyStore(p, "mygitserver",
+											"badpassword1");
 
 									Cipher cif = Cipher.getInstance("RSA");
 									cif.init(Cipher.WRAP_MODE, cert);

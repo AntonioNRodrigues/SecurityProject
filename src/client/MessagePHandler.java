@@ -30,10 +30,6 @@ import utilities.SecurityUtil;
 
 public class MessagePHandler extends MessageHandler {
 
-	/**
-	 * 
-	 */
-
 	private List<Path> filesList;
 
 	public MessagePHandler() {
@@ -105,10 +101,11 @@ public class MessagePHandler extends MessageHandler {
 				// Envia a assinatura
 				out.writeObject(signature);
 
-				// gerar uma chave aleat�ria para utilizar com o AES
+				// gerar uma chave aleatoria para utilizar com o AES
 				SecretKey key = SecurityUtil.getKey();
 
-				Path cifrado = Paths.get(params.getFile().getFileName() + ".cif");
+				Path cifrado = Paths.get(
+						CLIENT + File.separator + params.getRepName() + File.separator + params.getFileName() + ".cif");
 
 				// Cifrar o ficheiro com a chave criada
 				SecurityUtil.cipherFile(params.getFile(), key, cifrado);
@@ -179,10 +176,11 @@ public class MessagePHandler extends MessageHandler {
 					// Envia a assinatura
 					out.writeObject(signature);
 
-					// gerar uma chave aleat�ria para utilizar com o AES
+					// gerar uma chave aleatoria para utilizar com o AES
 					SecretKey key = SecurityUtil.getKey();
 
-					Path cifrado = Paths.get(params.getFile().getFileName() + ".cif");
+					Path cifrado = Paths.get(CLIENT + File.separator + params.getRepName() + File.separator
+							+ params.getFileName() + ".cif");
 
 					// Cifrar o ficheiro com a chave criada
 					SecurityUtil.cipherFile(params.getFile(), key, cifrado);

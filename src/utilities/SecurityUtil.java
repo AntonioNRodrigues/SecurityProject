@@ -52,7 +52,7 @@ public class SecurityUtil {
 	public static final String AES = "AES";
 	public static final String RSA = "RSA";
 	public static final String SHA_256 = "SHA-256";
-	public static final String SHA_256_RSA = SHA_256 + RSA;
+	public static final String SHA_256_RSA = SHA_256 + "_" +RSA;
 	public static final int bits_RSA = 2048;
 	public static final int bits_AES = 128;
 	public static final String SERVER_KEY = "Server.key";
@@ -202,12 +202,12 @@ public class SecurityUtil {
 	 * @throws BadPaddingException
 	 * @throws IOException
 	 */
-	public static void cipherFile(Path temp, SecretKey sk, Path encriptedFile) throws NoSuchAlgorithmException,
+	public static void cipherFile(Path file, SecretKey sk, Path encriptedFile) throws NoSuchAlgorithmException,
 			NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
 		Cipher c = getCipher();
 		c.init(Cipher.ENCRYPT_MODE, sk);
 		// read file
-		FileInputStream fis = new FileInputStream(temp.toFile());
+		FileInputStream fis = new FileInputStream(file.toFile());
 		// write encrypted file
 		CipherOutputStream cos = new CipherOutputStream(new FileOutputStream(encriptedFile.toFile()), c);
 		byte[] b = new byte[16];
@@ -218,7 +218,7 @@ public class SecurityUtil {
 		}
 		cos.close();
 		fis.close();
-		Files.deleteIfExists(temp);
+		//Files.deleteIfExists(file);
 
 	}
 
@@ -387,7 +387,7 @@ public class SecurityUtil {
 	public static Signature getSignature(PrivateKey pk) {
 		Signature s = null;
 		try {
-			s = Signature.getInstance(SHA_256_RSA);
+			s = Signature.getInstance("MD5WithRSA");
 			s.initSign(pk);
 		} catch (NoSuchAlgorithmException | InvalidKeyException e) {
 			e.printStackTrace();
@@ -420,6 +420,7 @@ public class SecurityUtil {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		System.out.println(s);
 		return s.sign();
 	}
 
