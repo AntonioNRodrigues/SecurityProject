@@ -397,7 +397,8 @@ public class ServerSkell {
 							out.writeObject((Object) "NOK");
 							out.writeObject((Object) "Erro: O ficheiro indicado não existe");
 						} else {
-
+							
+							String path = SERVER + File.separator + mp.getRepoName() + File.separator;
 							// Saca da chave do ficheiro que est� guardada com a
 							// extens�o .key.server
 							FileInputStream keyFile = new FileInputStream(mp.getFileName() + ".key.server");
@@ -431,11 +432,13 @@ public class ServerSkell {
 							
 							// Envia a chave K para o cliente
 							out.writeObject(keyFinal);
-							
-							
-							// TODO:  RESTO DO
-							// TRABALHO
 
+							//Vai buscar a assinatura e envia para o cliente
+							ObjectInputStream ois = new ObjectInputStream (new FileInputStream(path + mp.getFileName() + ".sig"));
+							String data = (String) ois.readObject();
+							out.writeObject(data);
+							ois.close();
+							
 							// In�cio do envio do ficheiro cifrado
 							File inRepoCifrado = rr.getFile(mp.getFileName());
 
