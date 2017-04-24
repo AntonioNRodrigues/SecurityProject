@@ -423,7 +423,6 @@ public class ServerSkell {
 							} catch (IllegalBlockSizeException e) {
 								System.out.println("ERRO: O TAMANHO DO ARRAY N�O � O MAIS CORRECTO");
 							} catch (BadPaddingException e) {
-								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
 
