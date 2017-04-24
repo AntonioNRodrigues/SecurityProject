@@ -367,9 +367,7 @@ public class MessagePHandler extends MessageHandler {
 		for (int i = 0; i < sizeList; i++) {
 			try {
 				//Recebe a chave K do servidor para decifrar o ficheiro
-				byte[] key = (byte[]) in.readObject();
-				
-				SecretKey secretKey = new SecretKeySpec(key, 0, key.length, "AES");
+				SecretKey secretKey = (SecretKey) in.readObject();
 				
 				Long receivedTimeStamp = (Long) in.readObject();
 				Path path = Paths.get(CLIENT + File.separator + repoName + File.separator);
@@ -383,6 +381,7 @@ public class MessagePHandler extends MessageHandler {
 				
 				
 				//TODO: FALTA RECEBER E VERIFICAR A ASSINATURA
+				
 				
 				received.setLastModified(receivedTimeStamp);
 				File inRepo = new File(

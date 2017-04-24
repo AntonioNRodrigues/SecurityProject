@@ -34,6 +34,7 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 import enums.TypeOperation;
 import enums.TypeSend;
@@ -425,11 +426,15 @@ public class ServerSkell {
 								e.printStackTrace();
 							}
 
-							// TODO: Fazer a SecretKey from String (?) RESTO DO
-							// TRABALHO
-
+							//Convert byte[] to Secret Key
+							SecretKey keyFinal = new SecretKeySpec(chaveDecifrada, 0, chaveDecifrada.length, "AES");
+							
 							// Envia a chave K para o cliente
-							out.writeObject(chaveDecifrada);
+							out.writeObject(keyFinal);
+							
+							
+							// TODO:  RESTO DO
+							// TRABALHO
 
 							// In�cio do envio do ficheiro cifrado
 							File inRepoCifrado = rr.getFile(mp.getFileName());
