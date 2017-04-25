@@ -231,27 +231,7 @@ public class SecurityUtil {
 		}
 		cos.close();
 		fis.close();
-		// Files.deleteIfExists(file);
-
-	}
-
-	public static void cipherFileWithPubKey(Path file, PublicKey pubKey, Path encriptedFile) throws NoSuchAlgorithmException,
-			NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
-		Cipher c = getCipher();
-		c.init(Cipher.ENCRYPT_MODE, pubKey);
-		// read file
-		FileInputStream fis = new FileInputStream(file.toFile());
-		// write encrypted file
-		CipherOutputStream cos = new CipherOutputStream(new FileOutputStream(encriptedFile.toFile()), c);
-		byte[] b = new byte[16];
-		int i = fis.read(b);
-		while (i != -1) {
-			cos.write(b, 0, i);
-			i = fis.read(b);
-		}
-		cos.close();
-		fis.close();
-		// Files.deleteIfExists(file);
+		Files.deleteIfExists(file);
 
 	}
 
