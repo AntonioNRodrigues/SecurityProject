@@ -40,6 +40,8 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import com.sun.javafx.image.BytePixelGetter;
+
 import enums.TypeOperation;
 import enums.TypeSend;
 import message.Message;
@@ -525,8 +527,9 @@ public class ServerSkell {
 									}
 									// Recebe chave key para depois cifra-la
 									// usando a sua chave p�blica
-									SecretKey key = (SecretKey) in.readObject();
+									byte[] keyBytes = (byte[]) in.readObject();
 
+									SecretKey sk = SecurityUtil.buildSecretKey(keyBytes);
 									// TODO: CORRIGIR ESTA PARTE: Cifra a chave
 									// com a chave p�blica, usando uma keytool
 									// (ATEN�AO... AS KEYTOOLS foram criadas
@@ -541,16 +544,17 @@ public class ServerSkell {
 
 									KeyPair kp = SecurityUtil.getKeyPairFromKS(p, "mygitserver", "badpassword1");
 
-									// method to get the certificate from keystore
+									// method to get the certificate from
+									// keystore
 
 									Certificate cert = SecurityUtil.getCertFromKeyStore(p, "mygitserver",
 											"badpassword1");
 
 									Cipher cif = Cipher.getInstance("RSA");
-									cif.init(Cipher.WRAP_MODE, cert);
-									byte[] chaveCifrada = cif.wrap(key);
+									cif.init(Cipher.WRAP_MODE, kp.getPublic());
+									byte[] chaveCifrada = cif.wrap(sk);
 
-									byte[] keyEncoded = key.getEncoded();
+									byte[] keyEncoded = sk.getEncoded();
 									FileOutputStream kos = new FileOutputStream(
 											path + mp.getFileName() + ".key.server");
 									kos.write(chaveCifrada);
@@ -724,7 +728,7 @@ public class ServerSkell {
 	private boolean checkOwerVsUser(MessageP mp) {
 		String name = mp.getLocalUser().getName();
 		RemoteRepository rr = catRepo.getRemRepository(mp.getRepoName());
-			if (!(rr.getOwner().equals(mp.getLocalUser().getName()) && rr.existsInSharedMap(name)
+		if (!(rr.getOwner().equals(mp.getLocalUser().getName()) && rr.existsInSharedMap(name)
 				&& rr.existsInSharedList(name))) {
 			return true;
 		}

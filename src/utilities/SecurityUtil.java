@@ -346,6 +346,16 @@ public class SecurityUtil {
 	}
 
 	/**
+	 * method to build or rebuild a secretKey from bytes
+	 * @param bytes
+	 * @return
+	 */
+	public static SecretKey buildSecretKey(byte[] bytes) {
+		return new SecretKeySpec(bytes, 0, bytes.length, "AES");
+
+	}
+
+	/**
 	 * method to generate a NONCE
 	 * 
 	 * @return

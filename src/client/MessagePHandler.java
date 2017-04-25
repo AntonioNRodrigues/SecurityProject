@@ -127,7 +127,7 @@ public class MessagePHandler extends MessageHandler {
 				SecurityUtil.cipherFile(params.getFile(), key, cifrado);
 
 				// Envia a chave para o Servidor
-				out.writeObject(key);
+				out.writeObject(key.getEncoded());
 
 				// Prepara e envia o ficheiro
 				ReadWriteUtil.sendFile(cifrado, in, out);
