@@ -131,7 +131,7 @@ public class ServerSkell {
 							error = true;
 							out.writeObject((Object) "NOK");
 							out.writeObject(
-									(Object) "Erro: O utilizador indicado na remoçao de partilha do repositorio nao existe");
+									(Object) "Erro: O utilizador indicado na remoï¿½ao de partilha do repositorio nao existe");
 						}
 
 						// Validar se o userId Ã© utilizador com acesso ao
@@ -201,41 +201,10 @@ public class ServerSkell {
 				}
 
 			} else if (msg instanceof MessageP) {
-				/*
-				 * boolean variable to use if the user != owner set to true else
-				 * set it to false
-				 */
-				boolean difUser = false;
+
 				MessageP mp = ((MessageP) msg);
 				TypeSend typeSend = mp.getTypeSend();
 				TypeOperation operation = mp.getOperation();
-				// RemoteRepository remoRepo =
-				// catRepo.getRemRepository(mp.getRepoName());
-				// if the user is not the owner of the repo and has permissions
-				// to do stuff to the repo
-
-				// if
-				// (!(remoRepo.getOwner().equals(mp.getLocalUser().getName()))
-				// &&
-				// remoRepo.getSharedPublicKey().containsKey(mp.getLocalUser().getName()))
-				// {
-				// this is the public key of the user which has access to the
-				// repo
-				// if its push repo or file --> the user chipher the content of
-				// repo or file with his privateKey
-				// sends to the server and the server uses the publickey to
-				// decipher the content
-
-				// in the case od pull repo or file the server ciphers the
-				// content with the public key of the user
-				// and sends it to the user. has to decipher the content with
-				// its private key
-				// publicKeyOfUser = receiveMsgDifferentOwner(mp);
-				// if(publicKeyOfUser == null){
-				// out.writeObject("You do not have access to this operation");
-				// }
-
-				// }
 
 				switch (typeSend) {
 				case REPOSITORY:
@@ -260,12 +229,6 @@ public class ServerSkell {
 							out.writeObject((Object) "NOK");
 							out.writeObject((Object) "Erro: o utilizador nao tem acesso ao repositorio || "
 									+ "the repo does not have the publickey of the user");
-							// the is
-						}
-						if (!error && rr.getSharedPublicKey().get(mp.getLocalUser().getName()) != null
-								&& rr.getSharedUsers().contains(mp.getLocalUser().getName())) {
-							difUser = true;
-							System.out.println("Diferente User" + difUser);
 						}
 
 						if (!error) {
@@ -280,18 +243,11 @@ public class ServerSkell {
 
 									for (Path f : uniqueList) {
 										out.writeObject((Object) f.toFile().lastModified());
-										if (difUser) {
-											PublicKey pubKey = rr.getSharedPublicKey().get(mp.getLocalUser().getName());
-											Path toSendPath = new File(f.getFileName().toString() + ".cifWithPubKey")
-													.toPath();
-											SecurityUtil.cipherFileWithPubKey(f, pubKey, toSendPath);
-											System.out.println("Pull repo path of cpheredFile" + toSendPath);
-										}
+
 										ReadWriteUtil.sendFile(SERVER + File.separator + mp.getRepoName()
 												+ File.separator + f.toFile().getName(), in, out);
 									}
-								} catch (IOException | InvalidKeyException | IllegalBlockSizeException
-										| BadPaddingException e) {
+								} catch (IOException e) {
 									e.printStackTrace();
 									out.writeObject((Object) "NOK");
 									out.writeObject((Object) "SERVER ERROR");
@@ -720,9 +676,8 @@ public class ServerSkell {
 			User u = catUsers.getMapUsers().get(msg.getLocalUser().getName());
 			// user does not exist, register user
 			if (u == null) {
-				System.out.println("THE USER WAS NOT FOUND:: REGISTERING USER");
+				System.out.println("O utilizador nao foi encontrado. A registar Utilizador");
 				catUsers.registerUser(msg.getLocalUser().getName(), msg.getPassword());
-
 				return true;
 			}
 			// user exists check permissions
