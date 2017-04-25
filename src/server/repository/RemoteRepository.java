@@ -212,7 +212,7 @@ public class RemoteRepository {
 	/*
 	 * method to check is the user is already in the list of shared users
 	 */
-	private boolean existsInSharedList(String userName) {
+	public boolean existsInSharedList(String userName) {
 		return sharedUsers.contains(userName) ? true : false;
 	}
 
@@ -222,8 +222,8 @@ public class RemoteRepository {
 	 * @param userName
 	 * @return
 	 */
-	private boolean existsInSharedMap(String userName) {
-		return sharedPublicKey.containsKey(userName) ? true : false;
+	public boolean existsInSharedMap(String userName) {
+		return (sharedPublicKey.get(userName) == null) ? true : false;
 	}
 
 	public boolean addPublicKeySharedUser(String userName, PublicKey pk) {

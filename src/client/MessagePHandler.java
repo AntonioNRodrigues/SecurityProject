@@ -85,12 +85,20 @@ public class MessagePHandler extends MessageHandler {
 		}
 
 		String result = "";
+		boolean isOwner = false;
 		try {
 			result = (String) in.readObject();
+			String temp = (String) in.readObject();
+			if (temp.contentEquals("OWNER")) {
+				isOwner = true;
+			} else {
+				isOwner = false;
+			}
 		} catch (ClassNotFoundException | IOException e) {
 			e.printStackTrace();
 		}
 
+		System.out.println(result + " " + isOwner);
 		if (result.contentEquals("OK")) {
 			// Enviar o ficheiro
 			try {
@@ -102,10 +110,12 @@ public class MessagePHandler extends MessageHandler {
 
 				KeyPair kp = SecurityUtil.getKeyPairFromKS(p, "mygitclient", "badpassword2");
 
-				// Cliente gera a assinatura digital do ficheiro em claro
-				byte[] signature = SecurityUtil.generateSignatureOfFile(params.getFile(), kp.getPrivate());
-				// Envia a assinatura
-				out.writeObject(signature);
+				if (isOwner) {
+					// Cliente gera a assinatura digital do ficheiro em claro
+					byte[] signature = SecurityUtil.generateSignatureOfFile(params.getFile(), kp.getPrivate());
+					// Envia a assinatura
+					out.writeObject(signature);
+				}
 
 				// gerar uma chave aleatoria para utilizar com o AES
 				SecretKey key = SecurityUtil.getKey();
@@ -329,37 +339,38 @@ public class MessagePHandler extends MessageHandler {
 
 		for (int i = 0; i < sizeList; i++) {
 			try {
-				//Recebe a chave K do servidor para decifrar o ficheiro
+				// Recebe a chave K do servidor para decifrar o ficheiro
 				SecretKey secretKey = (SecretKey) in.readObject();
-				
+
 				Long receivedTimeStamp = (Long) in.readObject();
 				Path path = Paths.get(CLIENT + File.separator + repoName + File.separator);
-				//Recebe o ficheiro cifrado.
+				// Recebe o ficheiro cifrado.
 				File received = ReadWriteUtil.receiveFile(path.toString(), in, out);
-				
-				//Decifrar o ficheiro recebido com K //TODO: Falta verificar se com o ficheiro de destino sendo o mesmo,
-				//se o ficheiro fica bem 'descifrado'. A alternativa � mandar o ficheiro do servidor com o append de uma extens�o e aqui retirar
-				//a extens�o do ficheiro.
+
+				// Decifrar o ficheiro recebido com K //TODO: Falta verificar se
+				// com o ficheiro de destino sendo o mesmo,
+				// se o ficheiro fica bem 'descifrado'. A alternativa � mandar o
+				// ficheiro do servidor com o append de uma extens�o e aqui
+				// retirar
+				// a extens�o do ficheiro.
 				SecurityUtil.decipherFile(received.toPath(), secretKey, path);
-				
-				
-				//Recebe a assinatura
+
+				// Recebe a assinatura
 				String signature = (String) in.readObject();
 				byte[] signatureInBytes = signature.getBytes();
 				Path p = Paths.get(".myGitClientKeyStore");
 				Certificate c = SecurityUtil.getCertFromKeyStore(p, "mygitclient", "badpassword2");
 				PublicKey pk = c.getPublicKey();
-				
-				//Verifica a assinatura com o que recebeu
+
+				// Verifica a assinatura com o que recebeu
 				Signature s = Signature.getInstance("MD5withRSA");
 				s.initVerify(pk);
 				s.update(signature.getBytes());
-				if(s.verify(signatureInBytes))
+				if (s.verify(signatureInBytes))
 					System.out.println("A assinatura e valida!");
 				else
 					System.out.println("A assinatura foi corrompida");
-				
-				
+
 				received.setLastModified(receivedTimeStamp);
 				File inRepo = new File(
 						CLIENT + File.separator + repoName + File.separator + received.getName().split(" ")[0]);
@@ -391,7 +402,7 @@ public class MessagePHandler extends MessageHandler {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (SignatureException e) {
-				System.out.println("Erro: ERRO NA CONVERS�O DA ASSINATURA.");
+				System.out.println("Erro: ERRO NA CONVERSAO DA ASSINATURA.");
 			}
 		}
 

@@ -18,6 +18,7 @@ import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.rmi.Remote;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -499,6 +500,12 @@ public class ServerSkell {
 
 								out.writeObject((Object) "OK");
 
+								if (!checkOwerVsUser(mp)) {
+									out.writeObject((Object) "NOT OWNER");
+								} else {
+									out.writeObject((Object) "OWNER");
+								}
+
 								// Receber ficheiro
 								try {
 
@@ -506,21 +513,17 @@ public class ServerSkell {
 									String path = SERVER + File.separator + mp.getRepoName() + File.separator;
 									String tempPath = SERVER + File.separator;
 
-									// Recebe assinatura do ficheiro
-									byte[] signature = (byte[]) in.readObject();
-									// Guarda-a com a extens�o .sig
-									System.out.println("--" + signature);
-									System.out.println("--" + mp.getFileName()); // this
-																					// one
-																					// is
-																					// null
-									System.out.println("--" + path);
+									// do this only the if is the Owner of Repo
+									if (!checkOwerVsUser(mp)) {
+										// Recebe assinatura do ficheiro
+										byte[] signature = (byte[]) in.readObject();
+										// Guarda-a com a extens�o .sig
 
-									FileOutputStream ass = new FileOutputStream(path + mp.getFileName() + ".sig");
-									ass.write(signature);
-									ass.close();
-
-									// Recebe chave key para depois cifr�-la
+										FileOutputStream ass = new FileOutputStream(path + mp.getFileName() + ".sig");
+										ass.write(signature);
+										ass.close();
+									}
+									// Recebe chave key para depois cifra-la
 									// usando a sua chave p�blica
 									SecretKey key = (SecretKey) in.readObject();
 
@@ -538,8 +541,7 @@ public class ServerSkell {
 
 									KeyPair kp = SecurityUtil.getKeyPairFromKS(p, "mygitserver", "badpassword1");
 
-									// method to get the certificate from
-									// keystore
+									// method to get the certificate from keystore
 
 									Certificate cert = SecurityUtil.getCertFromKeyStore(p, "mygitserver",
 											"badpassword1");
@@ -583,16 +585,13 @@ public class ServerSkell {
 										} else {
 											Files.deleteIfExists(received.toPath());
 										}
-										System.out.println("fileInrepo != null");
 									}
 
 								} catch (ClassNotFoundException e) {
 									e.printStackTrace();
 								} catch (InvalidKeyException e) {
-									// TODO Auto-generated catch block
 									e.printStackTrace();
 								} catch (IllegalBlockSizeException e) {
-									// TODO Auto-generated catch block
 									e.printStackTrace();
 								}
 
@@ -715,31 +714,20 @@ public class ServerSkell {
 		this.nonce = nonce;
 	}
 
-	public PublicKey receiveMsgDifferentOwner(MessageP mp) {
-		PublicKey pk = null;
-		RemoteRepository rr = catRepo.getRemRepository(mp.getLocalUser().getName());
-		// if the user does not have the public key in the sharedPublicLey Map
-		if (rr.getSharedPublicKey().get(mp.getLocalUser().getName()) == null) {
-			// ask for key
-			try {
-				out.writeObject((Object) "Please give me your public key");
-				byte[] publicKey = (byte[]) in.readObject();
-				// buildKey from the byte[] --> pk =
-				// rebuildPublicKey(publicKey);
-				// if (pk == null){
-				// out.writeObject((Object) "You did not provide a valid public
-				// key");
-				// }
-				// add publicKey to the sharedPublicKey Map
-				// return pk;
-
-			} catch (IOException | ClassNotFoundException e) {
-				e.printStackTrace();
-			}
-		} else {
-			pk = rr.getSharedPublicKey().get(mp.getLocalUser().getName());
+	/**
+	 * method to see if the user is not the owner of the repository but has
+	 * access to it
+	 * 
+	 * @param msg
+	 * @return true if not owner and has access false otherwise
+	 */
+	private boolean checkOwerVsUser(MessageP mp) {
+		String name = mp.getLocalUser().getName();
+		RemoteRepository rr = catRepo.getRemRepository(mp.getRepoName());
+			if (!(rr.getOwner().equals(mp.getLocalUser().getName()) && rr.existsInSharedMap(name)
+				&& rr.existsInSharedList(name))) {
+			return true;
 		}
-		return pk;
+		return false;
 	}
-
 }
