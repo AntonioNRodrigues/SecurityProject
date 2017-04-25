@@ -19,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.InvalidKeyException;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyStoreException;
 import java.security.MessageDigest;
@@ -27,6 +28,8 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.crypto.BadPaddingException;
@@ -108,7 +111,7 @@ public class ServerSkell {
 					if (!catRepo.repoExists(mrs.getRepoName())) {
 
 						out.writeObject((Object) "NOK");
-						out.writeObject((Object) "Erro: O repositório não existe");
+						out.writeObject((Object) "Erro: O repositorio nao existe");
 
 					} else {
 						// Repositorio existe
@@ -120,7 +123,7 @@ public class ServerSkell {
 						if (!rr.getOwner().equals(mrs.getLocalUser().getName())) {
 							error = true;
 							out.writeObject((Object) "NOK");
-							out.writeObject((Object) "Erro: Não é dono do repositório");
+							out.writeObject((Object) "Erro: Nao eh dono do repositorio");
 						}
 
 						// Validar se o userId existe
@@ -128,7 +131,7 @@ public class ServerSkell {
 							error = true;
 							out.writeObject((Object) "NOK");
 							out.writeObject(
-									(Object) "Erro: O utilizador indicado na remoção de partilha do repositório não existe");
+									(Object) "Erro: O utilizador indicado na remo�ao de partilha do repositorio nao existe");
 						}
 
 						// Validar se o userId é utilizador com acesso ao
@@ -159,6 +162,7 @@ public class ServerSkell {
 						// Repositorio existe
 
 						rr = catRepo.getRemRepository(mrs.getRepoName());
+						User user = catUsers.getMapUsers().get(mrs.getLocalUser().getName());
 
 						boolean error = false;
 						// Validar se o utilizador eh dono
@@ -179,6 +183,15 @@ public class ServerSkell {
 						if (!error) {
 							out.writeObject((Object) "OK");
 							rr.addShareUserToRepo(mrs.getUserId());
+							// dont know if this is correct
+							PublicKey pubkey = null;
+							try {
+								pubkey = KeyFactory.getInstance("RSA")
+										.generatePublic(new X509EncodedKeySpec(user.getPubKey()));
+							} catch (InvalidKeySpecException e) {
+								e.printStackTrace();
+							}
+							rr.addPublicKeySharedUser(user.getName(), pubkey);
 						}
 					}
 
@@ -188,12 +201,11 @@ public class ServerSkell {
 				}
 
 			} else if (msg instanceof MessageP) {
-				//PublicKey publicKeyOfUser = null;
 				/*
 				 * boolean variable to use if the user != owner set to true else
 				 * set it to false
 				 */
-				// boolean difUser = false;
+				boolean difUser = false;
 				MessageP mp = ((MessageP) msg);
 				TypeSend typeSend = mp.getTypeSend();
 				TypeOperation operation = mp.getOperation();
@@ -242,17 +254,19 @@ public class ServerSkell {
 						// Validar se o utilizador e dono ou tem acesso
 						// partilhado ao repositorio
 						if (!error && !(rr.getOwner().equals(mp.getLocalUser().getName())
-								|| rr.getSharedUsers().contains(mp.getLocalUser().getName()))) {
+								|| rr.getSharedUsers().contains(mp.getLocalUser().getName())
+								|| rr.getSharedPublicKey().get(mp.getLocalUser().getName()) == null)) {
 							error = true;
 							out.writeObject((Object) "NOK");
-							out.writeObject((Object) "Erro: o utilizador nao tem acesso ao repositorio");
-						//the user has the access to the repo but does not have set is publicKey
-						} /*else if (rr.getSharedPublicKey().containsKey(mp.getLocalUser().getName())
-								&& (rr.getSharedPublicKey().get(mp.getLocalUser().getName()) == null)) {
-							//ask the user to send the key
-							publicKeyOfUser = receiveMsgDifferentOwner(mp);
-							
-						}*/
+							out.writeObject((Object) "Erro: o utilizador nao tem acesso ao repositorio || "
+									+ "the repo does not have the publickey of the user");
+							// the is
+						}
+						if (!error && rr.getSharedPublicKey().get(mp.getLocalUser().getName()) != null
+								&& rr.getSharedUsers().contains(mp.getLocalUser().getName())) {
+							difUser = true;
+							System.out.println("Diferente User" + difUser);
+						}
 
 						if (!error) {
 
@@ -266,10 +280,18 @@ public class ServerSkell {
 
 									for (Path f : uniqueList) {
 										out.writeObject((Object) f.toFile().lastModified());
+										if (difUser) {
+											PublicKey pubKey = rr.getSharedPublicKey().get(mp.getLocalUser().getName());
+											Path toSendPath = new File(f.getFileName().toString() + ".cifWithPubKey")
+													.toPath();
+											SecurityUtil.cipherFileWithPubKey(f, pubKey, toSendPath);
+											System.out.println("Pull repo path of cpheredFile" + toSendPath);
+										}
 										ReadWriteUtil.sendFile(SERVER + File.separator + mp.getRepoName()
 												+ File.separator + f.toFile().getName(), in, out);
 									}
-								} catch (IOException e) {
+								} catch (IOException | InvalidKeyException | IllegalBlockSizeException
+										| BadPaddingException e) {
 									e.printStackTrace();
 									out.writeObject((Object) "NOK");
 									out.writeObject((Object) "SERVER ERROR");
@@ -430,7 +452,8 @@ public class ServerSkell {
 						} else {
 
 							String path = SERVER + File.separator + mp.getRepoName() + File.separator;
-							// Saca da chave do ficheiro que est� guardada com a
+							// Saca da chave do ficheiro que est� guardada com
+							// a
 
 							// extens�o .key.server
 							FileInputStream keyFile = new FileInputStream(mp.getFileName() + ".key.server");
@@ -459,18 +482,19 @@ public class ServerSkell {
 								e.printStackTrace();
 							}
 
-							//Convert byte[] to Secret Key
+							// Convert byte[] to Secret Key
 							SecretKey keyFinal = new SecretKeySpec(chaveDecifrada, 0, chaveDecifrada.length, "AES");
-							
+
 							// Envia a chave K para o cliente
 							out.writeObject(keyFinal);
 
-							//Vai buscar a assinatura e envia para o cliente
-							ObjectInputStream ois = new ObjectInputStream (new FileInputStream(path + mp.getFileName() + ".sig"));
+							// Vai buscar a assinatura e envia para o cliente
+							ObjectInputStream ois = new ObjectInputStream(
+									new FileInputStream(path + mp.getFileName() + ".sig"));
 							String data = (String) ois.readObject();
 							out.writeObject(data);
 							ois.close();
-							
+
 							// In�cio do envio do ficheiro cifrado
 							File inRepoCifrado = rr.getFile(mp.getFileName());
 

@@ -1,4 +1,4 @@
- 
+
 package utilities;
 
 import static utilities.ReadWriteUtil.SERVER;
@@ -51,7 +51,7 @@ public class SecurityUtil {
 	public static final String AES = "AES";
 	public static final String RSA = "RSA";
 	public static final String SHA_256 = "SHA-256";
-	public static final String SHA_256_RSA = SHA_256 + "_" +RSA;
+	public static final String SHA_256_RSA = SHA_256 + "_" + RSA;
 	public static final int bits_RSA = 2048;
 	public static final int bits_AES = 128;
 	public static final String SERVER_KEY = "Server.key";
@@ -162,6 +162,20 @@ public class SecurityUtil {
 	}
 
 	/**
+	 * 
+	 * @param sk
+	 * @param path
+	 */
+	public static void persistePrivateKey(PrivateKey privateK, String path) {
+		byte[] privateKeyEncoded = privateK.getEncoded();
+		try (ObjectOutputStream oo = new ObjectOutputStream(new FileOutputStream(new File(path)))) {
+			oo.write(privateKeyEncoded);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
 	 * method to get a pair of asymmetric keys
 	 * 
 	 * @return
@@ -217,7 +231,27 @@ public class SecurityUtil {
 		}
 		cos.close();
 		fis.close();
-		//Files.deleteIfExists(file);
+		// Files.deleteIfExists(file);
+
+	}
+
+	public static void cipherFileWithPubKey(Path file, PublicKey pubKey, Path encriptedFile) throws NoSuchAlgorithmException,
+			NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
+		Cipher c = getCipher();
+		c.init(Cipher.ENCRYPT_MODE, pubKey);
+		// read file
+		FileInputStream fis = new FileInputStream(file.toFile());
+		// write encrypted file
+		CipherOutputStream cos = new CipherOutputStream(new FileOutputStream(encriptedFile.toFile()), c);
+		byte[] b = new byte[16];
+		int i = fis.read(b);
+		while (i != -1) {
+			cos.write(b, 0, i);
+			i = fis.read(b);
+		}
+		cos.close();
+		fis.close();
+		// Files.deleteIfExists(file);
 
 	}
 
@@ -444,9 +478,13 @@ public class SecurityUtil {
 
 	/**
 	 * method to get the keystore
-	 * @param keyStore path to the keystore
-	 * @param alias from the keystore
-	 * @param pass from the keystore
+	 * 
+	 * @param keyStore
+	 *            path to the keystore
+	 * @param alias
+	 *            from the keystore
+	 * @param pass
+	 *            from the keystore
 	 * @return the keystore
 	 */
 	public static KeyStore getKeyStore(Path keyStore, String alias, String pss) {
@@ -465,9 +503,13 @@ public class SecurityUtil {
 
 	/**
 	 * method to get the KeyPair from a specific keystore
-	 * @param keyStore path to the keystore
-	 * @param alias from the keystore
-	 * @param pass from the keystore
+	 * 
+	 * @param keyStore
+	 *            path to the keystore
+	 * @param alias
+	 *            from the keystore
+	 * @param pass
+	 *            from the keystore
 	 * @return the KeyPair
 	 */
 	public static KeyPair getKeyPairFromKS(Path keyStore, String alias, String pss) {
@@ -475,7 +517,7 @@ public class SecurityUtil {
 		Key k = null;
 		KeyPair kpair = null;
 		try {
-			
+
 			k = ks.getKey(alias, pss.toCharArray());
 			if (k instanceof PrivateKey) {
 				Certificate cert = ks.getCertificate(alias);
@@ -488,11 +530,16 @@ public class SecurityUtil {
 		}
 		return kpair;
 	}
+
 	/**
 	 * method to get the certificate from a specific keystore
-	 * @param keyStore path to the keystore
-	 * @param alias from the keystore
-	 * @param pass from the keystore
+	 * 
+	 * @param keyStore
+	 *            path to the keystore
+	 * @param alias
+	 *            from the keystore
+	 * @param pass
+	 *            from the keystore
 	 * @return the certifcate inside the keystore
 	 */
 	public static Certificate getCertFromKeyStore(Path keyStore, String alias, String pss) {
@@ -506,14 +553,16 @@ public class SecurityUtil {
 
 		return cert;
 	}
-	
-	
-	
+
 	/**
 	 * method to get the keystore
-	 * @param keyStore path to the keystore
-	 * @param alias from the keystore
-	 * @param pass from the keystore
+	 * 
+	 * @param keyStore
+	 *            path to the keystore
+	 * @param alias
+	 *            from the keystore
+	 * @param pass
+	 *            from the keystore
 	 * @return the keystore
 	 */
 	public static KeyStore getTrustStore(Path trustStore, String alias, String pss) {
