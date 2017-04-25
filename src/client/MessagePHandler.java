@@ -316,44 +316,6 @@ public class MessagePHandler extends MessageHandler {
 		return "MessagePHandler:sendPullRepMessage";
 	}
 
-//	private void receiveFiles(String repoName, ObjectInputStream in, ObjectOutputStream out) {
-//
-//		// mesmmo protocolo do servidor, receber primeiro o numero de ficheiros,
-//		// ler depois os ficheiros
-//		int sizeList = 0;
-//		try {
-//			sizeList = (Integer) in.readObject();
-//			// System.out.println("sizelist: " + sizeList);
-//		} catch (ClassNotFoundException | IOException e) {
-//			e.printStackTrace();
-//		}
-//
-//		for (int i = 0; i < sizeList; i++) {
-//			try {
-//				Long receivedTimeStamp = (Long) in.readObject();
-//				String path = CLIENT + File.separator + repoName + File.separator;
-//				File received = ReadWriteUtil.receiveFile(path, in, out);
-//				received.setLastModified(receivedTimeStamp);
-//				File inRepo = new File(
-//						CLIENT + File.separator + repoName + File.separator + received.getName().split(" ")[0]);
-//				if (inRepo.exists()) {
-//					if (received.lastModified() <= inRepo.lastModified()) {
-//						Files.deleteIfExists(received.toPath());
-//					} else if (received.lastModified() > inRepo.lastModified()) {
-//						received.renameTo(inRepo);
-//					}
-//				} else if (!(inRepo.exists())) {
-//					received.renameTo(inRepo);
-//				}
-//
-//			} catch (ClassNotFoundException | IOException e) {
-//				e.printStackTrace();
-//			}
-//
-//		}
-//
-//	}
-
 	private void receiveFilesPullRep(String repoName, ObjectInputStream in, ObjectOutputStream out) {
 
 		// mesmmo protocolo do servidor, receber primeiro o numero de ficheiros,
@@ -376,8 +338,8 @@ public class MessagePHandler extends MessageHandler {
 				File received = ReadWriteUtil.receiveFile(path.toString(), in, out);
 				
 				//Decifrar o ficheiro recebido com K //TODO: Falta verificar se com o ficheiro de destino sendo o mesmo,
-				//se o ficheiro fica bem 'descifrado'. A alternativa é mandar o ficheiro do servidor com o append de uma extensão e aqui retirar
-				//a extensão do ficheiro.
+				//se o ficheiro fica bem 'descifrado'. A alternativa ï¿½ mandar o ficheiro do servidor com o append de uma extensï¿½o e aqui retirar
+				//a extensï¿½o do ficheiro.
 				SecurityUtil.decipherFile(received.toPath(), secretKey, path);
 				
 				
@@ -393,7 +355,7 @@ public class MessagePHandler extends MessageHandler {
 				s.initVerify(pk);
 				s.update(signature.getBytes());
 				if(s.verify(signatureInBytes))
-					System.out.println("A assinatura é válida!");
+					System.out.println("A assinatura e valida!");
 				else
 					System.out.println("A assinatura foi corrompida");
 				
@@ -429,7 +391,7 @@ public class MessagePHandler extends MessageHandler {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (SignatureException e) {
-				System.out.println("Erro: ERRO NA CONVERSÃO DA ASSINATURA.");
+				System.out.println("Erro: ERRO NA CONVERSï¿½O DA ASSINATURA.");
 			}
 		}
 
