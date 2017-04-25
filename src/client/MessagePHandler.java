@@ -14,7 +14,10 @@ import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.Signature;
 import java.security.SignatureException;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -315,43 +318,43 @@ public class MessagePHandler extends MessageHandler {
 		return "MessagePHandler:sendPullRepMessage";
 	}
 
-	private void receiveFiles(String repoName, ObjectInputStream in, ObjectOutputStream out) {
-
-		// mesmmo protocolo do servidor, receber primeiro o numero de ficheiros,
-		// ler depois os ficheiros
-		int sizeList = 0;
-		try {
-			sizeList = (Integer) in.readObject();
-			// System.out.println("sizelist: " + sizeList);
-		} catch (ClassNotFoundException | IOException e) {
-			e.printStackTrace();
-		}
-
-		for (int i = 0; i < sizeList; i++) {
-			try {
-				Long receivedTimeStamp = (Long) in.readObject();
-				String path = CLIENT + File.separator + repoName + File.separator;
-				File received = ReadWriteUtil.receiveFile(path, in, out);
-				received.setLastModified(receivedTimeStamp);
-				File inRepo = new File(
-						CLIENT + File.separator + repoName + File.separator + received.getName().split(" ")[0]);
-				if (inRepo.exists()) {
-					if (received.lastModified() <= inRepo.lastModified()) {
-						Files.deleteIfExists(received.toPath());
-					} else if (received.lastModified() > inRepo.lastModified()) {
-						received.renameTo(inRepo);
-					}
-				} else if (!(inRepo.exists())) {
-					received.renameTo(inRepo);
-				}
-
-			} catch (ClassNotFoundException | IOException e) {
-				e.printStackTrace();
-			}
-
-		}
-
-	}
+//	private void receiveFiles(String repoName, ObjectInputStream in, ObjectOutputStream out) {
+//
+//		// mesmmo protocolo do servidor, receber primeiro o numero de ficheiros,
+//		// ler depois os ficheiros
+//		int sizeList = 0;
+//		try {
+//			sizeList = (Integer) in.readObject();
+//			// System.out.println("sizelist: " + sizeList);
+//		} catch (ClassNotFoundException | IOException e) {
+//			e.printStackTrace();
+//		}
+//
+//		for (int i = 0; i < sizeList; i++) {
+//			try {
+//				Long receivedTimeStamp = (Long) in.readObject();
+//				String path = CLIENT + File.separator + repoName + File.separator;
+//				File received = ReadWriteUtil.receiveFile(path, in, out);
+//				received.setLastModified(receivedTimeStamp);
+//				File inRepo = new File(
+//						CLIENT + File.separator + repoName + File.separator + received.getName().split(" ")[0]);
+//				if (inRepo.exists()) {
+//					if (received.lastModified() <= inRepo.lastModified()) {
+//						Files.deleteIfExists(received.toPath());
+//					} else if (received.lastModified() > inRepo.lastModified()) {
+//						received.renameTo(inRepo);
+//					}
+//				} else if (!(inRepo.exists())) {
+//					received.renameTo(inRepo);
+//				}
+//
+//			} catch (ClassNotFoundException | IOException e) {
+//				e.printStackTrace();
+//			}
+//
+//		}
+//
+//	}
 
 	private void receiveFilesPullRep(String repoName, ObjectInputStream in, ObjectOutputStream out) {
 
@@ -367,9 +370,7 @@ public class MessagePHandler extends MessageHandler {
 		for (int i = 0; i < sizeList; i++) {
 			try {
 				//Recebe a chave K do servidor para decifrar o ficheiro
-				byte[] key = (byte[]) in.readObject();
-				
-				SecretKey secretKey = new SecretKeySpec(key, 0, key.length, "AES");
+				SecretKey secretKey = (SecretKey) in.readObject();
 				
 				Long receivedTimeStamp = (Long) in.readObject();
 				Path path = Paths.get(CLIENT + File.separator + repoName + File.separator);
@@ -382,7 +383,22 @@ public class MessagePHandler extends MessageHandler {
 				SecurityUtil.decipherFile(received.toPath(), secretKey, path);
 				
 				
-				//TODO: FALTA RECEBER E VERIFICAR A ASSINATURA
+				//Recebe a assinatura
+				String signature = (String) in.readObject();
+				byte[] signatureInBytes = signature.getBytes();
+				Path p = Paths.get(".myGitClientKeyStore");
+				Certificate c = SecurityUtil.getCertFromKeyStore(p, "mygitclient", "badpassword2");
+				PublicKey pk = c.getPublicKey();
+				
+				//Verifica a assinatura com o que recebeu
+				Signature s = Signature.getInstance("MD5withRSA");
+				s.initVerify(pk);
+				s.update(signature.getBytes());
+				if(s.verify(signatureInBytes))
+					System.out.println("A assinatura é válida!");
+				else
+					System.out.println("A assinatura foi corrompida");
+				
 				
 				received.setLastModified(receivedTimeStamp);
 				File inRepo = new File(
@@ -414,6 +430,8 @@ public class MessagePHandler extends MessageHandler {
 			} catch (BadPaddingException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			} catch (SignatureException e) {
+				System.out.println("Erro: ERRO NA CONVERSÃO DA ASSINATURA.");
 			}
 		}
 

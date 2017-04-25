@@ -34,6 +34,7 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 import enums.TypeOperation;
 import enums.TypeSend;
@@ -428,8 +429,9 @@ public class ServerSkell {
 							out.writeObject((Object) "Erro: O ficheiro indicado não existe");
 						} else {
 
-							// Saca da chave do ficheiro que est� guardada com
-							// a
+							String path = SERVER + File.separator + mp.getRepoName() + File.separator;
+							// Saca da chave do ficheiro que est� guardada com a
+
 							// extens�o .key.server
 							FileInputStream keyFile = new FileInputStream(mp.getFileName() + ".key.server");
 							byte[] key = new byte[16];
@@ -454,16 +456,21 @@ public class ServerSkell {
 							} catch (IllegalBlockSizeException e) {
 								System.out.println("ERRO: O TAMANHO DO ARRAY N�O � O MAIS CORRECTO");
 							} catch (BadPaddingException e) {
-								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
 
-							// TODO: Fazer a SecretKey from String (?) RESTO DO
-							// TRABALHO
-
+							//Convert byte[] to Secret Key
+							SecretKey keyFinal = new SecretKeySpec(chaveDecifrada, 0, chaveDecifrada.length, "AES");
+							
 							// Envia a chave K para o cliente
-							out.writeObject(chaveDecifrada);
+							out.writeObject(keyFinal);
 
+							//Vai buscar a assinatura e envia para o cliente
+							ObjectInputStream ois = new ObjectInputStream (new FileInputStream(path + mp.getFileName() + ".sig"));
+							String data = (String) ois.readObject();
+							out.writeObject(data);
+							ois.close();
+							
 							// In�cio do envio do ficheiro cifrado
 							File inRepoCifrado = rr.getFile(mp.getFileName());
 
