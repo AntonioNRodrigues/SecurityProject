@@ -45,8 +45,6 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
-
 public class SecurityUtil {
 	public static final String AES = "AES";
 	public static final String RSA = "RSA";
@@ -231,7 +229,7 @@ public class SecurityUtil {
 		}
 		cos.close();
 		fis.close();
-		Files.deleteIfExists(file);
+		//Files.deleteIfExists(file);
 
 	}
 
@@ -347,6 +345,7 @@ public class SecurityUtil {
 
 	/**
 	 * method to build or rebuild a secretKey from bytes
+	 * 
 	 * @param bytes
 	 * @return
 	 */
@@ -362,7 +361,13 @@ public class SecurityUtil {
 	 */
 	public static String generateNonce() {
 		byte[] binaryData = UUID.randomUUID().toString().getBytes();
-		return Base64.encode(binaryData);
+		String str = null;
+		try {
+			str = new String(binaryData, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		return str;
 	}
 
 	/**

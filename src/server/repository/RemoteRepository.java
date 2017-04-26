@@ -188,7 +188,7 @@ public class RemoteRepository {
 		// if the does not have access to the repo add it
 		if (!(existsInSharedList(userName))) {
 			sharedUsers.add(userName);
-			sharedPublicKey.put(userName, null);
+			//sharedPublicKey.put(userName, null);
 			persisteSharedUser(userName, this);
 		}
 		System.out.println("Current List of Shared Users for the " + this.nameRepo + ": " + sharedUsers);
