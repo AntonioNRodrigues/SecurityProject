@@ -438,7 +438,7 @@ public class ServerSkell {
 							// Saca da chave do ficheiro que est� guardada com a
 
 							// extens�o .key.server
-							FileInputStream keyFile = new FileInputStream(mp.getFileName() + ".key.server");
+							FileInputStream keyFile = new FileInputStream(path + mp.getFileName() + ".key.server");
 							byte[] key = new byte[16];
 							keyFile.read(key);
 
@@ -457,6 +457,7 @@ public class ServerSkell {
 
 								chaveDecifrada = decrypt.doFinal(key);
 							} catch (InvalidKeyException e1) {
+								e1.printStackTrace();
 								System.out.println("ERRO: N�O FOI POSS�VEL INICIALIZAR O DECRIPTADOR");
 							} catch (IllegalBlockSizeException e) {
 								System.out.println("ERRO: O TAMANHO DO ARRAY N�O � O MAIS CORRECTO");
