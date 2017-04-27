@@ -188,7 +188,7 @@ public class ServerSkell {
 				}
 
 			} else if (msg instanceof MessageP) {
-				//PublicKey publicKeyOfUser = null;
+				// PublicKey publicKeyOfUser = null;
 				/*
 				 * boolean variable to use if the user != owner set to true else
 				 * set it to false
@@ -246,13 +246,18 @@ public class ServerSkell {
 							error = true;
 							out.writeObject((Object) "NOK");
 							out.writeObject((Object) "Erro: o utilizador nao tem acesso ao repositorio");
-						//the user has the access to the repo but does not have set is publicKey
-						} /*else if (rr.getSharedPublicKey().containsKey(mp.getLocalUser().getName())
-								&& (rr.getSharedPublicKey().get(mp.getLocalUser().getName()) == null)) {
-							//ask the user to send the key
-							publicKeyOfUser = receiveMsgDifferentOwner(mp);
-							
-						}*/
+							// the user has the access to the repo but does not
+							// have set is publicKey
+						} /*
+							 * else if (rr.getSharedPublicKey().containsKey(mp.
+							 * getLocalUser().getName()) &&
+							 * (rr.getSharedPublicKey().get(mp.getLocalUser().
+							 * getName()) == null)) { //ask the user to send the
+							 * key publicKeyOfUser =
+							 * receiveMsgDifferentOwner(mp);
+							 * 
+							 * }
+							 */
 
 						if (!error) {
 
@@ -459,18 +464,19 @@ public class ServerSkell {
 								e.printStackTrace();
 							}
 
-							//Convert byte[] to Secret Key
+							// Convert byte[] to Secret Key
 							SecretKey keyFinal = new SecretKeySpec(chaveDecifrada, 0, chaveDecifrada.length, "AES");
-							
+
 							// Envia a chave K para o cliente
 							out.writeObject(keyFinal);
 
-							//Vai buscar a assinatura e envia para o cliente
-							ObjectInputStream ois = new ObjectInputStream (new FileInputStream(path + mp.getFileName() + ".sig"));
+							// Vai buscar a assinatura e envia para o cliente
+							ObjectInputStream ois = new ObjectInputStream(
+									new FileInputStream(path + mp.getFileName() + ".sig"));
 							String data = (String) ois.readObject();
 							out.writeObject(data);
 							ois.close();
-							
+
 							// In�cio do envio do ficheiro cifrado
 							File inRepoCifrado = rr.getFile(mp.getFileName());
 
@@ -529,46 +535,25 @@ public class ServerSkell {
 									// Recebe assinatura do ficheiro
 									byte[] signature = (byte[]) in.readObject();
 									// Guarda-a com a extens�o .sig
-									System.out.println("--" + signature);
-									System.out.println("--" + mp.getFileName()); // this
-																					// one
-																					// is
-																					// null
-									System.out.println("--" + path);
 
 									FileOutputStream ass = new FileOutputStream(path + mp.getFileName() + ".sig");
 									ass.write(signature);
 									ass.close();
 
-									// Recebe chave key para depois cifr�-la
-									// usando a sua chave p�blica
+									// Recebe chave key para depois cifra-la
+									// usando a sua chave publica
 									SecretKey key = (SecretKey) in.readObject();
-
-									// TODO: CORRIGIR ESTA PARTE: Cifra a chave
-									// com a chave p�blica, usando uma keytool
-									// (ATEN�AO... AS KEYTOOLS foram criadas
-									// antes?!)
-									// cifrar chave AES com chave publica
-									/*
-									 * 1- buscar chave publica -> keystore 2 -
-									 * cifrar chave publica
-									 */
-
-									Path p = Paths.get(".myGitServerKeyStore");
-
-									KeyPair kp = SecurityUtil.getKeyPairFromKS(p, "mygitserver", "badpassword1");
 
 									// method to get the certificate from
 									// keystore
 
-									Certificate cert = SecurityUtil.getCertFromKeyStore(p, "mygitserver",
-											"badpassword1");
+									Certificate cert = SecurityUtil.getCertFromKeyStore(
+											Paths.get(".myGitServerKeyStore"), "mygitserver", "badpassword1");
 
 									Cipher cif = Cipher.getInstance("RSA");
 									cif.init(Cipher.WRAP_MODE, cert);
 									byte[] chaveCifrada = cif.wrap(key);
 
-									byte[] keyEncoded = key.getEncoded();
 									FileOutputStream kos = new FileOutputStream(
 											path + mp.getFileName() + ".key.server");
 									kos.write(chaveCifrada);
@@ -603,7 +588,6 @@ public class ServerSkell {
 										} else {
 											Files.deleteIfExists(received.toPath());
 										}
-										System.out.println("fileInrepo != null");
 									}
 
 								} catch (ClassNotFoundException e) {

@@ -71,9 +71,6 @@ public class MessagePHandler extends MessageHandler {
 	private String sendPushFileMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params)
 			throws GeneralSecurityException {
 
-		// o tipo do timestamp Ã© FileTime que Ã© timezone independent!
-		// LocalDateTime timestamp = LocalDateTime.now();
-
 		BasicFileAttributes attributes = getFileAttributes(params.getFile());
 
 		MessageP mp = new MessageP(new User(params.getLocalUser(), params.getPassword(), MyGitClient.nonce),
@@ -96,13 +93,9 @@ public class MessagePHandler extends MessageHandler {
 		if (result.contentEquals("OK")) {
 			// Enviar o ficheiro
 			try {
-				// Gera chave privada atravï¿½s da password do utilizador -
-				// TODO: VERIFICAR COMO ï¿½ QUE O UTILIZADOR OBTEM A CHAVE PRIVADA
-				// / COMO ï¿½ PARTILHADA?!
 
-				Path p = Paths.get(".myGitClientKeyStore");
-
-				KeyPair kp = SecurityUtil.getKeyPairFromKS(p, "mygitclient", "badpassword2");
+				KeyPair kp = SecurityUtil.getKeyPairFromKS(Paths.get(".myGitClientKeyStore"), "mygitclient",
+						"badpassword2");
 
 				// Cliente gera a assinatura digital do ficheiro em claro
 				byte[] signature = SecurityUtil.generateSignatureOfFile(params.getFile(), kp.getPrivate());
@@ -121,14 +114,14 @@ public class MessagePHandler extends MessageHandler {
 				// Envia a chave para o Servidor
 				out.writeObject(key);
 
-				// Prepara e envia o ficheiro
+				// Prepara e envia o ficheiro cifrado
 				ReadWriteUtil.sendFile(cifrado, in, out);
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (SignatureException e) {
 				e.printStackTrace();
 			}
-			System.out.println("-- O  ficheiro " + params.getFileName() + " foi copiado  para o servidor");
+			System.out.println("O  ficheiro " + params.getFileName() + " foi copiado  para o servidor");
 		} else if (result.contentEquals("NOK")) {
 			System.out.println("OK");
 			String error = "";
@@ -318,43 +311,45 @@ public class MessagePHandler extends MessageHandler {
 		return "MessagePHandler:sendPullRepMessage";
 	}
 
-//	private void receiveFiles(String repoName, ObjectInputStream in, ObjectOutputStream out) {
-//
-//		// mesmmo protocolo do servidor, receber primeiro o numero de ficheiros,
-//		// ler depois os ficheiros
-//		int sizeList = 0;
-//		try {
-//			sizeList = (Integer) in.readObject();
-//			// System.out.println("sizelist: " + sizeList);
-//		} catch (ClassNotFoundException | IOException e) {
-//			e.printStackTrace();
-//		}
-//
-//		for (int i = 0; i < sizeList; i++) {
-//			try {
-//				Long receivedTimeStamp = (Long) in.readObject();
-//				String path = CLIENT + File.separator + repoName + File.separator;
-//				File received = ReadWriteUtil.receiveFile(path, in, out);
-//				received.setLastModified(receivedTimeStamp);
-//				File inRepo = new File(
-//						CLIENT + File.separator + repoName + File.separator + received.getName().split(" ")[0]);
-//				if (inRepo.exists()) {
-//					if (received.lastModified() <= inRepo.lastModified()) {
-//						Files.deleteIfExists(received.toPath());
-//					} else if (received.lastModified() > inRepo.lastModified()) {
-//						received.renameTo(inRepo);
-//					}
-//				} else if (!(inRepo.exists())) {
-//					received.renameTo(inRepo);
-//				}
-//
-//			} catch (ClassNotFoundException | IOException e) {
-//				e.printStackTrace();
-//			}
-//
-//		}
-//
-//	}
+	// private void receiveFiles(String repoName, ObjectInputStream in,
+	// ObjectOutputStream out) {
+	//
+	// // mesmmo protocolo do servidor, receber primeiro o numero de ficheiros,
+	// // ler depois os ficheiros
+	// int sizeList = 0;
+	// try {
+	// sizeList = (Integer) in.readObject();
+	// // System.out.println("sizelist: " + sizeList);
+	// } catch (ClassNotFoundException | IOException e) {
+	// e.printStackTrace();
+	// }
+	//
+	// for (int i = 0; i < sizeList; i++) {
+	// try {
+	// Long receivedTimeStamp = (Long) in.readObject();
+	// String path = CLIENT + File.separator + repoName + File.separator;
+	// File received = ReadWriteUtil.receiveFile(path, in, out);
+	// received.setLastModified(receivedTimeStamp);
+	// File inRepo = new File(
+	// CLIENT + File.separator + repoName + File.separator +
+	// received.getName().split(" ")[0]);
+	// if (inRepo.exists()) {
+	// if (received.lastModified() <= inRepo.lastModified()) {
+	// Files.deleteIfExists(received.toPath());
+	// } else if (received.lastModified() > inRepo.lastModified()) {
+	// received.renameTo(inRepo);
+	// }
+	// } else if (!(inRepo.exists())) {
+	// received.renameTo(inRepo);
+	// }
+	//
+	// } catch (ClassNotFoundException | IOException e) {
+	// e.printStackTrace();
+	// }
+	//
+	// }
+	//
+	// }
 
 	private void receiveFilesPullRep(String repoName, ObjectInputStream in, ObjectOutputStream out) {
 
@@ -369,37 +364,38 @@ public class MessagePHandler extends MessageHandler {
 
 		for (int i = 0; i < sizeList; i++) {
 			try {
-				//Recebe a chave K do servidor para decifrar o ficheiro
+				// Recebe a chave K do servidor para decifrar o ficheiro
 				SecretKey secretKey = (SecretKey) in.readObject();
-				
+
 				Long receivedTimeStamp = (Long) in.readObject();
 				Path path = Paths.get(CLIENT + File.separator + repoName + File.separator);
-				//Recebe o ficheiro cifrado.
+				// Recebe o ficheiro cifrado.
 				File received = ReadWriteUtil.receiveFile(path.toString(), in, out);
-				
-				//Decifrar o ficheiro recebido com K //TODO: Falta verificar se com o ficheiro de destino sendo o mesmo,
-				//se o ficheiro fica bem 'descifrado'. A alternativa é mandar o ficheiro do servidor com o append de uma extensão e aqui retirar
-				//a extensão do ficheiro.
+
+				// Decifrar o ficheiro recebido com K //TODO: Falta verificar se
+				// com o ficheiro de destino sendo o mesmo,
+				// se o ficheiro fica bem 'descifrado'. A alternativa ï¿½ mandar o
+				// ficheiro do servidor com o append de uma extensï¿½o e aqui
+				// retirar
+				// a extensï¿½o do ficheiro.
 				SecurityUtil.decipherFile(received.toPath(), secretKey, path);
-				
-				
-				//Recebe a assinatura
+
+				// Recebe a assinatura
 				String signature = (String) in.readObject();
 				byte[] signatureInBytes = signature.getBytes();
 				Path p = Paths.get(".myGitClientKeyStore");
 				Certificate c = SecurityUtil.getCertFromKeyStore(p, "mygitclient", "badpassword2");
 				PublicKey pk = c.getPublicKey();
-				
-				//Verifica a assinatura com o que recebeu
+
+				// Verifica a assinatura com o que recebeu
 				Signature s = Signature.getInstance("MD5withRSA");
 				s.initVerify(pk);
 				s.update(signature.getBytes());
-				if(s.verify(signatureInBytes))
-					System.out.println("A assinatura é válida!");
+				if (s.verify(signatureInBytes))
+					System.out.println("A assinatura ï¿½ vï¿½lida!");
 				else
 					System.out.println("A assinatura foi corrompida");
-				
-				
+
 				received.setLastModified(receivedTimeStamp);
 				File inRepo = new File(
 						CLIENT + File.separator + repoName + File.separator + received.getName().split(" ")[0]);
@@ -431,7 +427,7 @@ public class MessagePHandler extends MessageHandler {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (SignatureException e) {
-				System.out.println("Erro: ERRO NA CONVERSÃO DA ASSINATURA.");
+				System.out.println("Erro: ERRO NA CONVERSï¿½O DA ASSINATURA.");
 			}
 		}
 

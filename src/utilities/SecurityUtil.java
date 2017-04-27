@@ -423,7 +423,6 @@ public class SecurityUtil {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		System.out.println(s);
 		return s.sign();
 	}
 
