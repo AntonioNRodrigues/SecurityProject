@@ -185,12 +185,12 @@ public class ServerSkell {
 							rr.addShareUserToRepo(mrs.getUserId());
 							// dont know if this is correct
 							PublicKey pubkey = null;
-							try {
-								pubkey = KeyFactory.getInstance("RSA")
-										.generatePublic(new X509EncodedKeySpec(user.getPubKey()));
-							} catch (InvalidKeySpecException e) {
-								e.printStackTrace();
-							}
+							PublicKey pubkey2 = null;
+							pubkey2 = SecurityUtil.getTrustStore(Paths.get(".myGitServerTrustStore"), "mygitserver",
+									"badpassword1").getCertificate("mygitserver").getPublicKey();
+							//pubkey = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(user.getPubKey()));
+							System.out.println(pubkey2);
+							
 							rr.addPublicKeySharedUser(user.getName(), pubkey);
 						}
 					}

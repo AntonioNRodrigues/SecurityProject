@@ -351,7 +351,6 @@ public class SecurityUtil {
 	 */
 	public static SecretKey buildSecretKey(byte[] bytes) {
 		return new SecretKeySpec(bytes, 0, bytes.length, "AES");
-
 	}
 
 	/**
