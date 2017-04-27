@@ -1,4 +1,4 @@
- 
+
 package utilities;
 
 import static utilities.ReadWriteUtil.SERVER;
@@ -45,13 +45,11 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
-
 public class SecurityUtil {
 	public static final String AES = "AES";
 	public static final String RSA = "RSA";
 	public static final String SHA_256 = "SHA-256";
-	public static final String SHA_256_RSA = SHA_256 + "_" +RSA;
+	public static final String SHA_256_RSA = SHA_256 + "_" + RSA;
 	public static final int bits_RSA = 2048;
 	public static final int bits_AES = 128;
 	public static final String SERVER_KEY = "Server.key";
@@ -217,7 +215,7 @@ public class SecurityUtil {
 		}
 		cos.close();
 		fis.close();
-		//Files.deleteIfExists(file);
+		// Files.deleteIfExists(file);
 
 	}
 
@@ -338,7 +336,13 @@ public class SecurityUtil {
 	 */
 	public static String generateNonce() {
 		byte[] binaryData = UUID.randomUUID().toString().getBytes();
-		return Base64.encode(binaryData);
+		String str = null;
+		try {
+			str = new String(binaryData, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		return str;
 	}
 
 	/**
@@ -444,9 +448,13 @@ public class SecurityUtil {
 
 	/**
 	 * method to get the keystore
-	 * @param keyStore path to the keystore
-	 * @param alias from the keystore
-	 * @param pass from the keystore
+	 * 
+	 * @param keyStore
+	 *            path to the keystore
+	 * @param alias
+	 *            from the keystore
+	 * @param pass
+	 *            from the keystore
 	 * @return the keystore
 	 */
 	public static KeyStore getKeyStore(Path keyStore, String alias, String pss) {
@@ -465,9 +473,13 @@ public class SecurityUtil {
 
 	/**
 	 * method to get the KeyPair from a specific keystore
-	 * @param keyStore path to the keystore
-	 * @param alias from the keystore
-	 * @param pass from the keystore
+	 * 
+	 * @param keyStore
+	 *            path to the keystore
+	 * @param alias
+	 *            from the keystore
+	 * @param pass
+	 *            from the keystore
 	 * @return the KeyPair
 	 */
 	public static KeyPair getKeyPairFromKS(Path keyStore, String alias, String pss) {
@@ -475,7 +487,7 @@ public class SecurityUtil {
 		Key k = null;
 		KeyPair kpair = null;
 		try {
-			
+
 			k = ks.getKey(alias, pss.toCharArray());
 			if (k instanceof PrivateKey) {
 				Certificate cert = ks.getCertificate(alias);
@@ -488,11 +500,16 @@ public class SecurityUtil {
 		}
 		return kpair;
 	}
+
 	/**
 	 * method to get the certificate from a specific keystore
-	 * @param keyStore path to the keystore
-	 * @param alias from the keystore
-	 * @param pass from the keystore
+	 * 
+	 * @param keyStore
+	 *            path to the keystore
+	 * @param alias
+	 *            from the keystore
+	 * @param pass
+	 *            from the keystore
 	 * @return the certifcate inside the keystore
 	 */
 	public static Certificate getCertFromKeyStore(Path keyStore, String alias, String pss) {
@@ -506,14 +523,16 @@ public class SecurityUtil {
 
 		return cert;
 	}
-	
-	
-	
+
 	/**
 	 * method to get the keystore
-	 * @param keyStore path to the keystore
-	 * @param alias from the keystore
-	 * @param pass from the keystore
+	 * 
+	 * @param keyStore
+	 *            path to the keystore
+	 * @param alias
+	 *            from the keystore
+	 * @param pass
+	 *            from the keystore
 	 * @return the keystore
 	 */
 	public static KeyStore getTrustStore(Path trustStore, String alias, String pss) {
