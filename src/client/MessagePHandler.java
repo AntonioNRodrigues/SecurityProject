@@ -3,6 +3,7 @@ package client;
 import static utilities.ReadWriteUtil.CLIENT;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -103,19 +104,22 @@ public class MessagePHandler extends MessageHandler {
 				out.writeObject(signature);
 
 				// gerar uma chave aleatoria para utilizar com o AES
-				SecretKey key = SecurityUtil.getKey();
-
+				SecretKey secretKey = SecurityUtil.getKey();
+				for (int i = 0; i < secretKey.getEncoded().length; i++){
+					System.out.print(secretKey.getEncoded()[i]);
+				}
 				Path cifrado = Paths.get(
 						CLIENT + File.separator + params.getRepName() + File.separator + params.getFileName() + ".cif");
 
 				// Cifrar o ficheiro com a chave criada
-				SecurityUtil.cipherFile(params.getFile(), key, cifrado);
+				SecurityUtil.cipherFile(params.getFile(), secretKey, cifrado);
 
 				// Envia a chave para o Servidor
-				out.writeObject(key);
+				out.writeObject(secretKey);
 
 				// Prepara e envia o ficheiro cifrado
 				ReadWriteUtil.sendFile(cifrado, in, out);
+				
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (SignatureException e) {
@@ -378,21 +382,29 @@ public class MessagePHandler extends MessageHandler {
 				// ficheiro do servidor com o append de uma extens�o e aqui
 				// retirar
 				// a extens�o do ficheiro.
-				SecurityUtil.decipherFile(received.toPath(), secretKey, path);
+				
+				SecurityUtil.decipherFile2(received.toPath(), secretKey, Paths.get(path + "temp.txt"));
 
 				// Recebe a assinatura
-				String signature = (String) in.readObject();
-				byte[] signatureInBytes = signature.getBytes();
-				Path p = Paths.get(".myGitClientKeyStore");
-				Certificate c = SecurityUtil.getCertFromKeyStore(p, "mygitclient", "badpassword2");
+				byte [] signature = (byte []) in.readObject();
+				
+				Certificate c = SecurityUtil.getCertFromKeyStore(Paths.get(".myGitClientKeyStore"), "mygitclient", "badpassword2");
 				PublicKey pk = c.getPublicKey();
-
+				
+				File file = new File(path + "temp.txt");
+				FileInputStream fiStream = new FileInputStream(file);
+				byte[] data = new byte[(int) file.length()];
+				fiStream.read(data);
+				out.writeObject((Object) data);
+				fiStream.close();
+				
+				
 				// Verifica a assinatura com o que recebeu
-				Signature s = Signature.getInstance("MD5withRSA");
+				Signature s = Signature.getInstance("SHA256withRSA");
 				s.initVerify(pk);
-				s.update(signature.getBytes());
-				if (s.verify(signatureInBytes))
-					System.out.println("A assinatura � v�lida!");
+				s.update(data);
+				if (s.verify(signature))
+					System.out.println("A assinatura e v�lida!");
 				else
 					System.out.println("A assinatura foi corrompida");
 

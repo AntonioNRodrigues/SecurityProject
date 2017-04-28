@@ -9,6 +9,8 @@ package server;
 
 import static utilities.ReadWriteUtil.SERVER;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -19,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyStoreException;
 import java.security.MessageDigest;
@@ -29,12 +32,13 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+
+import com.sun.xml.internal.ws.policy.spi.PolicyAssertionValidator.Fitness;
 
 import enums.TypeOperation;
 import enums.TypeSend;
@@ -44,6 +48,7 @@ import message.MessageP;
 import message.MessageRS;
 import server.repository.RemoteRepository;
 import server.repository.RepositoryCatalog;
+import sun.security.util.Length;
 import user.User;
 import user.UserCatalog;
 import utilities.ReadWriteUtil;
@@ -338,21 +343,17 @@ public class ServerSkell {
 									 * 1- buscar chave publica -> keystore 2 -
 									 * cifrar chave publica
 									 */
-									Path p = Paths.get(".myGitServerKeyStore");
-
-									KeyPair kp = SecurityUtil.getKeyPairFromKS(p, "mygitserver", "badpassword1");
 
 									// method to get the certificate from
 									// keystore
 
-									Certificate cert = SecurityUtil.getCertFromKeyStore(p, "mygitserver",
-											"badpassword1");
+									KeyPair kPair = SecurityUtil.getKeyPairFromKS(Paths.get(".myGitServerKeyStore"),
+											"mygitserver", "badpassword1");
 
 									Cipher cif = Cipher.getInstance("RSA");
-									cif.init(Cipher.WRAP_MODE, cert);
+									cif.init(Cipher.WRAP_MODE, kPair.getPublic());
 									byte[] chaveCifrada = cif.wrap(key);
 
-									byte[] keyEncoded = key.getEncoded();
 									FileOutputStream kos = new FileOutputStream(
 											path + mp.getFileName() + ".key.server");
 									kos.write(chaveCifrada);
@@ -434,51 +435,7 @@ public class ServerSkell {
 							out.writeObject((Object) "Erro: O ficheiro indicado não existe");
 						} else {
 
-							String path = SERVER + File.separator + mp.getRepoName() + File.separator;
-							// Saca da chave do ficheiro que est� guardada com a
-
-							// extens�o .key.server
-							FileInputStream keyFile = new FileInputStream(path + mp.getFileName() + ".key.server");
-							byte[] key = new byte[16];
-							keyFile.read(key);
-
-							// Vai � Keystore para buscar a sua chave privada
-							// e
-							// decripta a chave.
-							Path p = Paths.get(".myGitServerKeyStore");
-							KeyPair kp = SecurityUtil.getKeyPairFromKS(p, "mygitserver", "badpassword1");
-							PrivateKey chaveParaDecifrar = kp.getPrivate();
-
-							Cipher decrypt = Cipher.getInstance("AES");
-
-							byte[] chaveDecifrada = new byte[16];
-							try {
-								decrypt.init(Cipher.DECRYPT_MODE, chaveParaDecifrar);
-
-								chaveDecifrada = decrypt.doFinal(key);
-							} catch (InvalidKeyException e1) {
-								e1.printStackTrace();
-								System.out.println("ERRO: N�O FOI POSS�VEL INICIALIZAR O DECRIPTADOR");
-							} catch (IllegalBlockSizeException e) {
-								System.out.println("ERRO: O TAMANHO DO ARRAY N�O � O MAIS CORRECTO");
-							} catch (BadPaddingException e) {
-								e.printStackTrace();
-							}
-
-							// Convert byte[] to Secret Key
-							SecretKey keyFinal = new SecretKeySpec(chaveDecifrada, 0, chaveDecifrada.length, "AES");
-
-							// Envia a chave K para o cliente
-							out.writeObject(keyFinal);
-
-							// Vai buscar a assinatura e envia para o cliente
-							ObjectInputStream ois = new ObjectInputStream(
-									new FileInputStream(path + mp.getFileName() + ".sig"));
-							String data = (String) ois.readObject();
-							out.writeObject(data);
-							ois.close();
-
-							// In�cio do envio do ficheiro cifrado
+							// Inicio do envio do ficheiro cifrado
 							File inRepoCifrado = rr.getFile(mp.getFileName());
 
 							// client does not have the recent file so send it
@@ -486,12 +443,61 @@ public class ServerSkell {
 								try {
 
 									out.writeObject((Object) "OK");
+
 									// Enviar o numero de ficheiros
 									out.writeObject((Object) 1);
+
+									String path = SERVER + File.separator + mp.getRepoName() + File.separator;
+									// Saca da chave do ficheiro que est�
+									// guardada com
+									// a
+
+									// extensao .key.server
+
+									FileInputStream fis = new FileInputStream(path + mp.getFileName() + ".key.server");
+									ByteArrayOutputStream baos = new ByteArrayOutputStream();
+									byte[] b = new byte[16];
+									int len = 0;
+									while ((len = fis.read(b)) != -1) {
+										baos.write(b, 0, len);
+									}
+									fis.close();
+
+									Path p = Paths.get(".myGitServerKeyStore");
+									KeyPair kp = SecurityUtil.getKeyPairFromKS(p, "mygitserver", "badpassword1");
+
+									Key k = null;
+									Cipher decrypt = Cipher.getInstance("RSA");
+
+									try {
+										decrypt.init(Cipher.UNWRAP_MODE, kp.getPrivate());
+										k = decrypt.unwrap(baos.toByteArray(), "AES", Cipher.SECRET_KEY);
+
+									} catch (InvalidKeyException e1) {
+										e1.printStackTrace();
+										System.out.println("ERRO: N�O FOI POSS�VEL INICIALIZAR O DECRIPTADOR");
+									}
+									baos.close();
+
+									// Convert byte[] to Secret Key
+									SecretKey keyFinal = (SecretKey) k;
+									System.out.println("----------------------------" + keyFinal);
+									// Envia a chave K para o cliente
+									out.writeObject(keyFinal);
+
 									// Enviar timeststamp
 									out.writeObject((Object) inRepoCifrado.lastModified());
 									ReadWriteUtil.sendFile(SERVER + File.separator + mp.getRepoName() + File.separator
 											+ inRepoCifrado.getName(), in, out);
+
+									// Vai buscar a assinatura e envia para o
+									// cliente
+									File file = new File(path + mp.getFileName() + ".sig");
+									FileInputStream fiStream = new FileInputStream(file);
+									byte[] data = new byte[(int) file.length()];
+									fiStream.read(data);
+									out.writeObject((Object) data);
+									fiStream.close();
 
 								} catch (IOException e) {
 									e.printStackTrace();
@@ -537,23 +543,22 @@ public class ServerSkell {
 									byte[] signature = (byte[]) in.readObject();
 									// Guarda-a com a extens�o .sig
 
-									FileOutputStream ass = new FileOutputStream(path + mp.getFileName() + ".sig");
-									ass.write(signature);
-									ass.close();
+									FileOutputStream fos = new FileOutputStream(path + mp.getFileName() + ".sig");
+									fos.write(signature);
+									fos.close();
 
 									// Recebe chave key para depois cifra-la
 									// usando a sua chave publica
-									SecretKey key = (SecretKey) in.readObject();
+									SecretKey secretKey = (SecretKey) in.readObject();
 
 									// method to get the certificate from
 									// keystore
 
-									Certificate cert = SecurityUtil.getCertFromKeyStore(
-											Paths.get(".myGitServerKeyStore"), "mygitserver", "badpassword1");
-
+									KeyPair kPair = SecurityUtil.getKeyPairFromKS(Paths.get(".myGitServerKeyStore"),
+											"mygitserver", "badpassword1");
 									Cipher cif = Cipher.getInstance("RSA");
-									cif.init(Cipher.WRAP_MODE, cert);
-									byte[] chaveCifrada = cif.wrap(key);
+									cif.init(Cipher.WRAP_MODE, kPair.getPublic());
+									byte[] chaveCifrada = cif.wrap(secretKey);
 
 									FileOutputStream kos = new FileOutputStream(
 											path + mp.getFileName() + ".key.server");

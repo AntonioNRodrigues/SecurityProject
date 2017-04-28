@@ -16,6 +16,7 @@ import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyPair;
@@ -249,6 +250,23 @@ public class SecurityUtil {
 		fos.close();
 	}
 
+	public static void decipherFile2(Path fileToDecript, SecretKey sk, Path temp) throws NoSuchAlgorithmException,
+			NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
+		Cipher c = Cipher.getInstance("AES");
+		c.init(Cipher.DECRYPT_MODE, sk);
+		// get ciphered file
+		CipherInputStream cis = new CipherInputStream(new FileInputStream(fileToDecript.toFile()), c);
+		FileOutputStream fos = new FileOutputStream(temp.toFile());
+		byte[] b = new byte[16];
+		int i = cis.read(b);
+		while (i != -1) {
+			fos.write(b, 0, i);
+			i = cis.read(b);
+		}
+		cis.close();
+		fos.close();
+	}
+
 	/**
 	 * 
 	 * @param f
@@ -329,6 +347,18 @@ public class SecurityUtil {
 
 	}
 
+	public static byte[] loadSecretKey(Path p) {
+		File f = p.toFile();
+		byte[] secretKeyBytes = new byte[16];
+		try (ObjectInputStream out = new ObjectInputStream(new FileInputStream(p.toFile()))) {
+			out.read(secretKeyBytes);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return secretKeyBytes;
+
+	}
+
 	/**
 	 * method to generate a NONCE
 	 * 
@@ -390,7 +420,7 @@ public class SecurityUtil {
 	public static Signature getSignature(PrivateKey pk) {
 		Signature s = null;
 		try {
-			s = Signature.getInstance("MD5WithRSA");
+			s = Signature.getInstance("SHA256withRSA");
 			s.initSign(pk);
 		} catch (NoSuchAlgorithmException | InvalidKeyException e) {
 			e.printStackTrace();
@@ -436,7 +466,7 @@ public class SecurityUtil {
 	 * @return the signature of that specific file
 	 * @throws SignatureException
 	 */
-	public static void persistSignToFile(byte[] data, String nameFile, String nameRepo) throws SignatureException {
+	public static void persistSignatureToFile(byte[] data, String nameFile, String nameRepo) throws SignatureException {
 		File signature = new File(SERVER + File.separator + nameRepo + File.separator + nameFile + EXT_SIG);
 		try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(signature))) {
 			bos.write(data);
