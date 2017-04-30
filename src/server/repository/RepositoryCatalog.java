@@ -133,7 +133,7 @@ public class RepositoryCatalog {
 			// for (String fileInFolder : repFolder.list()) {
 			// get owner.txt and read it
 			// if (fileInFolder.equals(OWNER)) {
-			str = readOwnerFile(repFolder.getCanonicalPath(), OWNER);
+			str = readOwnerFile(repFolder.getName(), OWNER);
 			// }
 			// }
 		}
@@ -217,7 +217,7 @@ public class RepositoryCatalog {
 
 		String str = null;
 		System.out.println("get repo owner from encrypted owner file");
-		Path file = Paths.get(SERVER + File.separator + repFolderName + File.separator + OWNER);
+		Path file =     Paths.get(SERVER + File.separator + repFolderName + File.separator + OWNER);
 		Path hmacFile = Paths.get(SERVER + File.separator + repFolderName + File.separator + "." + OWNER + ".hmac");
 
 		if (Files.exists(file)) {
