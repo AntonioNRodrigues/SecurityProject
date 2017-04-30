@@ -3,6 +3,7 @@
 grant codeBase "file:bin/*"{
 	permission java.net.SocketPermission "*:23456", "listen, resolve";
 	permission java.net.SocketPermission "*:1024-", "accept";
+	permission java.util.PropertyPermission "user.home", "read"; 
     permission java.util.PropertyPermission "user.dir", "read";
     permission java.util.PropertyPermission "java.io.tmpdir", "read";
     permission java.io.FilePermission "${user.dir}", "read";

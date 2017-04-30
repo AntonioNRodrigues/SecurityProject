@@ -10,9 +10,12 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -26,6 +29,7 @@ import message.Message;
 import server.repository.RepositoryCatalog;
 import user.UserCatalog;
 import utilities.SecurityUtil;
+import utilities.SecurityUtil2;
 
 public class MyGitServer {
 	private static final int MAX_THREADS = 5;
@@ -33,7 +37,8 @@ public class MyGitServer {
 	private RepositoryCatalog catRepo;
 	private UserCatalog catUsers;
 
-	public MyGitServer() {
+	public MyGitServer() throws InvalidKeyException, NoSuchAlgorithmException, 
+		InvalidAlgorithmParameterException {
 		this.catRepo = new RepositoryCatalog();
 		this.catUsers = new UserCatalog();
 	}
@@ -42,7 +47,9 @@ public class MyGitServer {
 		return (args.length == 1) ? true : false;
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InvalidKeyException,
+		NoSuchAlgorithmException, InvalidAlgorithmParameterException {
+		
 		if (!checkParams(args)) {
 			System.out.println("MyGitServer is NOT Running");
 			System.out.println("MyGitServer requires port number");
@@ -53,7 +60,13 @@ public class MyGitServer {
 		String pass = sc.nextLine();
 		// check && validate pass length > 6 and < 10 ex::: -----> TO DO
 		System.out.println("MyGitServer is Running with password");
-		SecurityUtil.generateSecretKeyFromPass(pass);
+		//SecurityUtil.generateSecretKeyFromPass(pass);
+		try {
+			SecurityUtil2.createKey(pass);
+		} catch (InvalidKeyException | NoSuchAlgorithmException | InvalidKeySpecException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		// Check password file integrity
 

@@ -8,8 +8,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
@@ -20,19 +22,37 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
+import com.sun.corba.se.spi.ior.Writeable;
+
 import utilities.SecurityUtil;
 import utilities.SecurityUtil2;
 
 public class UserCatalog {
 	private Map<String, User> mapUsers;
 
-	public UserCatalog() {
+	/*public UserCatalog() {
 		this.mapUsers = new ConcurrentHashMap<>();
 		if (!buildUsers()) {
 			readFile();
 		}
 		System.out.println(mapUsers);
+	}*/
+	
+	public UserCatalog() {
+		this.mapUsers = new ConcurrentHashMap<>();
+		try {
+			if (!loadUsers()) {
+				System.out.println("server process halted");
+				System.exit(0);
+			}
+			
+		} catch (InvalidKeyException | NoSuchAlgorithmException | InvalidAlgorithmParameterException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println(mapUsers);
 	}
+
 
 	/**
 	 * Read the file users.txt and populates the map with user:password
@@ -143,33 +163,104 @@ public class UserCatalog {
 		return true;
 
 	}
-	
-	
+		
 	/*
 	 * register user with user's file integrity check
 	 */
 	public boolean registerUser2(String name, String password) {
-		System.out.println("REGISTER USER");
-				
-		Path users = Paths.get(SERVER + File.separator + USERS);
+		System.out.println("REGISTER USER2");
+
+		Path file = Paths.get(SERVER + File.separator + USERS);
+		Path hmacFile = Paths.get(SERVER + File.separator + "." + file.getFileName() + ".hmac");
 		SecretKey sk = SecurityUtil.getKeyFromServer();
 		byte[] b = (name + ":" + password).getBytes();
 
 		try {
-			if (SecurityUtil2.checkFileIntegrity(users, sk))				
-				SecurityUtil2.appendToFile(users, sk, b);
-			else
-				return false;
-		} catch (InvalidKeyException | NoSuchAlgorithmException | IOException e) {
-			// TODO Auto-generated catch block
+			if (Files.exists(file)) {
+
+				if (Files.exists(hmacFile)) {
+
+					// append new user to current file
+					if (SecurityUtil2.checkFileIntegrity(file, hmacFile, sk)) {
+						SecurityUtil2.appendToFile(file, sk, b);
+						SecurityUtil2.writeHMACFile(file, hmacFile, sk);
+					} else {
+						System.out.println("incorrect hmac user file");
+						return false;
+					}
+				} else {
+					System.out.println("hmac user file doesnt exist");
+					return false;
+				}
+			} else {
+				// create new file
+				SecurityUtil2.cipherFile(file, sk, b);
+				System.out.println("SecurityUtil2.cipherFile(users, sk, b);");
+				SecurityUtil2.writeHMACFile(file, hmacFile, sk);
+				System.out.println("SecurityUtil2.writeHMACFile(users, sk);");
+			}
+		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
 		}
 
 		mapUsers.put(name, new User(name, password));
-		System.out.println(mapUsers);
+		System.out.println("mapusers: " + mapUsers);
+		return true;
+	}	
+	
+	/**
+	 * Read the users encrypted file and populates the users map with user:password
+	 * @throws IOException 
+	 * @throws InvalidAlgorithmParameterException 
+	 * @throws NoSuchAlgorithmException 
+	 * @throws InvalidKeyException 
+	 */
+	public boolean loadUsers() throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, IOException {
+
+		System.out.println("load users from encrypted users file");
+		Path usersFile = Paths.get(SERVER + File.separator + USERS);
+		Path usersHmac = Paths.get(SERVER + File.separator + "." + usersFile.getFileName() + ".hmac");
+
+		if (Files.exists(usersFile)) {
+			
+				if (Files.exists(usersHmac)) {
+				
+					// decipher file and read content
+					SecretKey sk = SecurityUtil.getKeyFromServer();
+
+					if (SecurityUtil2.checkFileIntegrity(usersFile, usersHmac, sk)) {				
+			
+						try {
+							
+							byte[] b = SecurityUtil2.decipherFile2Memory(usersFile, sk);
+							String content = new String(b);
+							String[] array = content.split("\n");
+							for (String s : array) {
+								splitLine(s);
+							}
+						} catch (IOException | InvalidKeyException e) {
+							e.printStackTrace();
+						} catch (InvalidAlgorithmParameterException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+					else {
+						System.out.println("incorrect hmac users file");
+						return false;
+					}
+				} else {
+					System.out.println("hmac users file doesnt exist");
+					return false;
+				}		
+			}
+		else
+			System.out.println("users file doesnt exist");
+		
 		return true;
 	}
+	
 
 	/**
 	 * Method to persist the user in a temp.txt file

@@ -31,6 +31,7 @@ import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.util.Base64;
 import java.util.Formatter;
 import java.util.UUID;
 
@@ -44,8 +45,6 @@ import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-
-import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 
 public class SecurityUtil {
 	public static final String AES = "AES";
@@ -137,7 +136,7 @@ public class SecurityUtil {
 	public static Cipher getCipher() {
 		Cipher c = null;
 		try {
-			c = Cipher.getInstance("AES/ECB/PKCS5Padding");
+			c = Cipher.getInstance("AES/CBC/PKCS5Padding");
 		} catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
 			e.printStackTrace();
 		}
@@ -185,7 +184,7 @@ public class SecurityUtil {
 	 */
 	public static void generateSecretKeyFromPass(String str) {
 		byte[] pass = str.getBytes();
-		SecretKey sk = new SecretKeySpec(pass, AES);
+		SecretKey sk = new SecretKeySpec(pass, AES);		
 		persisteKey(sk, ReadWriteUtil.SERVER + File.separator + SERVER_KEY);
 	}
 
@@ -218,7 +217,6 @@ public class SecurityUtil {
 		cos.close();
 		fis.close();
 		//Files.deleteIfExists(file);
-
 	}
 
 	/**
@@ -338,7 +336,9 @@ public class SecurityUtil {
 	 */
 	public static String generateNonce() {
 		byte[] binaryData = UUID.randomUUID().toString().getBytes();
-		return Base64.encode(binaryData);
+		return  Base64.getEncoder().encodeToString(binaryData);
+		// used java.util class instead of the apache xerces class
+		//return Base64.encode(binaryData);
 	}
 
 	/**
