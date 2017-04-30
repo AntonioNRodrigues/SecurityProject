@@ -1,12 +1,13 @@
 package client;
 
 import static utilities.ReadWriteUtil.CLIENT;
-
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -94,7 +95,7 @@ public class MessagePHandler extends MessageHandler {
 			try {
 				File tempDir = new File(CLIENT + File.separator + params.getRepName() + File.separator + "temp");
 				tempDir.mkdirs();
-				
+
 				KeyPair kp = SecurityUtil.getKeyPairFromKS(Paths.get(".myGitClientKeyStore"), "mygitclient",
 						"badpassword2");
 
@@ -105,7 +106,7 @@ public class MessagePHandler extends MessageHandler {
 
 				// gerar uma chave aleatoria para utilizar com o AES
 				SecretKey secretKey = SecurityUtil.getKey();
-				
+
 				Path cifrado = Paths.get(tempDir + File.separator + params.getFileName());
 
 				// Cifrar o ficheiro com a chave criada
@@ -161,7 +162,7 @@ public class MessagePHandler extends MessageHandler {
 		}
 		File tempDir = new File(CLIENT + File.separator + params.getRepName() + File.separator + "temp");
 		tempDir.mkdirs();
-		
+
 		if (result.contentEquals("OK")) {
 			// Enviar os ficheiros
 			for (Path path : filesList) {
@@ -178,9 +179,9 @@ public class MessagePHandler extends MessageHandler {
 
 					// gerar uma chave aleatoria para utilizar com o AES
 					SecretKey secretKey = SecurityUtil.getKey();
-					
+
 					Path cifrado = Paths.get(tempDir + File.separator + f.getName());
-	
+
 					// Cifrar o ficheiro com a chave criada
 					SecurityUtil.cipherFile(path, secretKey, cifrado);
 
@@ -323,16 +324,16 @@ public class MessagePHandler extends MessageHandler {
 			try {
 				Long receivedTimeStamp = (Long) in.readObject();
 				// Recebe a chave K do servidor para decifrar o ficheiro
-				
+
 				SecretKey secretKey = (SecretKey) in.readObject();
-				
+
 				System.out.println("SECRET KEY " + secretKey);
-				
+
 				Path path = Paths.get(CLIENT + File.separator + repoName + File.separator);
 				// Recebe o ficheiro cifrado.
-				
+
 				System.out.println("path file receivede" + path.toString());
-				
+
 				File received = ReadWriteUtil.receiveFile(path.toString() + File.separator, in, out);
 				System.out.println(" path  " + received.getAbsolutePath());
 
@@ -342,11 +343,13 @@ public class MessagePHandler extends MessageHandler {
 				// Recebe a assinatura
 				byte[] signature = (byte[]) in.readObject();
 
+				//
 				Certificate c = SecurityUtil.getCertFromKeyStore(Paths.get(".myGitClientKeyStore"), "mygitclient",
 						"badpassword2");
-				
+
 				PublicKey pk = c.getPublicKey();
 
+				// ficheiro
 				File file = new File(path + File.separator + "temp" + received.getName());
 				FileInputStream fiStream = new FileInputStream(file);
 				byte[] data = new byte[(int) file.length()];
@@ -366,9 +369,9 @@ public class MessagePHandler extends MessageHandler {
 				File inRepo = new File(
 						CLIENT + File.separator + repoName + File.separator + received.getName().split(" ")[0]);
 
-				// falta copiar o conteudo do ficheiro temp1.txt(e o ficheiro
-				// para onde foram a informacao decifrada) para p 1.txt(este
-				// esta cifrado e eh o cifrado)
+				CopyOption[] options = new CopyOption[] { REPLACE_EXISTING };
+				Files.copy(file.toPath(), received.toPath(), options);
+				Files.delete(file.toPath());
 
 				if (inRepo.exists()) {
 					if (received.lastModified() <= inRepo.lastModified()) {
