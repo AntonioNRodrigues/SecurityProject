@@ -64,7 +64,10 @@ public class RemoteRepository {
 
 		for (Map.Entry<String, CopyOnWriteArrayList<Path>> pair : mapVersions.entrySet()) {
 			pair.getValue().sort(myComparator());
-			uniqueList.add(pair.getValue().get(0));
+			if (!(pair.getKey().equals("owner.txt") || pair.getKey().equals("shared.txt"))) {
+				uniqueList.add(pair.getValue().get(0));
+			}
+
 		}
 		return uniqueList;
 	}
@@ -126,10 +129,10 @@ public class RemoteRepository {
 			CopyOnWriteArrayList<Path> cp = getSortedList();
 			cp.add(received.toPath());
 			this.getMapVersions().put(nameFile, cp);
-			System.out.println(this.getMapVersions());
+			// System.out.println(this.getMapVersions());
 		} else {
 			this.getMapVersions().get(nameFile).add(received.toPath());
-			System.out.println(this.getMapVersions());
+			// System.out.println(this.getMapVersions());
 		}
 
 	}

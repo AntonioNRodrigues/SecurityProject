@@ -34,6 +34,19 @@ public class RepositoryCatalog {
 	}
 
 	/**
+	 * method to exclude the file with termination like .sig and .server
+	 * @param f file to check
+	 * @return true if want to exclude false otherwise
+	 */
+	private boolean excludedFiles(File f) {
+		String[] a = f.getName().split("\\.(?=[^\\.]+$)");
+		if(a[a.length-1].equals("sig") || (a[a.length-1].equals("server"))){
+			return true;
+		}
+		return false;
+	}
+
+	/**
 	 * method to read the SERVER folder, build the object representation of each
 	 * Repository and populate the mapFiles with each Repository and its files.
 	 */
@@ -49,9 +62,11 @@ public class RepositoryCatalog {
 				rr = new RemoteRepository(folder.getName());
 
 				for (File file : folder.listFiles()) {
-					String[] a = file.getName().split(" ");
-					String nameWithoutTimestamp = a[0];
-					rr.addFile(nameWithoutTimestamp, file);
+					if (!excludedFiles(file)) {
+						String[] a = file.getName().split(" ");
+						String nameWithoutTimestamp = a[0];
+						rr.addFile(nameWithoutTimestamp, file);
+					}
 				}
 
 				// inside each folder/repository exists a owner.txt file
