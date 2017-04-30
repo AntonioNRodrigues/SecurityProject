@@ -87,45 +87,9 @@ public class MyGitClient {
 			} else {
 				System.out.println("javax.net.ssl.trustStore = " + trustStore);
 			}
-			/*
-			 * class DefaultTrustManager implements X509TrustManager {
-			 * 
-			 * @Override public void checkClientTrusted(X509Certificate[] arg0,
-			 * String arg1) throws CertificateException {}
-			 * 
-			 * @Override public void checkServerTrusted(X509Certificate[] arg0,
-			 * String arg1) throws CertificateException {}
-			 * 
-			 * @Override public X509Certificate[] getAcceptedIssuers() { return
-			 * null; } }
-			 */
 
 			SocketFactory sf = SSLSocketFactory.getDefault();
 			Socket socket = sf.createSocket(myGitClient.getHost(), myGitClient.getPort());
-			// Socket socket = new Socket(myGitClient.getHost(),
-			// myGitClient.getPort());
-
-			// System.out.println("Loading KeyStore " + file + "...");
-			// final InputStream in = new FileInputStream(file);
-			// final KeyStore ks =
-			// KeyStore.getInstance(KeyStore.getDefaultType());
-			// ks.load(in, passphrase);
-			// in.close();
-
-			/*
-			 * final SSLContext context = SSLContext.getInstance("TLS"); final
-			 * TrustManagerFactory tmf =
-			 * TrustManagerFactory.getInstance(TrustManagerFactory
-			 * .getDefaultAlgorithm()); tmf.init(new ManagerFactoryParameters()
-			 * { });
-			 * 
-			 * final X509TrustManager defaultTrustManager = (X509TrustManager)
-			 * tmf.getTrustManagers()[0]; final DefaultTrustManager tm = new
-			 * DefaultTrustManager(); context.init(null, new TrustManager[] { tm
-			 * }, null); final SSLSocketFactory factory =
-			 * context.getSocketFactory(); Socket socket =
-			 * sf.createSocket(myGitClient.getHost(), myGitClient.getPort());
-			 */
 
 			ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
 			ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
@@ -156,19 +120,19 @@ public class MyGitClient {
 
 	private static void createLocalRepo(String repName) {
 
-		Path path = Paths.get("CLIENT" + File.separator + repName);
+		Path path = Paths.get(ReadWriteUtil.CLIENT + File.separator + repName);
 		boolean exists = Files.exists(path);
 		boolean isDirectory = Files.isDirectory(path);
 		boolean isFile = Files.isRegularFile(path);
 
 		if (exists && isDirectory) {
-			System.out.println("ERRO: Um repositório com esse nome já existe.");
+			System.out.println("ERRO: Um repositorio com esse nome ja existe.");
 		} else if (exists && isFile) {
-			System.out.println("ERRO: Já existe um ficheiro com o mesmo nome dado ao repositório.");
+			System.out.println("ERRO: Ja existe um ficheiro com o mesmo nome dado ao repositorio.");
 		} else {
 			try {
 				Files.createDirectories(path);
-				System.out.println("-- O repositório " + repName + " foi criado localmente");
+				System.out.println("-- O repositorio " + repName + " foi criado localmente");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

@@ -57,28 +57,20 @@ public class MyGitServer {
 		System.out.println("MyGitServer:: Please fill up the password");
 		Scanner sc = new Scanner(System.in);
 		String pass = sc.nextLine();
-		// check && validate pass length > 6 and < 10 ex::: -----> TO DO
 		System.out.println("MyGitServer is Running with password");
 		// SecurityUtil.generateSecretKeyFromPass(pass);
 		try {
 			SecurityUtil2.createKey(pass);
 		} catch (InvalidKeyException | NoSuchAlgorithmException | InvalidKeySpecException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-		// Check password file integrity
-
 		MyGitServer myGitServer = new MyGitServer();
 		sk = new ServerSkell(myGitServer);
 		myGitServer.startServer(args);
 	}
 
-	@SuppressWarnings("resource")
 	public void startServer(String[] args) {
 		SSLServerSocket sSoc = null;
-		// ServerSocket sSoc = null;
-
 		try {
 			System.setProperty("javax.net.ssl.keyStore", ".myGitServerKeyStore");
 			System.setProperty("javax.net.ssl.trustStore", ".myGitServerTrustStore");
@@ -92,54 +84,9 @@ public class MyGitServer {
 				System.out.println("javax.net.ssl.trustStore = " + trustStore);
 			}
 
-			/*
-			 * TrustManager tm = new X509TrustManager() { public void
-			 * checkClientTrusted(X509Certificate[] chain, String authType)
-			 * throws CertificateException { //do nothing, you're the client }
-			 * 
-			 * @Override public X509Certificate[] getAcceptedIssuers() { //also
-			 * only relevant for servers // TODO Auto-generated method stub
-			 * return null; }
-			 * 
-			 * @Override public void checkServerTrusted(X509Certificate[] chain,
-			 * String authType) throws CertificateException {
-			 */
-			/*
-			 * chain[chain.length -1] is the candidate for the root certificate.
-			 * Look it up to see whether it's in your list. If not, ask the user
-			 * for permission to add it. If not granted, reject. Validate the
-			 * chain using CertPathValidator and your list of trusted roots.
-			 */
-			// }
-			// };
-
-			/* Create keystore */
-			// KeyStore keyStore =
-			// KeyStore.getInstance(KeyStore.getDefaultType());
-			// keyStore.load(new FileInputStream(keyStore),
-			// passphrase.toCharArray());
-
-			/* Get factory for the given keystore */
-			// KeyManagerFactory kmf =
-			// KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-			// kmf.init(keystore, password.toCharArray()); // That's the key's
-			// password, if different.
-
-			// TrustManagerFactory tmf =
-			// TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-			// tmf.init(keyStore);
-
-			// SSLContext ctx = SSLContext.getInstance("SSL");
-			// ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
-			// SSLServerSocketFactory factory = ctx.getServerSocketFactory();
-
 			ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
 			sSoc = (SSLServerSocket) ssf.createServerSocket(Integer.parseInt(args[0]));
 
-			// Client authentication
-			// sSoc.setNeedClientAuth(true);
-
-			// sSoc = new ServerSocket(Integer.parseInt(args[0]));
 		} catch (IOException e) {
 			System.err.println(e.getMessage());
 			System.exit(-1);

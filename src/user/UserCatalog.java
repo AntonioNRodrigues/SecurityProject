@@ -36,7 +36,6 @@ public class UserCatalog {
 		} catch (InvalidKeyException | NoSuchAlgorithmException | InvalidAlgorithmParameterException | IOException e) {
 			e.printStackTrace();
 		}
-		System.out.println(mapUsers);
 	}
 
 	/**
@@ -52,7 +51,6 @@ public class UserCatalog {
 		} else {
 			u = new User(userPass[0].trim(), userPass[1].trim());
 		}
-		System.out.println(mapUsers);
 		mapUsers.put(u.getName(), u);
 	}
 
@@ -86,18 +84,20 @@ public class UserCatalog {
 						SecurityUtil2.writeHMACFile(file, hmacFile, sk);
 					} else {
 						System.out.println("incorrect hmac user file");
+						System.out.println("server process halted");
+						System.exit(0);
 						return false;
 					}
 				} else {
 					System.out.println("hmac user file doesnt exist");
+					System.out.println("server process halted");
+					System.exit(0);
 					return false;
 				}
 			} else {
 				// create new file
 				SecurityUtil2.cipherFile(file, sk, b);
-				System.out.println("SecurityUtil2.cipherFile(users, sk, b);");
 				SecurityUtil2.writeHMACFile(file, hmacFile, sk);
-				System.out.println("SecurityUtil2.writeHMACFile(users, sk);");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -105,7 +105,6 @@ public class UserCatalog {
 		}
 
 		mapUsers.put(name, new User(name, password));
-		System.out.println("mapusers: " + mapUsers);
 		return true;
 	}
 
@@ -121,7 +120,6 @@ public class UserCatalog {
 	public boolean loadUsers()
 			throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, IOException {
 
-		System.out.println("load users from encrypted users file");
 		Path file = Paths.get(SERVER + File.separator + USERS);
 		Path hmacFile = Paths.get(SERVER + File.separator + "." + USERS + ".hmac");
 
@@ -177,7 +175,6 @@ public class UserCatalog {
 		} catch (IOException e) {
 			System.err.println("PROBLEM PERSISTING THE USER");
 		}
-		System.out.println(mapUsers);
 	}
 
 	/**

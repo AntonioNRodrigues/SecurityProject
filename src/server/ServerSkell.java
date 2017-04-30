@@ -216,30 +216,26 @@ public class ServerSkell {
 						if (!error) {
 
 							CopyOnWriteArrayList<Path> uniqueList = rr.getUniqueList();
-							System.out.println("UNIQUE LIST " + uniqueList);
 							if (uniqueList.size() > 0) {
 								try {
 									out.writeObject((Object) "OK");
 									// Enviar o numero de ficheiros
-									System.out.println("size list" + uniqueList.size());
 									out.writeObject((Object) uniqueList.size());
 
 									for (Path f : uniqueList) {
-										System.out.println("TIMESTAMP " + f.toFile().lastModified());
 										// Enviar timeststamp
 										out.writeObject((Object) f.toFile().lastModified());
 										// pull interaction
 										pullInteraction(mp, f.toString().split(" ")[0], "");
-										System.out.println("FILE NAME " + SERVER + File.separator + mp.getRepoName()
-												+ File.separator + f.toFile().getName());
+
 										// send file
 										ReadWriteUtil.sendFile(SERVER + File.separator + mp.getRepoName()
 												+ File.separator + f.toFile().getName(), in, out);
-										System.out.println("SIG " + Paths.get(f + ".sig"));
 
 										String lastUser = rr.getLastUser(f.getFileName().toString().split(" ")[0]);
-										System.out.println("LAST USER" + lastUser);
+
 										out.writeObject((Object) lastUser);
+
 										// send the signatureof the file
 										sendSignature(Paths.get(f.toString()));
 
@@ -280,7 +276,6 @@ public class ServerSkell {
 								try {
 
 									String path = SERVER + File.separator + mp.getRepoName() + File.separator;
-									System.out.println(path);
 									// Recebe assinatura do ficheiro
 									byte[] signature = (byte[]) in.readObject();
 									// Guarda-a com a extensao .sig
@@ -314,8 +309,9 @@ public class ServerSkell {
 											new FileOutputStream(new File(path + received.getName() + ".key.server")));
 
 									rr.addLastUser(received.getName(), mp.getLocalUser().getName());
-									System.out.println(rr.getLastUser());
+
 									received.setLastModified(timestampReceivedFile);
+
 									// most recent file in repository
 									File fileInRepo = rr.getFile(received.getName());
 
@@ -373,11 +369,6 @@ public class ServerSkell {
 						} else
 							rr = catRepo.getRemRepository(mp.getRepoName());
 
-						// Validar se o utilizador é dono ou tem acesso
-						// partilhado ao repositorio
-						System.out.println("------" + rr.getSharedUsers() == null);
-						System.out.println(" -----" + mp.getLocalUser().getName() == null);
-
 						if (!error && !(rr.getOwner().equals(mp.getLocalUser().getName())
 								|| rr.getSharedUsers().contains(mp.getLocalUser().getName()))) {
 							error = true;
@@ -413,7 +404,7 @@ public class ServerSkell {
 											+ inRepoCifrado.getName(), in, out);
 
 									String lastUser = rr.getLastUser(mp.getFileName());
-									System.out.println("LAST USER" + lastUser);
+
 									out.writeObject((Object) lastUser);
 
 									// Vai buscar a assinatura e envia para o
@@ -558,12 +549,10 @@ public class ServerSkell {
 			// to check
 			// the messageDigest is good or not
 			if (u == null) {
-				// catUsers.registerUser(m.getLocalUser().getName(),
-				// m.getPassword());
 				catUsers.registerUser(m.getLocalUser().getName(), m.getPassword());
 				try {
 					out.writeObject((Object) "OK");
-					out.writeObject((Object) "-- O  utilizador " + m.getLocalUser().getName() + " foi criado");
+					out.writeObject((Object) "O  utilizador " + m.getLocalUser().getName() + " foi criado");
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -576,11 +565,10 @@ public class ServerSkell {
 				byte[] mdServer = SecurityUtil.calcSintese(str);
 
 				boolean mdCompare = MessageDigest.isEqual(mdUser, mdServer);
-				System.out.println(mdCompare);
 				if (mdCompare) {
 					try {
 						out.writeObject((Object) "OK");
-						out.writeObject((Object) "-- O  utilizador " + m.getLocalUser().getName() + " foi autenticado");
+						out.writeObject((Object) "O  utilizador " + m.getLocalUser().getName() + " foi autenticado");
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -590,7 +578,7 @@ public class ServerSkell {
 				if (u.getPassword().equals(m.getLocalUser().getPassword())) {
 					try {
 						out.writeObject((Object) "OK");
-						out.writeObject((Object) "-- O  utilizador " + m.getLocalUser().getName() + " foi autenticado");
+						out.writeObject((Object) "O  utilizador " + m.getLocalUser().getName() + " foi autenticado");
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -598,7 +586,7 @@ public class ServerSkell {
 					try {
 						out.writeObject((Object) "NOK");
 						out.writeObject((Object) "Erro: O  utilizador " + m.getLocalUser().getName()
-								+ " introduziu uma password inválida");
+								+ " introduziu uma password invalida");
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -612,7 +600,6 @@ public class ServerSkell {
 			if (u == null) {
 				System.out.println("THE USER WAS NOT FOUND:: REGISTERING USER");
 				catUsers.registerUser(msg.getLocalUser().getName(), msg.getPassword());
-
 				return true;
 			}
 			// user exists check permissions
@@ -651,12 +638,9 @@ public class ServerSkell {
 	}
 
 	private void pullInteraction(MessageP mp, String path, String nameFile) {
-		System.out.println("PULLINTEREACTION PATH " + path);
-		System.out.println("PULLINTEREACTION NAME FILE " + nameFile);
 		try {
 
 			// saca chave .key.server
-			System.out.println("KEY.SERVER" + path + nameFile + ".key.server");
 			FileInputStream fis = new FileInputStream(path + nameFile + ".key.server");
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			byte[] b = new byte[16];
@@ -682,10 +666,9 @@ public class ServerSkell {
 			}
 			baos.close();
 
-			// Convert byte[] to Secret Key
 			SecretKey keyFinal = (SecretKey) k;
 			// Envia a chave K para o cliente
-			out.writeObject(keyFinal);
+			out.writeObject((Object) keyFinal);
 		} catch (IOException | NoSuchAlgorithmException | NoSuchPaddingException e) {
 			e.printStackTrace();
 		}
@@ -693,9 +676,7 @@ public class ServerSkell {
 	}
 
 	private void sendSignature(Path f) {
-		System.out.println("SIGNATURE SENd " + f);
 		String realPath = f.toString().split(" ")[0] + ".sig";
-		System.out.println("SIGNATURE SENd " + realPath);
 		File realFile = new File(realPath);
 		try (FileInputStream fiStream = new FileInputStream(realFile)) {
 			byte[] data = new byte[(int) realFile.length()];

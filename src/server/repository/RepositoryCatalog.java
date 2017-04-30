@@ -174,7 +174,6 @@ public class RepositoryCatalog {
 	private void iterateSharedWithFile(String repFolderName, String shared, RemoteRepository rr)
 			throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, IOException {
 
-		System.out.println("load repo shared with info from encrypted repo shared with file");
 		Path file = Paths.get(SERVER + File.separator + repFolderName + File.separator + SHARED);
 		Path hmacFile = Paths.get(SERVER + File.separator + repFolderName + File.separator + "." + SHARED + ".hmac");
 
@@ -198,7 +197,6 @@ public class RepositoryCatalog {
 					} catch (IOException | InvalidKeyException e) {
 						e.printStackTrace();
 					} catch (InvalidAlgorithmParameterException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				} else {
@@ -216,7 +214,6 @@ public class RepositoryCatalog {
 			throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, IOException {
 
 		String str = null;
-		System.out.println("get repo owner from encrypted owner file");
 		Path file = Paths.get(SERVER + File.separator + repFolderName + File.separator + OWNER);
 		Path hmacFile = Paths.get(SERVER + File.separator + repFolderName + File.separator + "." + OWNER + ".hmac");
 
@@ -236,7 +233,6 @@ public class RepositoryCatalog {
 					} catch (IOException | InvalidKeyException e) {
 						e.printStackTrace();
 					} catch (InvalidAlgorithmParameterException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				} else {
@@ -305,11 +301,7 @@ public class RepositoryCatalog {
 
 	public RemoteRepository buildRepo(User localUser, String repoFileName) {
 
-		// para alem de retornar um novo repositorio tb e necessessario
-		// adiciona-lo ao catalogo de repositorios mapRemRepos
-
 		RemoteRepository rr = new RemoteRepository(localUser.getName(), repoFileName);
-		System.out.println(rr);
 		mapRemRepos.put(rr.getNameRepo(), rr);
 
 		return rr;

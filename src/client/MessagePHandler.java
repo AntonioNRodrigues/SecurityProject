@@ -198,7 +198,7 @@ public class MessagePHandler extends MessageHandler {
 				} catch (GeneralSecurityException e) {
 					e.printStackTrace();
 				}
-				System.out.println("-- O  repositório " + params.getRepName() + " foi copiado  para o  servidor");
+				System.out.println("-- O  repositorio " + params.getRepName() + " foi copiado  para o  servidor");
 			}
 
 		} else if (result.contentEquals("NOK")) {
@@ -328,25 +328,19 @@ public class MessagePHandler extends MessageHandler {
 
 				SecretKey secretKey = (SecretKey) in.readObject();
 
-				System.out.println("SECRET KEY " + secretKey);
-
 				Path path = Paths.get(CLIENT + File.separator + repoName + File.separator);
 				// Recebe o ficheiro cifrado.
 
-				System.out.println("path file receivede" + path.toString());
-
 				File received = ReadWriteUtil.receiveFile(path.toString() + File.separator, in, out);
-				System.out.println(" path  " + received.getAbsolutePath());
 
 				SecurityUtil.decipherFile2(received.toPath(), secretKey,
 						Paths.get(path + File.separator + "temp" + received.getName()));
 
 				String lastUser = (String) in.readObject();
-				System.out.println("LAST USER" + lastUser);
+
 				// Recebe a assinatura
 				byte[] signature = (byte[]) in.readObject();
 
-				//
 				Certificate c = SecurityUtil.getCertFromKeyStore(Paths.get(".myGitClientKeyStore"), "mygitclient",
 						"badpassword2");
 
@@ -371,11 +365,11 @@ public class MessagePHandler extends MessageHandler {
 				File inRepo = new File(
 						CLIENT + File.separator + repoName + File.separator + received.getName().split(" ")[0]);
 
-				received.setLastModified(receivedTimeStamp);
-
 				CopyOption[] options = new CopyOption[] { REPLACE_EXISTING };
-				Files.copy(file.toPath(), received.toPath(), options);
+				Path p = Files.copy(file.toPath(), received.toPath(), options);
 				Files.delete(file.toPath());
+
+				p.toFile().setLastModified(receivedTimeStamp);
 
 				if (inRepo.exists()) {
 					if (received.lastModified() <= inRepo.lastModified()) {
@@ -387,15 +381,8 @@ public class MessagePHandler extends MessageHandler {
 					received.renameTo(inRepo);
 				}
 
-			} catch (ClassNotFoundException | IOException e) {
-				e.printStackTrace();
-			} catch (InvalidKeyException e) {
-				e.printStackTrace();
-			} catch (NoSuchAlgorithmException e) {
-				e.printStackTrace();
-			} catch (NoSuchPaddingException e) {
-				e.printStackTrace();
-			} catch (IllegalBlockSizeException e) {
+			} catch (ClassNotFoundException | IOException | InvalidKeyException | NoSuchAlgorithmException
+					| NoSuchPaddingException | IllegalBlockSizeException e) {
 				e.printStackTrace();
 			} catch (BadPaddingException e) {
 				e.printStackTrace();
@@ -409,7 +396,7 @@ public class MessagePHandler extends MessageHandler {
 
 	private void loadRepoFiles(String repName) {
 
-		try (Stream<Path> paths = Files.walk(Paths.get("CLIENT" + File.separator + repName))) {
+		try (Stream<Path> paths = Files.walk(Paths.get(CLIENT + File.separator + repName))) {
 			paths.forEach(filePath -> {
 				if (Files.isRegularFile(filePath)) {
 					filesList.add(filePath);

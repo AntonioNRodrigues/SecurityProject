@@ -120,9 +120,7 @@ public class RemoteRepository {
 				if (!Files.exists(file)) {
 					// create new file
 					SecurityUtil2.cipherFile(file, sk, b);
-					System.out.println("SecurityUtil2.cipherFile(users, sk, b);");
 					SecurityUtil2.writeHMACFile(file, hmacFile, sk);
-					System.out.println("SecurityUtil2.writeHMACFile(users, sk);");
 				}
 			} catch (Exception e) {
 				System.err.println("Aconteceu um problema durante a criacao do ficheiro de dono do repositorio");
@@ -149,10 +147,8 @@ public class RemoteRepository {
 			CopyOnWriteArrayList<Path> cp = getSortedList();
 			cp.add(received.toPath());
 			this.getMapVersions().put(nameFile, cp);
-			// System.out.println(this.getMapVersions());
 		} else {
 			this.getMapVersions().get(nameFile).add(received.toPath());
-			// System.out.println(this.getMapVersions());
 		}
 
 	}
@@ -223,7 +219,6 @@ public class RemoteRepository {
 	 */
 	private void persisteSharedUser(String userName, RemoteRepository remoteRepository) {
 
-		System.out.println("persisteSharedUser");
 		Path file = Paths.get(SERVER + File.separator + this.nameRepo + File.separator + SHARED);
 		Path hmacFile = Paths.get(SERVER + File.separator + this.nameRepo + File.separator + "." + SHARED + ".hmac");
 
@@ -248,12 +243,10 @@ public class RemoteRepository {
 			} else {
 				// create new file
 				SecurityUtil2.cipherFile(file, sk, b);
-				System.out.println("SecurityUtil2.cipherFile(users, sk, b);");
 				SecurityUtil2.writeHMACFile(file, hmacFile, sk);
-				System.out.println("SecurityUtil2.writeHMACFile(users, sk);");
 			}
 		} catch (Exception e) {
-			System.err.println("Existiu um problema a adicinar o user ao ficheiro");
+			System.err.println("Existiu um problema a adicionar o user ao ficheiro");
 			e.printStackTrace();
 		}
 	}
@@ -261,7 +254,6 @@ public class RemoteRepository {
 	public void removeSharedUserFromRepo(String userId) {
 		sharedUsers.remove(userId);
 		removeUserFromSharedRepo(userId);
-		System.out.println("Current List of Shared Users for the " + this.nameRepo + ": " + sharedUsers);
 	}
 
 	private void removeUserFromSharedRepo(String userId) {
@@ -295,9 +287,7 @@ public class RemoteRepository {
 			} else {
 				// create new file
 				SecurityUtil2.cipherFile(file, sk, b);
-				System.out.println("SecurityUtil2.cipherFile(users, sk, b);");
 				SecurityUtil2.writeHMACFile(file, hmacFile, sk);
-				System.out.println("SecurityUtil2.writeHMACFile(users, sk);");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -340,7 +330,6 @@ public class RemoteRepository {
 	}
 
 	public void addLastUser(String filename, String nameUser) {
-		System.out.println("ADD LAST USER" + lastUser);
 		this.lastUser.put(filename, nameUser);
 
 	}
