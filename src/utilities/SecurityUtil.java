@@ -14,7 +14,6 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -32,7 +31,6 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.Base64;
-import java.util.Formatter;
 import java.util.UUID;
 
 import javax.crypto.BadPaddingException;
@@ -41,7 +39,6 @@ import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
-import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -78,34 +75,7 @@ public class SecurityUtil {
 			e.printStackTrace();
 		}
 		String decriptValue = new String(str);
-		System.out.println(decriptValue);
 		return decriptValue;
-
-	}
-
-	/**
-	 * 
-	 * @param sk
-	 * @param data
-	 * @return
-	 */
-	public static byte[] encriptSimetric(SecretKey sk, String data) {
-		byte[] strBytes = null;
-		Cipher c = null;
-		try {
-			c = getCipher();
-			c.init(Cipher.ENCRYPT_MODE, sk);
-			strBytes = c.doFinal(data.getBytes());
-		} catch (InvalidKeyException e) {
-			e.printStackTrace();
-		} catch (IllegalBlockSizeException e) {
-			e.printStackTrace();
-		} catch (BadPaddingException e) {
-			e.printStackTrace();
-		}
-
-		System.out.println(strBytes.toString());
-		return strBytes;
 
 	}
 
@@ -356,25 +326,6 @@ public class SecurityUtil {
 			e.printStackTrace();
 		}
 		return message;
-	}
-
-	public static String calcHMAC(Path path, String key, String algorithm)
-			throws NoSuchAlgorithmException, InvalidKeyException, IOException {
-		// usar como algoritmo "HmacSHA256"
-		SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(), algorithm);
-		Mac mac = Mac.getInstance(algorithm);
-		mac.init(secretKey);
-		// Note that this method is intended for simple cases where it is
-		// convenient to read all bytes into a byte array. It is not intended
-		// for reading in large files.
-		return hexString(mac.doFinal(Files.readAllBytes(path)));
-	}
-
-	private static String hexString(byte[] bytes) {
-		Formatter formatter = new Formatter();
-		for (byte b : bytes)
-			formatter.format("%02x", b);
-		return formatter.toString();
 	}
 
 	/**

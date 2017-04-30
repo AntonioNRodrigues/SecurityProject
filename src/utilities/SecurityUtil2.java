@@ -56,24 +56,25 @@ public class SecurityUtil2 {
 	 * 
 	 */
 	public static void appendToFile(Path file, SecretKey secretKey, byte[] text)
-			throws IOException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
-	
-		//decode file
-		byte[] decodedFile=SecurityUtil2.decipherFile2Memory(file, secretKey);
-	
-		//concatenate decoded file and the new text 
-		ByteArrayOutputStream baos = new ByteArrayOutputStream( );
+			throws IOException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
+			NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+
+		// decode file
+		byte[] decodedFile = SecurityUtil2.decipherFile2Memory(file, secretKey);
+
+		// concatenate decoded file and the new text
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		baos.write(decodedFile);
 		baos.write("\n".getBytes());
 		baos.write(text);
-		byte fileContent[] = baos.toByteArray( );
-	
+		byte fileContent[] = baos.toByteArray();
+
 		Path tempFile = Files.createTempFile("foobar", ".tmp");
-				
-		//encode again to temp file
+
+		// encode again to temp file
 		SecurityUtil2.cipherFile(tempFile, secretKey, fileContent);
 
-		//move temp file to file
+		// move temp file to file
 		CopyOption[] options = new CopyOption[] { REPLACE_EXISTING };
 		Files.copy(tempFile, file, options);
 		Files.delete(tempFile);
@@ -94,8 +95,6 @@ public class SecurityUtil2 {
 			int length;
 			while ((length = cis.read(b)) != -1)
 				out.write(b, 0, length);
-
-			System.out.println("decipherFile2Memory: ByteArrayOutputStream out:" + out.toString());
 			return out.toByteArray();
 		}
 	}
@@ -137,20 +136,15 @@ public class SecurityUtil2 {
 	 * 
 	 */
 	public static boolean checkFileIntegrity(Path file, Path hmacFile, SecretKey secretKey)
-			throws InvalidKeyException, IOException, NoSuchAlgorithmException, 
-			InvalidAlgorithmParameterException {
+			throws InvalidKeyException, IOException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
 
 		// calc file hmac
 		byte[] f = SecurityUtil2.decipherFile2Memory(file, secretKey);
 		byte[] h = SecurityUtil2.calcHMAC(f, secretKey);
-		System.out.println("h hmac: "+toHex(h));
-		System.out.println("hmac length: "+toHex(h).length());
 
 		// read hmac file
 		byte[] h2 = SecurityUtil2.readHMACFile(hmacFile);
-		System.out.println("h2 hmac: "+toHex(h2));
-		System.out.println("hmac length: "+toHex(h).length());
-		
+
 		// compare
 		if (Arrays.equals(h, h2))
 			return true;
@@ -175,9 +169,6 @@ public class SecurityUtil2 {
 		mac.init(sk);
 		mac.update(f);
 		byte[] hmac = mac.doFinal();
-		//System.out.println("calcHMAC:");
-		//System.out.println("hmac: "+toHex(hmac));
-		//System.out.println("length: "+toHex(hmac).length());
 		return hmac;
 	}
 
@@ -213,10 +204,6 @@ public class SecurityUtil2 {
 		SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
 		SecretKey sk = skf.generateSecret(spec);
 		byte[] hash = sk.getEncoded();
-		System.out.println("hash.length: " + hash.length);
-		System.out.println(iterations + ":" + toHex(salt) + ":" + toHex(hash));
-		System.out.println("pass: " + Arrays.toString(hash));
-		System.out.println("pass: " + toHex(hash));
 
 		// write symmetric key to disk
 		SecurityUtil.persisteKey(sk, ReadWriteUtil.SERVER + File.separator + SecurityUtil.SERVER_KEY);
