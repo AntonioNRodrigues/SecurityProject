@@ -3,11 +3,8 @@ package server.repository;
 import static utilities.ReadWriteUtil.OWNER;
 import static utilities.ReadWriteUtil.SERVER;
 import static utilities.ReadWriteUtil.SHARED;
-import static utilities.ReadWriteUtil.USERS;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,16 +25,15 @@ public class RepositoryCatalog {
 
 	private Map<String, RemoteRepository> mapRemRepos;
 
-	public RepositoryCatalog() throws InvalidKeyException,NoSuchAlgorithmException, 
-		InvalidAlgorithmParameterException {
+	public RepositoryCatalog()
+			throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
 		super();
 		buildMap();
 		listRepos();
 	}
 
-	private void buildMap() throws InvalidKeyException, NoSuchAlgorithmException,
-		InvalidAlgorithmParameterException {
-		
+	private void buildMap() throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
+
 		this.mapRemRepos = new ConcurrentHashMap<String, RemoteRepository>();
 		// if buildFolder == true do nothing
 		// there is no need to populate the map with repositories
@@ -49,12 +45,14 @@ public class RepositoryCatalog {
 
 	/**
 	 * method to exclude the file with termination like .sig and .server
-	 * @param f file to check
+	 * 
+	 * @param f
+	 *            file to check
 	 * @return true if want to exclude false otherwise
 	 */
 	private boolean excludedFiles(File f) {
 		String[] a = f.getName().split("\\.(?=[^\\.]+$)");
-		if(a[a.length-1].equals("sig") || (a[a.length-1].equals("server"))){
+		if (a[a.length - 1].equals("sig") || (a[a.length - 1].equals("server")) || (a[a.length - 1].equals("hmac"))) {
 			return true;
 		}
 		return false;
@@ -63,13 +61,13 @@ public class RepositoryCatalog {
 	/**
 	 * method to read the SERVER folder, build the object representation of each
 	 * Repository and populate the mapFiles with each Repository and its files.
-	 * @throws InvalidAlgorithmParameterException 
-	 * @throws NoSuchAlgorithmException 
-	 * @throws InvalidKeyException 
+	 * 
+	 * @throws InvalidAlgorithmParameterException
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeyException
 	 */
-	private void readFolder() throws InvalidKeyException, NoSuchAlgorithmException,
-		InvalidAlgorithmParameterException {
-		
+	private void readFolder() throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
+
 		RemoteRepository rr = null;
 		// list of repos inside Server
 		for (String repoFolder : new File(SERVER).list()) {
@@ -120,24 +118,24 @@ public class RepositoryCatalog {
 	 *            File Server
 	 * @return the owner of the REpository
 	 * @throws IOException
-	 * @throws InvalidAlgorithmParameterException 
-	 * @throws NoSuchAlgorithmException 
-	 * @throws InvalidKeyException 
+	 * @throws InvalidAlgorithmParameterException
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeyException
 	 */
-	private String getOwner(File f) throws 
-	IOException, InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
-		
+	private String getOwner(File f)
+			throws IOException, InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
+
 		String str = null;
 		File repFolder = new File(f.getCanonicalPath() + File.separator);
 
 		if (repFolder.isDirectory()) {
 			// list all its files
-			//for (String fileInFolder : repFolder.list()) {
-				// get owner.txt and read it
-				//if (fileInFolder.equals(OWNER)) {
-					str = readOwnerFile(repFolder.getCanonicalPath(), OWNER);
-				//}
-			//}
+			// for (String fileInFolder : repFolder.list()) {
+			// get owner.txt and read it
+			// if (fileInFolder.equals(OWNER)) {
+			str = readOwnerFile(repFolder.getCanonicalPath(), OWNER);
+			// }
+			// }
 		}
 		return str;
 	}
@@ -149,12 +147,12 @@ public class RepositoryCatalog {
 	 *            File Server
 	 * @return the owner of the REpository
 	 * @throws IOException
-	 * @throws InvalidAlgorithmParameterException 
-	 * @throws NoSuchAlgorithmException 
-	 * @throws InvalidKeyException 
+	 * @throws InvalidAlgorithmParameterException
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeyException
 	 */
-	private String getSharedWith(File f, RemoteRepository rr) throws IOException,
-		InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
+	private String getSharedWith(File f, RemoteRepository rr)
+			throws IOException, InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
 		String str = null;
 		File repFolder = new File(f.getCanonicalPath() + File.separator);
 		if (repFolder.isDirectory()) {
@@ -173,78 +171,75 @@ public class RepositoryCatalog {
 	 * Ler o ficheiro shared.txt e criar a lista em memoria dos utilizadores com
 	 * acesso ao repositorio
 	 */
-	private void iterateSharedWithFile(String repFolderName, String shared, RemoteRepository rr) throws
-		InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, IOException {
+	private void iterateSharedWithFile(String repFolderName, String shared, RemoteRepository rr)
+			throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, IOException {
 
 		System.out.println("load repo shared with info from encrypted repo shared with file");
-		Path file =     Paths.get(SERVER + File.separator + repFolderName + File.separator + SHARED);
+		Path file = Paths.get(SERVER + File.separator + repFolderName + File.separator + SHARED);
 		Path hmacFile = Paths.get(SERVER + File.separator + repFolderName + File.separator + "." + SHARED + ".hmac");
 
 		if (Files.exists(file)) {
-			
-				if (Files.exists(hmacFile)) {
-				
-					// decipher file and read content
-					SecretKey sk = SecurityUtil.getKeyFromServer();
 
-					if (SecurityUtil2.checkFileIntegrity(file, hmacFile, sk)) {				
-			
-						try {
-							
-							byte[] b = SecurityUtil2.decipherFile2Memory(file, sk);
-							String content = new String(b);
-							String[] array = content.split("\n");
-							for (String s : array) {
-								rr.getSharedUsers().add(s);
-							}
-						} catch (IOException | InvalidKeyException e) {
-							e.printStackTrace();
-						} catch (InvalidAlgorithmParameterException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-					else {
-						System.out.println("incorrect hmac users file");
-					}
-				} else {
-					System.out.println("hmac users file doesnt exist");
-				}		
-			}
-		else
-			System.out.println("users file doesnt exist");
-
-	}
-
-	private String readOwnerFile(String repFolderName, String nameFile) throws
-		InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, IOException {
-		
-		String str = null;
-		System.out.println("get repo owner from encrypted owner file");
-		Path file =     Paths.get(SERVER + File.separator + repFolderName + File.separator + OWNER);
-		Path hmacFile = Paths.get(SERVER + File.separator + repFolderName + File.separator + "." + OWNER + ".hmac");
-		
-		if (Files.exists(file)) {
-			
 			if (Files.exists(hmacFile)) {
-			
+
 				// decipher file and read content
 				SecretKey sk = SecurityUtil.getKeyFromServer();
 
 				if (SecurityUtil2.checkFileIntegrity(file, hmacFile, sk)) {
+
 					try {
-						
+
 						byte[] b = SecurityUtil2.decipherFile2Memory(file, sk);
-						str = new String(b);
-						
+						String content = new String(b);
+						String[] array = content.split("\n");
+						for (String s : array) {
+							rr.getSharedUsers().add(s);
+						}
 					} catch (IOException | InvalidKeyException e) {
 						e.printStackTrace();
 					} catch (InvalidAlgorithmParameterException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
+				} else {
+					System.out.println("incorrect hmac users file");
 				}
-				else {
+			} else {
+				System.out.println("hmac users file doesnt exist");
+			}
+		} else
+			System.out.println("users file doesnt exist");
+
+	}
+
+	private String readOwnerFile(String repFolderName, String nameFile)
+			throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, IOException {
+
+		String str = null;
+		System.out.println("get repo owner from encrypted owner file");
+		Path file = Paths.get(SERVER + File.separator + repFolderName + File.separator + OWNER);
+		Path hmacFile = Paths.get(SERVER + File.separator + repFolderName + File.separator + "." + OWNER + ".hmac");
+
+		if (Files.exists(file)) {
+
+			if (Files.exists(hmacFile)) {
+
+				// decipher file and read content
+				SecretKey sk = SecurityUtil.getKeyFromServer();
+
+				if (SecurityUtil2.checkFileIntegrity(file, hmacFile, sk)) {
+					try {
+
+						byte[] b = SecurityUtil2.decipherFile2Memory(file, sk);
+						str = new String(b);
+
+					} catch (IOException | InvalidKeyException e) {
+						e.printStackTrace();
+					} catch (InvalidAlgorithmParameterException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				} else {
 					System.out.println("incorrect hmac repo owner file");
 					System.out.println("server process halted");
 					System.exit(0);
@@ -253,14 +248,12 @@ public class RepositoryCatalog {
 				System.out.println("hmac repo owner doesnt exist");
 				System.out.println("server process halted");
 				System.exit(0);
-			}		
-		}
-	else
-		System.out.println("repo owner file doesnt exist");
-	
+			}
+		} else
+			System.out.println("repo owner file doesnt exist");
 
-	return str;
-			
+		return str;
+
 	}
 
 	/**

@@ -175,7 +175,7 @@ public class ServerSkell {
 
 						if (!error) {
 							out.writeObject((Object) "OK");
-							System.out.println("mrs.getUserId(): "+mrs.getUserId());
+							System.out.println("mrs.getUserId(): " + mrs.getUserId());
 							rr.addShareUserToRepo(mrs.getUserId());
 						}
 					}
@@ -287,7 +287,7 @@ public class ServerSkell {
 									// Recebe chave key para depois cifra-la
 									// usando a sua chave publica
 									SecretKey key = (SecretKey) in.readObject();
-						
+
 									KeyPair kPair = SecurityUtil.getKeyPairFromKS(Paths.get(".myGitServerKeyStore"),
 											"mygitserver", "badpassword1");
 
@@ -304,9 +304,9 @@ public class ServerSkell {
 
 									Files.copy(Paths.get(path + "temp.sig"),
 											new FileOutputStream(new File(path + received.getName() + ".sig")));
-									
-									Files.copy(Paths.get(path + "temp.key.server"), new FileOutputStream(
-											new File(path + received.getName() + ".key.server")));
+
+									Files.copy(Paths.get(path + "temp.key.server"),
+											new FileOutputStream(new File(path + received.getName() + ".key.server")));
 
 									received.setLastModified(timestampReceivedFile);
 									// most recent file in repository
@@ -330,9 +330,9 @@ public class ServerSkell {
 											Files.deleteIfExists(received.toPath());
 										}
 									}
-								Files.deleteIfExists(Paths.get(path + received.getName() + ".temp.key.server"));
-								Files.deleteIfExists(Paths.get(path + received.getName() + ".temp.sig"));
-								
+									Files.deleteIfExists(Paths.get(path + received.getName() + ".temp.key.server"));
+									Files.deleteIfExists(Paths.get(path + received.getName() + ".temp.sig"));
+
 								} catch (ClassNotFoundException e) {
 									e.printStackTrace();
 								} catch (InvalidKeyException e) {
@@ -368,6 +368,9 @@ public class ServerSkell {
 
 						// Validar se o utilizador é dono ou tem acesso
 						// partilhado ao repositorio
+						System.out.println("------" + rr.getSharedUsers() == null);
+						System.out.println(" -----" + mp.getLocalUser().getName() == null);
+
 						if (!error && !(rr.getOwner().equals(mp.getLocalUser().getName())
 								|| rr.getSharedUsers().contains(mp.getLocalUser().getName()))) {
 							error = true;
@@ -541,7 +544,8 @@ public class ServerSkell {
 			// to check
 			// the messageDigest is good or not
 			if (u == null) {
-				//catUsers.registerUser(m.getLocalUser().getName(), m.getPassword());
+				// catUsers.registerUser(m.getLocalUser().getName(),
+				// m.getPassword());
 				catUsers.registerUser(m.getLocalUser().getName(), m.getPassword());
 				try {
 					out.writeObject((Object) "OK");
