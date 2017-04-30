@@ -14,8 +14,9 @@ public interface IMessageTypes {
 	/**
 	 * @param operation
 	 * @return
-	 * @throws GeneralSecurityException 
+	 * @throws GeneralSecurityException
 	 */
-	String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) throws GeneralSecurityException;
+	String sendMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params)
+			throws GeneralSecurityException;
 
 }

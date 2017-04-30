@@ -37,8 +37,7 @@ public class MyGitServer {
 	private RepositoryCatalog catRepo;
 	private UserCatalog catUsers;
 
-	public MyGitServer() throws InvalidKeyException, NoSuchAlgorithmException, 
-		InvalidAlgorithmParameterException {
+	public MyGitServer() throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
 		this.catRepo = new RepositoryCatalog();
 		this.catUsers = new UserCatalog();
 	}
@@ -47,9 +46,9 @@ public class MyGitServer {
 		return (args.length == 1) ? true : false;
 	}
 
-	public static void main(String[] args) throws InvalidKeyException,
-		NoSuchAlgorithmException, InvalidAlgorithmParameterException {
-		
+	public static void main(String[] args)
+			throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
+
 		if (!checkParams(args)) {
 			System.out.println("MyGitServer is NOT Running");
 			System.out.println("MyGitServer requires port number");
@@ -60,7 +59,7 @@ public class MyGitServer {
 		String pass = sc.nextLine();
 		// check && validate pass length > 6 and < 10 ex::: -----> TO DO
 		System.out.println("MyGitServer is Running with password");
-		//SecurityUtil.generateSecretKeyFromPass(pass);
+		// SecurityUtil.generateSecretKeyFromPass(pass);
 		try {
 			SecurityUtil2.createKey(pass);
 		} catch (InvalidKeyException | NoSuchAlgorithmException | InvalidKeySpecException e) {
@@ -84,7 +83,7 @@ public class MyGitServer {
 			System.setProperty("javax.net.ssl.keyStore", ".myGitServerKeyStore");
 			System.setProperty("javax.net.ssl.trustStore", ".myGitServerTrustStore");
 			System.setProperty("javax.net.ssl.keyStorePassword", "badpassword1");
-			//System.setProperty("javax.net.debug", "all");
+			// System.setProperty("javax.net.debug", "all");
 
 			String trustStore = System.getProperty("javax.net.ssl.trustStore");
 			if (trustStore == null) {
@@ -136,7 +135,7 @@ public class MyGitServer {
 
 			ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
 			sSoc = (SSLServerSocket) ssf.createServerSocket(Integer.parseInt(args[0]));
-			
+
 			// Client authentication
 			// sSoc.setNeedClientAuth(true);
 

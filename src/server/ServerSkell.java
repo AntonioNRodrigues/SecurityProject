@@ -337,8 +337,8 @@ public class ServerSkell {
 											Files.deleteIfExists(received.toPath());
 										}
 									}
-									Files.deleteIfExists(Paths.get(path + received.getName() + ".temp.key.server"));
-									Files.deleteIfExists(Paths.get(path + received.getName() + ".temp.sig"));
+									Files.deleteIfExists(Paths.get(path + "temp.key.server"));
+									Files.deleteIfExists(Paths.get(path + "temp.sig"));
 
 								} catch (ClassNotFoundException e) {
 									e.printStackTrace();

@@ -6,13 +6,10 @@ import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.security.MessageDigest;
 
 import message.Message;
 import message.MessageA;
 import user.User;
-import utilities.ReadWriteUtil;
-import utilities.SecurityUtil;
 
 public abstract class MessageHandler implements IMessageTypes {
 	/**

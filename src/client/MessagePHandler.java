@@ -1,7 +1,8 @@
 package client;
 
-import static utilities.ReadWriteUtil.CLIENT;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static utilities.ReadWriteUtil.CLIENT;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -367,9 +368,10 @@ public class MessagePHandler extends MessageHandler {
 				else
 					System.out.println("A assinatura foi corrompida");
 
-				received.setLastModified(receivedTimeStamp);
 				File inRepo = new File(
 						CLIENT + File.separator + repoName + File.separator + received.getName().split(" ")[0]);
+
+				received.setLastModified(receivedTimeStamp);
 
 				CopyOption[] options = new CopyOption[] { REPLACE_EXISTING };
 				Files.copy(file.toPath(), received.toPath(), options);

@@ -97,9 +97,8 @@ public class MessageP extends Message implements Serializable {
 
 	@Override
 	public String toString() {
-		return "MessageP [repoName=" + repoName + ", fileName=" + fileName + ", operation=" + operation 
-				+ ", typeSend=" + typeSend + ", numberFiles=" + numberFiles + ", timestamp=" + timestamp 
-				+ "]";
+		return "MessageP [repoName=" + repoName + ", fileName=" + fileName + ", operation=" + operation + ", typeSend="
+				+ typeSend + ", numberFiles=" + numberFiles + ", timestamp=" + timestamp + "]";
 	}
-	
+
 }

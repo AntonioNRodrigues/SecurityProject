@@ -9,7 +9,8 @@ public class User implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private String name;
 	private String password;
-	private byte [] b;
+	private byte[] b;
+
 	public User(String name) {
 		super();
 		this.name = name;

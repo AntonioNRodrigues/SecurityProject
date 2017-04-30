@@ -79,7 +79,7 @@ public class MyGitClient {
 			System.setProperty("javax.net.ssl.keyStore", ".myGitClientKeyStore");
 			System.setProperty("javax.net.ssl.trustStore", ".myGitClientTrustStore");
 			System.setProperty("javax.net.ssl.keyStorePassword", "badpassword2");
-			//System.setProperty("javax.net.debug", "all");
+			// System.setProperty("javax.net.debug", "all");
 
 			String trustStore = System.getProperty("javax.net.ssl.trustStore");
 			if (trustStore == null) {

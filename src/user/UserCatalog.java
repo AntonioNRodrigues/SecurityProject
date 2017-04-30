@@ -24,7 +24,7 @@ import utilities.SecurityUtil2;
 
 public class UserCatalog {
 	private Map<String, User> mapUsers;
-	
+
 	public UserCatalog() {
 		this.mapUsers = new ConcurrentHashMap<>();
 		try {
@@ -32,7 +32,7 @@ public class UserCatalog {
 				System.out.println("server process halted");
 				System.exit(0);
 			}
-			
+
 		} catch (InvalidKeyException | NoSuchAlgorithmException | InvalidAlgorithmParameterException | IOException e) {
 			e.printStackTrace();
 		}
@@ -56,7 +56,6 @@ public class UserCatalog {
 		mapUsers.put(u.getName(), u);
 	}
 
-
 	public Map<String, User> getMapUsers() {
 		return mapUsers;
 	}
@@ -65,13 +64,12 @@ public class UserCatalog {
 		this.mapUsers = mapUsers;
 	}
 
-		
 	/*
 	 * register user with user's file integrity check
 	 */
 	public boolean registerUser(String name, String password) {
 
-		Path file =     Paths.get(SERVER + File.separator + USERS);
+		Path file = Paths.get(SERVER + File.separator + USERS);
 		Path hmacFile = Paths.get(SERVER + File.separator + "." + USERS + ".hmac");
 
 		SecretKey sk = SecurityUtil.getKeyFromServer();
@@ -109,59 +107,59 @@ public class UserCatalog {
 		mapUsers.put(name, new User(name, password));
 		System.out.println("mapusers: " + mapUsers);
 		return true;
-	}	
-	
+	}
+
 	/**
-	 * Read the users encrypted file and populates the users map with user:password
-	 * @throws IOException 
-	 * @throws InvalidAlgorithmParameterException 
-	 * @throws NoSuchAlgorithmException 
-	 * @throws InvalidKeyException 
+	 * Read the users encrypted file and populates the users map with
+	 * user:password
+	 * 
+	 * @throws IOException
+	 * @throws InvalidAlgorithmParameterException
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeyException
 	 */
-	public boolean loadUsers() throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, IOException {
+	public boolean loadUsers()
+			throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, IOException {
 
 		System.out.println("load users from encrypted users file");
-		Path file =     Paths.get(SERVER + File.separator + USERS);
+		Path file = Paths.get(SERVER + File.separator + USERS);
 		Path hmacFile = Paths.get(SERVER + File.separator + "." + USERS + ".hmac");
-		
-		if (Files.exists(file)) {
-			
-				if (Files.exists(hmacFile)) {
-				
-					// decipher file and read content
-					SecretKey sk = SecurityUtil.getKeyFromServer();
 
-					if (SecurityUtil2.checkFileIntegrity(file, hmacFile, sk)) {				
-			
-						try {
-							
-							byte[] b = SecurityUtil2.decipherFile2Memory(file, sk);
-							String content = new String(b);
-							String[] array = content.split("\n");
-							for (String s : array) {
-								splitLine(s);
-							}
-						} catch (IOException | InvalidKeyException e) {
-							e.printStackTrace();
-						} catch (InvalidAlgorithmParameterException e) {
-							e.printStackTrace();
+		if (Files.exists(file)) {
+
+			if (Files.exists(hmacFile)) {
+
+				// decipher file and read content
+				SecretKey sk = SecurityUtil.getKeyFromServer();
+
+				if (SecurityUtil2.checkFileIntegrity(file, hmacFile, sk)) {
+
+					try {
+
+						byte[] b = SecurityUtil2.decipherFile2Memory(file, sk);
+						String content = new String(b);
+						String[] array = content.split("\n");
+						for (String s : array) {
+							splitLine(s);
 						}
-					}
-					else {
-						System.out.println("incorrect hmac users file");
-						return false;
+					} catch (IOException | InvalidKeyException e) {
+						e.printStackTrace();
+					} catch (InvalidAlgorithmParameterException e) {
+						e.printStackTrace();
 					}
 				} else {
-					System.out.println("hmac users file doesnt exist");
+					System.out.println("incorrect hmac users file");
 					return false;
-				}		
+				}
+			} else {
+				System.out.println("hmac users file doesnt exist");
+				return false;
 			}
-		else
+		} else
 			System.out.println("users file doesnt exist");
-		
+
 		return true;
 	}
-	
 
 	/**
 	 * Method to persist the user in a temp.txt file

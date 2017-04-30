@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import user.User;
 
-public class Message implements Serializable{
+public class Message implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private User localUser;
 	private String serverAdress;
@@ -45,5 +45,5 @@ public class Message implements Serializable{
 	public String toString() {
 		return "Message [localUser=" + localUser + ", serverAdress=" + serverAdress + ", password=" + password + "]";
 	}
-	
+
 }

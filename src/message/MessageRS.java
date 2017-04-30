@@ -48,5 +48,5 @@ public class MessageRS extends Message implements Serializable {
 	public String toString() {
 		return "MessageRS [typeOperation=" + operation + ", repoName=" + repoName + ", userId=" + userId + "]";
 	}
-	
+
 }
