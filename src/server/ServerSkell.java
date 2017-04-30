@@ -9,6 +9,7 @@ package server;
 
 import static utilities.ReadWriteUtil.SERVER;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -19,22 +20,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 
 import enums.TypeOperation;
 import enums.TypeSend;
@@ -188,42 +185,10 @@ public class ServerSkell {
 				}
 
 			} else if (msg instanceof MessageP) {
-				//PublicKey publicKeyOfUser = null;
-				/*
-				 * boolean variable to use if the user != owner set to true else
-				 * set it to false
-				 */
-				// boolean difUser = false;
+
 				MessageP mp = ((MessageP) msg);
 				TypeSend typeSend = mp.getTypeSend();
 				TypeOperation operation = mp.getOperation();
-				// RemoteRepository remoRepo =
-				// catRepo.getRemRepository(mp.getRepoName());
-				// if the user is not the owner of the repo and has permissions
-				// to do stuff to the repo
-
-				// if
-				// (!(remoRepo.getOwner().equals(mp.getLocalUser().getName()))
-				// &&
-				// remoRepo.getSharedPublicKey().containsKey(mp.getLocalUser().getName()))
-				// {
-				// this is the public key of the user which has access to the
-				// repo
-				// if its push repo or file --> the user chipher the content of
-				// repo or file with his privateKey
-				// sends to the server and the server uses the publickey to
-				// decipher the content
-
-				// in the case od pull repo or file the server ciphers the
-				// content with the public key of the user
-				// and sends it to the user. has to decipher the content with
-				// its private key
-				// publicKeyOfUser = receiveMsgDifferentOwner(mp);
-				// if(publicKeyOfUser == null){
-				// out.writeObject("You do not have access to this operation");
-				// }
-
-				// }
 
 				switch (typeSend) {
 				case REPOSITORY:
@@ -246,28 +211,33 @@ public class ServerSkell {
 							error = true;
 							out.writeObject((Object) "NOK");
 							out.writeObject((Object) "Erro: o utilizador nao tem acesso ao repositorio");
-						//the user has the access to the repo but does not have set is publicKey
-						} /*else if (rr.getSharedPublicKey().containsKey(mp.getLocalUser().getName())
-								&& (rr.getSharedPublicKey().get(mp.getLocalUser().getName()) == null)) {
-							//ask the user to send the key
-							publicKeyOfUser = receiveMsgDifferentOwner(mp);
-							
-						}*/
-
+						}
 						if (!error) {
 
 							CopyOnWriteArrayList<Path> uniqueList = rr.getUniqueList();
-
+							System.out.println("UNIQUE LIST " + uniqueList);
 							if (uniqueList.size() > 0) {
 								try {
 									out.writeObject((Object) "OK");
 									// Enviar o numero de ficheiros
-									out.writeObject((Integer) uniqueList.size());
+									System.out.println("size list" + uniqueList.size());
+									out.writeObject((Object) uniqueList.size());
 
 									for (Path f : uniqueList) {
+										System.out.println("TIMESTAMP " + f.toFile().lastModified());
+										// Enviar timeststamp
 										out.writeObject((Object) f.toFile().lastModified());
+										// pull interaction
+										pullInteraction(mp, f.toString().split(" ")[0], "");
+										System.out.println("FILE NAME " + SERVER + File.separator + mp.getRepoName()
+												+ File.separator + f.toFile().getName());
+										// send file
 										ReadWriteUtil.sendFile(SERVER + File.separator + mp.getRepoName()
 												+ File.separator + f.toFile().getName(), in, out);
+										System.out.println("SIG " + Paths.get(f + ".sig"));
+										// send the signatureof the file
+										sendSignature(Paths.get(f.toString()));
+
 									}
 								} catch (IOException e) {
 									e.printStackTrace();
@@ -277,7 +247,7 @@ public class ServerSkell {
 							} else {
 								out.writeObject((Object) "NOK");
 								out.writeObject(
-										(Object) "O repositório local está sincronizado, não existe nenhuma versão mais recente dos ficheiros.");
+										(Object) "O repositorio local esta sincronizado, nao existe nenhuma versao mais recente dos ficheiros.");
 							}
 						}
 						break;
@@ -292,7 +262,7 @@ public class ServerSkell {
 							// Repositorio existe
 							rr = catRepo.getRemRepository(mp.getRepoName());
 
-						// Validar se o utilizador é dono ou tem acesso
+						// Validar se o utilizador e dono ou tem acesso
 						// partilhado ao repositorio
 						if (rr.getOwner().equals(mp.getLocalUser().getName())
 								|| rr.getSharedUsers().contains(mp.getLocalUser().getName())) {
@@ -305,56 +275,37 @@ public class ServerSkell {
 								try {
 
 									String path = SERVER + File.separator + mp.getRepoName() + File.separator;
-
+									System.out.println(path);
 									// Recebe assinatura do ficheiro
 									byte[] signature = (byte[]) in.readObject();
 									// Guarda-a com a extensao .sig
-									System.out.println("--" + signature);
-									System.out.println("--" + mp.getFileName()); // this
-																					// one
-																					// is
-																					// null
-									System.out.println("--" + path);
-									FileOutputStream fos = new FileOutputStream(path + mp.getFileName() + ".sig");
+									FileOutputStream fos = new FileOutputStream(path + "temp" + ".sig");
 									fos.write(signature);
-
 									fos.close();
 
 									// Recebe chave key para depois cifra-la
 									// usando a sua chave publica
 									SecretKey key = (SecretKey) in.readObject();
-
-									// TODO: CORRIGIR ESTA PARTE: Cifra a chave
-									// com a chave p�blica, usando uma keytool
-									// (ATEN�AO... AS KEYTOOLS foram criadas
-									// antes?!)
-									// cifrar chave AES com chave publica
-									/*
-									 * 1- buscar chave publica -> keystore 2 -
-									 * cifrar chave publica
-									 */
-									Path p = Paths.get(".myGitServerKeyStore");
-
-									KeyPair kp = SecurityUtil.getKeyPairFromKS(p, "mygitserver", "badpassword1");
-
-									// method to get the certificate from
-									// keystore
-
-									Certificate cert = SecurityUtil.getCertFromKeyStore(p, "mygitserver",
-											"badpassword1");
+						
+									KeyPair kPair = SecurityUtil.getKeyPairFromKS(Paths.get(".myGitServerKeyStore"),
+											"mygitserver", "badpassword1");
 
 									Cipher cif = Cipher.getInstance("RSA");
-									cif.init(Cipher.WRAP_MODE, cert);
+									cif.init(Cipher.WRAP_MODE, kPair.getPublic());
 									byte[] chaveCifrada = cif.wrap(key);
 
-									byte[] keyEncoded = key.getEncoded();
-									FileOutputStream kos = new FileOutputStream(
-											path + mp.getFileName() + ".key.server");
+									FileOutputStream kos = new FileOutputStream(path + "temp" + ".key.server");
 									kos.write(chaveCifrada);
 									kos.close();
 
 									Long timestampReceivedFile = (Long) in.readObject();
 									File received = ReadWriteUtil.receiveFile(SERVER + File.separator, in, out);
+
+									Files.copy(Paths.get(path + "temp.sig"),
+											new FileOutputStream(new File(path + received.getName() + ".sig")));
+									
+									Files.copy(Paths.get(path + "temp.key.server"), new FileOutputStream(
+											new File(path + received.getName() + ".key.server")));
 
 									received.setLastModified(timestampReceivedFile);
 									// most recent file in repository
@@ -378,14 +329,14 @@ public class ServerSkell {
 											Files.deleteIfExists(received.toPath());
 										}
 									}
-
+								Files.deleteIfExists(Paths.get(path + received.getName() + ".temp.key.server"));
+								Files.deleteIfExists(Paths.get(path + received.getName() + ".temp.sig"));
+								
 								} catch (ClassNotFoundException e) {
 									e.printStackTrace();
 								} catch (InvalidKeyException e) {
-									// TODO Auto-generated catch block
 									e.printStackTrace();
 								} catch (IllegalBlockSizeException e) {
-									// TODO Auto-generated catch block
 									e.printStackTrace();
 								}
 							}
@@ -429,62 +380,30 @@ public class ServerSkell {
 							out.writeObject((Object) "Erro: O ficheiro indicado não existe");
 						} else {
 
-							String path = SERVER + File.separator + mp.getRepoName() + File.separator;
-							// Saca da chave do ficheiro que est� guardada com a
-
-							// extens�o .key.server
-							FileInputStream keyFile = new FileInputStream(mp.getFileName() + ".key.server");
-							byte[] key = new byte[16];
-							keyFile.read(key);
-
-							// Vai � Keystore para buscar a sua chave privada
-							// e
-							// decripta a chave.
-							Path p = Paths.get(".myGitServerKeyStore");
-							KeyPair kp = SecurityUtil.getKeyPairFromKS(p, "mygitserver", "badpassword1");
-							PrivateKey chaveParaDecifrar = kp.getPrivate();
-
-							Cipher decrypt = Cipher.getInstance("AES");
-
-							byte[] chaveDecifrada = new byte[16];
-							try {
-								decrypt.init(Cipher.DECRYPT_MODE, chaveParaDecifrar);
-
-								chaveDecifrada = decrypt.doFinal(key);
-							} catch (InvalidKeyException e1) {
-								System.out.println("ERRO: N�O FOI POSS�VEL INICIALIZAR O DECRIPTADOR");
-							} catch (IllegalBlockSizeException e) {
-								System.out.println("ERRO: O TAMANHO DO ARRAY N�O � O MAIS CORRECTO");
-							} catch (BadPaddingException e) {
-								e.printStackTrace();
-							}
-
-							//Convert byte[] to Secret Key
-							SecretKey keyFinal = new SecretKeySpec(chaveDecifrada, 0, chaveDecifrada.length, "AES");
-							
-							// Envia a chave K para o cliente
-							out.writeObject(keyFinal);
-
-							//Vai buscar a assinatura e envia para o cliente
-							ObjectInputStream ois = new ObjectInputStream (new FileInputStream(path + mp.getFileName() + ".sig"));
-							String data = (String) ois.readObject();
-							out.writeObject(data);
-							ois.close();
-							
-							// In�cio do envio do ficheiro cifrado
+							// Inicio do envio do ficheiro cifrado
 							File inRepoCifrado = rr.getFile(mp.getFileName());
 
 							// client does not have the recent file so send it
 							if (mp.getTimestamp() <= inRepoCifrado.lastModified()) {
 								try {
-
+									String path = SERVER + File.separator + mp.getRepoName() + File.separator;
 									out.writeObject((Object) "OK");
 									// Enviar o numero de ficheiros
-									out.writeObject((Object) 1);
+									out.writeObject((Object) new Integer(1));
+
 									// Enviar timeststamp
 									out.writeObject((Object) inRepoCifrado.lastModified());
+
+									// pull interaction
+									pullInteraction(mp, path, mp.getFileName());
+
+									// send file
 									ReadWriteUtil.sendFile(SERVER + File.separator + mp.getRepoName() + File.separator
 											+ inRepoCifrado.getName(), in, out);
+
+									// Vai buscar a assinatura e envia para o
+									// cliente
+									sendSignature(Paths.get(path + mp.getFileName()));
 
 								} catch (IOException e) {
 									e.printStackTrace();
@@ -493,7 +412,7 @@ public class ServerSkell {
 								}
 							} else {
 								out.writeObject((Object) "NOK");
-								out.writeObject((Object) "Não existe nenhuma versão mais recente do ficheiro.");
+								out.writeObject((Object) "Nao existe nenhuma versao mais recente do ficheiro.");
 							}
 						}
 
@@ -529,46 +448,24 @@ public class ServerSkell {
 									// Recebe assinatura do ficheiro
 									byte[] signature = (byte[]) in.readObject();
 									// Guarda-a com a extens�o .sig
-									System.out.println("--" + signature);
-									System.out.println("--" + mp.getFileName()); // this
-																					// one
-																					// is
-																					// null
-									System.out.println("--" + path);
 
-									FileOutputStream ass = new FileOutputStream(path + mp.getFileName() + ".sig");
-									ass.write(signature);
-									ass.close();
+									FileOutputStream fos = new FileOutputStream(path + mp.getFileName() + ".sig");
+									fos.write(signature);
+									fos.close();
 
-									// Recebe chave key para depois cifr�-la
-									// usando a sua chave p�blica
-									SecretKey key = (SecretKey) in.readObject();
-
-									// TODO: CORRIGIR ESTA PARTE: Cifra a chave
-									// com a chave p�blica, usando uma keytool
-									// (ATEN�AO... AS KEYTOOLS foram criadas
-									// antes?!)
-									// cifrar chave AES com chave publica
-									/*
-									 * 1- buscar chave publica -> keystore 2 -
-									 * cifrar chave publica
-									 */
-
-									Path p = Paths.get(".myGitServerKeyStore");
-
-									KeyPair kp = SecurityUtil.getKeyPairFromKS(p, "mygitserver", "badpassword1");
+									// Recebe chave key para depois cifra-la
+									// usando a sua chave publica
+									SecretKey secretKey = (SecretKey) in.readObject();
 
 									// method to get the certificate from
 									// keystore
 
-									Certificate cert = SecurityUtil.getCertFromKeyStore(p, "mygitserver",
-											"badpassword1");
-
+									KeyPair kPair = SecurityUtil.getKeyPairFromKS(Paths.get(".myGitServerKeyStore"),
+											"mygitserver", "badpassword1");
 									Cipher cif = Cipher.getInstance("RSA");
-									cif.init(Cipher.WRAP_MODE, cert);
-									byte[] chaveCifrada = cif.wrap(key);
+									cif.init(Cipher.WRAP_MODE, kPair.getPublic());
+									byte[] chaveCifrada = cif.wrap(secretKey);
 
-									byte[] keyEncoded = key.getEncoded();
 									FileOutputStream kos = new FileOutputStream(
 											path + mp.getFileName() + ".key.server");
 									kos.write(chaveCifrada);
@@ -603,16 +500,13 @@ public class ServerSkell {
 										} else {
 											Files.deleteIfExists(received.toPath());
 										}
-										System.out.println("fileInrepo != null");
 									}
 
 								} catch (ClassNotFoundException e) {
 									e.printStackTrace();
 								} catch (InvalidKeyException e) {
-									// TODO Auto-generated catch block
 									e.printStackTrace();
 								} catch (IllegalBlockSizeException e) {
-									// TODO Auto-generated catch block
 									e.printStackTrace();
 								}
 
@@ -737,31 +631,60 @@ public class ServerSkell {
 		this.nonce = nonce;
 	}
 
-	public PublicKey receiveMsgDifferentOwner(MessageP mp) {
-		PublicKey pk = null;
-		RemoteRepository rr = catRepo.getRemRepository(mp.getLocalUser().getName());
-		// if the user does not have the public key in the sharedPublicLey Map
-		if (rr.getSharedPublicKey().get(mp.getLocalUser().getName()) == null) {
-			// ask for key
-			try {
-				out.writeObject((Object) "Please give me your public key");
-				byte[] publicKey = (byte[]) in.readObject();
-				// buildKey from the byte[] --> pk =
-				// rebuildPublicKey(publicKey);
-				// if (pk == null){
-				// out.writeObject((Object) "You did not provide a valid public
-				// key");
-				// }
-				// add publicKey to the sharedPublicKey Map
-				// return pk;
+	private void pullInteraction(MessageP mp, String path, String nameFile) {
+		System.out.println("PULLINTEREACTION PATH " + path);
+		System.out.println("PULLINTEREACTION NAME FILE " + nameFile);
+		try {
 
-			} catch (IOException | ClassNotFoundException e) {
-				e.printStackTrace();
+			// saca chave .key.server
+			System.out.println("KEY.SERVER" + path + nameFile + ".key.server");
+			FileInputStream fis = new FileInputStream(path + nameFile + ".key.server");
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			byte[] b = new byte[16];
+			int len = 0;
+			while ((len = fis.read(b)) != -1) {
+				baos.write(b, 0, len);
 			}
-		} else {
-			pk = rr.getSharedPublicKey().get(mp.getLocalUser().getName());
+			fis.close();
+
+			Path p = Paths.get(".myGitServerKeyStore");
+			KeyPair kp = SecurityUtil.getKeyPairFromKS(p, "mygitserver", "badpassword1");
+
+			Key k = null;
+			Cipher decrypt = Cipher.getInstance("RSA");
+
+			try {
+				decrypt.init(Cipher.UNWRAP_MODE, kp.getPrivate());
+				k = decrypt.unwrap(baos.toByteArray(), "AES", Cipher.SECRET_KEY);
+
+			} catch (InvalidKeyException e1) {
+				e1.printStackTrace();
+				System.out.println("ERRO: NAO FOI POSSIVEL INICIALIZAR O DECRIPTADOR");
+			}
+			baos.close();
+
+			// Convert byte[] to Secret Key
+			SecretKey keyFinal = (SecretKey) k;
+			// Envia a chave K para o cliente
+			out.writeObject(keyFinal);
+		} catch (IOException | NoSuchAlgorithmException | NoSuchPaddingException e) {
+			e.printStackTrace();
 		}
-		return pk;
+
+	}
+
+	private void sendSignature(Path f) {
+		System.out.println("SIGNATURE SENd " + f);
+		String realPath = f.toString().split(" ")[0] + ".sig";
+		System.out.println("SIGNATURE SENd " + realPath);
+		File realFile = new File(realPath);
+		try (FileInputStream fiStream = new FileInputStream(realFile)) {
+			byte[] data = new byte[(int) realFile.length()];
+			fiStream.read(data);
+			out.writeObject((Object) data);
+		} catch (Exception e) {
+		}
+
 	}
 
 }

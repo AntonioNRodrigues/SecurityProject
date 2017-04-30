@@ -1,4 +1,4 @@
- 
+
 package utilities;
 
 import static utilities.ReadWriteUtil.SERVER;
@@ -16,6 +16,7 @@ import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyPair;
@@ -50,7 +51,7 @@ public class SecurityUtil {
 	public static final String AES = "AES";
 	public static final String RSA = "RSA";
 	public static final String SHA_256 = "SHA-256";
-	public static final String SHA_256_RSA = SHA_256 + "_" +RSA;
+	public static final String SHA_256_RSA = SHA_256 + "_" + RSA;
 	public static final int bits_RSA = 2048;
 	public static final int bits_AES = 128;
 	public static final String SERVER_KEY = "Server.key";
@@ -216,6 +217,7 @@ public class SecurityUtil {
 		}
 		cos.close();
 		fis.close();
+
 		//Files.deleteIfExists(file);
 	}
 
@@ -235,6 +237,23 @@ public class SecurityUtil {
 	public static void decipherFile(Path fileToDecript, SecretKey sk, Path temp) throws NoSuchAlgorithmException,
 			NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
 		Cipher c = getCipher();
+		c.init(Cipher.DECRYPT_MODE, sk);
+		// get ciphered file
+		CipherInputStream cis = new CipherInputStream(new FileInputStream(fileToDecript.toFile()), c);
+		FileOutputStream fos = new FileOutputStream(temp.toFile());
+		byte[] b = new byte[16];
+		int i = cis.read(b);
+		while (i != -1) {
+			fos.write(b, 0, i);
+			i = cis.read(b);
+		}
+		cis.close();
+		fos.close();
+	}
+
+	public static void decipherFile2(Path fileToDecript, SecretKey sk, Path temp) throws NoSuchAlgorithmException,
+			NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
+		Cipher c = Cipher.getInstance("AES");
 		c.init(Cipher.DECRYPT_MODE, sk);
 		// get ciphered file
 		CipherInputStream cis = new CipherInputStream(new FileInputStream(fileToDecript.toFile()), c);
@@ -329,6 +348,18 @@ public class SecurityUtil {
 
 	}
 
+	public static byte[] loadSecretKey(Path p) {
+		File f = p.toFile();
+		byte[] secretKeyBytes = new byte[16];
+		try (ObjectInputStream out = new ObjectInputStream(new FileInputStream(p.toFile()))) {
+			out.read(secretKeyBytes);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return secretKeyBytes;
+
+	}
+
 	/**
 	 * method to generate a NONCE
 	 * 
@@ -337,8 +368,10 @@ public class SecurityUtil {
 	public static String generateNonce() {
 		byte[] binaryData = UUID.randomUUID().toString().getBytes();
 		return  Base64.getEncoder().encodeToString(binaryData);
+		
 		// used java.util class instead of the apache xerces class
 		//return Base64.encode(binaryData);
+
 	}
 
 	/**
@@ -386,7 +419,7 @@ public class SecurityUtil {
 	public static Signature getSignature(PrivateKey pk) {
 		Signature s = null;
 		try {
-			s = Signature.getInstance("MD5WithRSA");
+			s = Signature.getInstance("SHA256withRSA");
 			s.initSign(pk);
 		} catch (NoSuchAlgorithmException | InvalidKeyException e) {
 			e.printStackTrace();
@@ -419,7 +452,6 @@ public class SecurityUtil {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		System.out.println(s);
 		return s.sign();
 	}
 
@@ -433,7 +465,7 @@ public class SecurityUtil {
 	 * @return the signature of that specific file
 	 * @throws SignatureException
 	 */
-	public static void persistSignToFile(byte[] data, String nameFile, String nameRepo) throws SignatureException {
+	public static void persistSignatureToFile(byte[] data, String nameFile, String nameRepo) throws SignatureException {
 		File signature = new File(SERVER + File.separator + nameRepo + File.separator + nameFile + EXT_SIG);
 		try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(signature))) {
 			bos.write(data);
@@ -444,9 +476,13 @@ public class SecurityUtil {
 
 	/**
 	 * method to get the keystore
-	 * @param keyStore path to the keystore
-	 * @param alias from the keystore
-	 * @param pass from the keystore
+	 * 
+	 * @param keyStore
+	 *            path to the keystore
+	 * @param alias
+	 *            from the keystore
+	 * @param pass
+	 *            from the keystore
 	 * @return the keystore
 	 */
 	public static KeyStore getKeyStore(Path keyStore, String alias, String pss) {
@@ -465,9 +501,13 @@ public class SecurityUtil {
 
 	/**
 	 * method to get the KeyPair from a specific keystore
-	 * @param keyStore path to the keystore
-	 * @param alias from the keystore
-	 * @param pass from the keystore
+	 * 
+	 * @param keyStore
+	 *            path to the keystore
+	 * @param alias
+	 *            from the keystore
+	 * @param pass
+	 *            from the keystore
 	 * @return the KeyPair
 	 */
 	public static KeyPair getKeyPairFromKS(Path keyStore, String alias, String pss) {
@@ -475,7 +515,7 @@ public class SecurityUtil {
 		Key k = null;
 		KeyPair kpair = null;
 		try {
-			
+
 			k = ks.getKey(alias, pss.toCharArray());
 			if (k instanceof PrivateKey) {
 				Certificate cert = ks.getCertificate(alias);
@@ -488,11 +528,16 @@ public class SecurityUtil {
 		}
 		return kpair;
 	}
+
 	/**
 	 * method to get the certificate from a specific keystore
-	 * @param keyStore path to the keystore
-	 * @param alias from the keystore
-	 * @param pass from the keystore
+	 * 
+	 * @param keyStore
+	 *            path to the keystore
+	 * @param alias
+	 *            from the keystore
+	 * @param pass
+	 *            from the keystore
 	 * @return the certifcate inside the keystore
 	 */
 	public static Certificate getCertFromKeyStore(Path keyStore, String alias, String pss) {
@@ -506,14 +551,16 @@ public class SecurityUtil {
 
 		return cert;
 	}
-	
-	
-	
+
 	/**
 	 * method to get the keystore
-	 * @param keyStore path to the keystore
-	 * @param alias from the keystore
-	 * @param pass from the keystore
+	 * 
+	 * @param keyStore
+	 *            path to the keystore
+	 * @param alias
+	 *            from the keystore
+	 * @param pass
+	 *            from the keystore
 	 * @return the keystore
 	 */
 	public static KeyStore getTrustStore(Path trustStore, String alias, String pss) {

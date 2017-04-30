@@ -11,6 +11,7 @@ grant codeBase "file:bin/*"{
     permission java.io.FilePermission "${java.io.tmpdir}", "read,write,delete";
     permission java.io.FilePermission "SERVER", "read,write";
     permission java.io.FilePermission "SERVER/-", "read, write, delete";
+    permission java.io.FilePermission ".myGitServerKeyStore", "read";
     permission java.util.PropertyPermission "javax.net.ssl.trustStore", "read, write";
 	permission java.util.PropertyPermission "javax.net.ssl.trustStorePassword", "read, write";
 	permission java.util.PropertyPermission "javax.net.ssl.keyStore", "read, write";
