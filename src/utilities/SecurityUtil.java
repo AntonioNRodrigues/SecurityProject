@@ -50,7 +50,6 @@ public class SecurityUtil {
 	public static final String AES = "AES";
 	public static final String RSA = "RSA";
 	public static final String SHA_256 = "SHA-256";
-	public static final String SHA_256_RSA = SHA_256 + "_" + RSA;
 	public static final int bits_RSA = 2048;
 	public static final int bits_AES = 128;
 	public static final String SERVER_KEY = "Server.key";
@@ -136,7 +135,7 @@ public class SecurityUtil {
 	public static Cipher getCipher() {
 		Cipher c = null;
 		try {
-			c = Cipher.getInstance("AES/CBC/PKCS5Padding");
+			c = Cipher.getInstance(AES);
 		} catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
 			e.printStackTrace();
 		}

@@ -15,7 +15,6 @@ import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -101,7 +100,7 @@ public class RemoteRepository {
 
 		File f = new File(SERVER + File.separator + this.nameRepo);
 		if (!f.exists()) {
-
+			
 			f.mkdirs();
 			setTimestamp(f.lastModified());
 
@@ -118,7 +117,7 @@ public class RemoteRepository {
 					System.out.println("SecurityUtil2.cipherFile(users, sk, b);");
 					SecurityUtil2.writeHMACFile(file, hmacFile, sk);
 					System.out.println("SecurityUtil2.writeHMACFile(users, sk);");
-				}
+				} 
 			} catch (Exception e) {
 				System.err.println("Aconteceu um problema durante a criacao do ficheiro de dono do repositorio");
 				e.printStackTrace();
@@ -203,6 +202,7 @@ public class RemoteRepository {
 		System.out.println("Current List of Shared Users for the " + this.nameRepo + ": " + sharedUsers);
 	}
 
+	
 	/*
 	 * method to check is the user is already in the list of shared users
 	 */
@@ -217,9 +217,9 @@ public class RemoteRepository {
 	 * @param remoteRepository
 	 */
 	private void persisteSharedUser(String userName, RemoteRepository remoteRepository) {
-
+		
 		System.out.println("persisteSharedUser");
-		Path file = Paths.get(SERVER + File.separator + this.nameRepo + File.separator + SHARED);
+		Path file =     Paths.get(SERVER + File.separator + this.nameRepo + File.separator + SHARED);
 		Path hmacFile = Paths.get(SERVER + File.separator + this.nameRepo + File.separator + "." + SHARED + ".hmac");
 
 		SecretKey sk = SecurityUtil.getKeyFromServer();
@@ -259,9 +259,10 @@ public class RemoteRepository {
 		System.out.println("Current List of Shared Users for the " + this.nameRepo + ": " + sharedUsers);
 	}
 
+	
 	private void removeUserFromSharedRepo(String userId) {
 
-		Path file = Paths.get(SERVER + File.separator + this.nameRepo + File.separator + SHARED);
+		Path file =     Paths.get(SERVER + File.separator + this.nameRepo + File.separator + SHARED);
 		Path hmacFile = Paths.get(SERVER + File.separator + this.nameRepo + File.separator + "." + SHARED + ".hmac");
 
 		SecretKey sk = SecurityUtil.getKeyFromServer();
@@ -273,13 +274,12 @@ public class RemoteRepository {
 				if (Files.exists(hmacFile)) {
 
 					if (SecurityUtil2.checkFileIntegrity(file, hmacFile, sk)) {
-
+						
 						updateFile(file, sk, b);
-
+						
 						SecurityUtil2.writeHMACFile(file, hmacFile, sk);
-
-						System.out
-								.println("O utilizador " + userId + " foi removido do ficheiro " + file.getFileName());
+						
+						System.out.println("O utilizador " + userId + " foi removido do ficheiro " + file.getFileName());
 
 					} else {
 						System.out.println("incorrect repo shared with info hmac file");
@@ -298,33 +298,34 @@ public class RemoteRepository {
 			e.printStackTrace();
 		}
 	}
-
+	
+	
 	public void updateFile(Path file, SecretKey secretKey, byte[] text)
-			throws IOException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
-			NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+			throws IOException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+		
+		ByteArrayOutputStream baos = new ByteArrayOutputStream( );
 
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-		for (int i = 0; i < this.sharedUsers.size(); i++) {
+		for (int i= 0; i<this.sharedUsers.size(); i++) {
 			baos.write(this.sharedUsers.get(i).getBytes());
-			if (i < this.sharedUsers.size() - 1)
+			if (i<this.sharedUsers.size()-1) 
 				baos.write("\n".getBytes());
 		}
-		byte fileContent[] = baos.toByteArray();
-
-		Path tempFile = Files.createTempFile("foobar", ".tmp");
-		// encode again to temp file
+		byte fileContent[] = baos.toByteArray( );
+		
+		Path tempFile = Files.createTempFile("foobar", ".tmp");		
+		//encode again to temp file
 		SecurityUtil2.cipherFile(tempFile, secretKey, fileContent);
 
-		// move temp file to file
+		//move temp file to file
 		CopyOption[] options = new CopyOption[] { REPLACE_EXISTING };
 		Files.copy(tempFile, file, options);
 		Files.delete(tempFile);
 	}
+	
 
 	@Override
 	public String toString() {
 		return "RemoteRepository [owner=" + owner + ", timestamp=" + timestamp + ", nameRepo=" + nameRepo
-				+ ", mapVersions=" + mapVersions + ", sharedUsers=" + sharedUsers + "]";
+				+ ", mapVersions=" + mapVersions + ", sharedUsers=" + sharedUsers +"]";
 	}
 }
