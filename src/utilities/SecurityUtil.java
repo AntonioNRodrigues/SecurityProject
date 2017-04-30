@@ -253,7 +253,7 @@ public class SecurityUtil {
 
 	public static void decipherFile2(Path fileToDecript, SecretKey sk, Path temp) throws NoSuchAlgorithmException,
 			NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
-		Cipher c = Cipher.getInstance("AES");
+		Cipher c = getCipher();
 		c.init(Cipher.DECRYPT_MODE, sk);
 		// get ciphered file
 		CipherInputStream cis = new CipherInputStream(new FileInputStream(fileToDecript.toFile()), c);
