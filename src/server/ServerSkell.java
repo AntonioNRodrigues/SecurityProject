@@ -236,6 +236,10 @@ public class ServerSkell {
 										ReadWriteUtil.sendFile(SERVER + File.separator + mp.getRepoName()
 												+ File.separator + f.toFile().getName(), in, out);
 										System.out.println("SIG " + Paths.get(f + ".sig"));
+
+										String lastUser = rr.getLastUser(f.getFileName().toString().split(" ")[0]);
+										System.out.println("LAST USER" + lastUser);
+										out.writeObject((Object) lastUser);
 										// send the signatureof the file
 										sendSignature(Paths.get(f.toString()));
 
@@ -280,6 +284,7 @@ public class ServerSkell {
 									// Recebe assinatura do ficheiro
 									byte[] signature = (byte[]) in.readObject();
 									// Guarda-a com a extensao .sig
+
 									FileOutputStream fos = new FileOutputStream(path + "temp" + ".sig");
 									fos.write(signature);
 									fos.close();
@@ -308,6 +313,8 @@ public class ServerSkell {
 									Files.copy(Paths.get(path + "temp.key.server"),
 											new FileOutputStream(new File(path + received.getName() + ".key.server")));
 
+									rr.addLastUser(received.getName(), mp.getLocalUser().getName());
+									System.out.println(rr.getLastUser());
 									received.setLastModified(timestampReceivedFile);
 									// most recent file in repository
 									File fileInRepo = rr.getFile(received.getName());
@@ -405,6 +412,10 @@ public class ServerSkell {
 									ReadWriteUtil.sendFile(SERVER + File.separator + mp.getRepoName() + File.separator
 											+ inRepoCifrado.getName(), in, out);
 
+									String lastUser = rr.getLastUser(mp.getFileName());
+									System.out.println("LAST USER" + lastUser);
+									out.writeObject((Object) lastUser);
+
 									// Vai buscar a assinatura e envia para o
 									// cliente
 									sendSignature(Paths.get(path + mp.getFileName()));
@@ -478,6 +489,9 @@ public class ServerSkell {
 									// Recebe ficheiro
 									File received = ReadWriteUtil.receiveFile(tempPath, in, out);
 									received.setLastModified(mp.getTimestamp());
+
+									rr.addLastUser(received.getName(), mp.getLocalUser().getName());
+
 									File fileInRepo = rr.getFile(mp.getFileName());
 									// file does not exist add it to list
 									if (fileInRepo == null) {

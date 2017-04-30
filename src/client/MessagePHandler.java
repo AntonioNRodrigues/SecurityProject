@@ -340,6 +340,8 @@ public class MessagePHandler extends MessageHandler {
 				SecurityUtil.decipherFile2(received.toPath(), secretKey,
 						Paths.get(path + File.separator + "temp" + received.getName()));
 
+				String lastUser = (String) in.readObject();
+				System.out.println("LAST USER" + lastUser);
 				// Recebe a assinatura
 				byte[] signature = (byte[]) in.readObject();
 

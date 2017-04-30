@@ -17,6 +17,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.crypto.SecretKey;
 
+import com.sun.corba.se.impl.orbutil.RepositoryIdFactory;
+
 import user.User;
 import utilities.SecurityUtil;
 import utilities.SecurityUtil2;
@@ -122,18 +124,18 @@ public class RepositoryCatalog {
 	 * @throws NoSuchAlgorithmException
 	 * @throws InvalidKeyException
 	 */
-	private String getOwner(File f)
+	private String getOwner(File repo)
 			throws IOException, InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
 
 		String str = null;
-		File repFolder = new File(f.getCanonicalPath() + File.separator);
+		File repFolder = new File(repo.getCanonicalPath() + File.separator);
 
 		if (repFolder.isDirectory()) {
 			// list all its files
 			// for (String fileInFolder : repFolder.list()) {
 			// get owner.txt and read it
 			// if (fileInFolder.equals(OWNER)) {
-			str = readOwnerFile(repFolder.getCanonicalPath(), OWNER);
+			str = readOwnerFile(repFolder.getName(), OWNER);
 			// }
 			// }
 		}
