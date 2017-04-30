@@ -132,12 +132,12 @@ public class RepositoryCatalog {
 
 		if (repFolder.isDirectory()) {
 			// list all its files
-			for (String fileInFolder : repFolder.list()) {
+			//for (String fileInFolder : repFolder.list()) {
 				// get owner.txt and read it
-				if (fileInFolder.equals(OWNER)) {
+				//if (fileInFolder.equals(OWNER)) {
 					str = readOwnerFile(repFolder.getCanonicalPath(), OWNER);
-				}
-			}
+				//}
+			//}
 		}
 		return str;
 	}
@@ -177,21 +177,21 @@ public class RepositoryCatalog {
 		InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, IOException {
 
 		System.out.println("load repo shared with info from encrypted repo shared with file");
-		Path sharedFile = Paths.get(repFolderName + File.separator + SHARED);
-		Path sharedHmac = Paths.get(repFolderName + File.separator + SHARED + ".hmac");
+		Path file =     Paths.get(SERVER + File.separator + repFolderName + File.separator + SHARED);
+		Path hmacFile = Paths.get(SERVER + File.separator + repFolderName + File.separator + "." + SHARED + ".hmac");
 
-		if (Files.exists(sharedFile)) {
+		if (Files.exists(file)) {
 			
-				if (Files.exists(sharedHmac)) {
+				if (Files.exists(hmacFile)) {
 				
 					// decipher file and read content
 					SecretKey sk = SecurityUtil.getKeyFromServer();
 
-					if (SecurityUtil2.checkFileIntegrity(sharedFile, sharedHmac, sk)) {				
+					if (SecurityUtil2.checkFileIntegrity(file, hmacFile, sk)) {				
 			
 						try {
 							
-							byte[] b = SecurityUtil2.decipherFile2Memory(sharedFile, sk);
+							byte[] b = SecurityUtil2.decipherFile2Memory(file, sk);
 							String content = new String(b);
 							String[] array = content.split("\n");
 							for (String s : array) {
@@ -213,17 +213,6 @@ public class RepositoryCatalog {
 			}
 		else
 			System.out.println("users file doesnt exist");
-		
-		
-		
-		try (BufferedReader br = new BufferedReader(
-				new FileReader(new File(repFolderName + File.separator + SHARED)))) {
-			for (String line = br.readLine(); line != null; line = br.readLine()) {
-				rr.getSharedUsers().add(line);
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 
 	}
 
@@ -232,20 +221,20 @@ public class RepositoryCatalog {
 		
 		String str = null;
 		System.out.println("get repo owner from encrypted owner file");
-		Path ownerFile = Paths.get(SERVER + File.separator + USERS);
-		Path ownerHmac = Paths.get(SERVER + File.separator + "." + ownerFile.getFileName() + ".hmac");
-
-		if (Files.exists(ownerFile)) {
+		Path file =     Paths.get(SERVER + File.separator + repFolderName + File.separator + OWNER);
+		Path hmacFile = Paths.get(SERVER + File.separator + repFolderName + File.separator + "." + OWNER + ".hmac");
+		
+		if (Files.exists(file)) {
 			
-			if (Files.exists(ownerHmac)) {
+			if (Files.exists(hmacFile)) {
 			
 				// decipher file and read content
 				SecretKey sk = SecurityUtil.getKeyFromServer();
 
-				if (SecurityUtil2.checkFileIntegrity(ownerFile, ownerHmac, sk)) {
+				if (SecurityUtil2.checkFileIntegrity(file, hmacFile, sk)) {
 					try {
 						
-						byte[] b = SecurityUtil2.decipherFile2Memory(ownerFile, sk);
+						byte[] b = SecurityUtil2.decipherFile2Memory(file, sk);
 						str = new String(b);
 						
 					} catch (IOException | InvalidKeyException e) {

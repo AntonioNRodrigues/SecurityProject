@@ -71,8 +71,9 @@ public class UserCatalog {
 	 */
 	public boolean registerUser(String name, String password) {
 
-		Path file = Paths.get(SERVER + File.separator + USERS);
-		Path hmacFile = Paths.get(SERVER + File.separator + "." + file.getFileName() + ".hmac");
+		Path file =     Paths.get(SERVER + File.separator + USERS);
+		Path hmacFile = Paths.get(SERVER + File.separator + "." + USERS + ".hmac");
+
 		SecretKey sk = SecurityUtil.getKeyFromServer();
 		byte[] b = (name + ":" + password).getBytes();
 
@@ -120,21 +121,21 @@ public class UserCatalog {
 	public boolean loadUsers() throws InvalidKeyException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, IOException {
 
 		System.out.println("load users from encrypted users file");
-		Path usersFile = Paths.get(SERVER + File.separator + USERS);
-		Path usersHmac = Paths.get(SERVER + File.separator + "." + usersFile.getFileName() + ".hmac");
-
-		if (Files.exists(usersFile)) {
+		Path file =     Paths.get(SERVER + File.separator + USERS);
+		Path hmacFile = Paths.get(SERVER + File.separator + "." + USERS + ".hmac");
+		
+		if (Files.exists(file)) {
 			
-				if (Files.exists(usersHmac)) {
+				if (Files.exists(hmacFile)) {
 				
 					// decipher file and read content
 					SecretKey sk = SecurityUtil.getKeyFromServer();
 
-					if (SecurityUtil2.checkFileIntegrity(usersFile, usersHmac, sk)) {				
+					if (SecurityUtil2.checkFileIntegrity(file, hmacFile, sk)) {				
 			
 						try {
 							
-							byte[] b = SecurityUtil2.decipherFile2Memory(usersFile, sk);
+							byte[] b = SecurityUtil2.decipherFile2Memory(file, sk);
 							String content = new String(b);
 							String[] array = content.split("\n");
 							for (String s : array) {

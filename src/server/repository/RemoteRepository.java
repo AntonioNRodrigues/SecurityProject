@@ -4,16 +4,10 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static utilities.ReadWriteUtil.OWNER;
 import static utilities.ReadWriteUtil.SERVER;
 import static utilities.ReadWriteUtil.SHARED;
-import static utilities.ReadWriteUtil.USERS;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,7 +19,6 @@ import java.security.PublicKey;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -112,20 +105,32 @@ public class RemoteRepository {
 	}
 
 	private void persisteRemRepo() {
+
 		File f = new File(SERVER + File.separator + this.nameRepo);
 		if (!f.exists()) {
+			
 			f.mkdirs();
-			try (BufferedWriter fi = new BufferedWriter(
-					new FileWriter(new File(f.getAbsolutePath() + File.separator + OWNER)))) {
-				// write in the file the owner
-				fi.write(this.owner);
-				// create a file shared.txt
-				File shared = new File(SHARED);
-			} catch (IOException e) {
+			setTimestamp(f.lastModified());
+
+			Path file = Paths.get(SERVER + File.separator + this.nameRepo + File.separator + OWNER);
+			Path hmacFile = Paths.get(SERVER + File.separator + this.nameRepo + File.separator + "." + OWNER + ".hmac");
+
+			SecretKey sk = SecurityUtil.getKeyFromServer();
+			byte[] b = this.owner.getBytes();
+
+			try {
+				if (!Files.exists(file)) {
+					// create new file
+					SecurityUtil2.cipherFile(file, sk, b);
+					System.out.println("SecurityUtil2.cipherFile(users, sk, b);");
+					SecurityUtil2.writeHMACFile(file, hmacFile, sk);
+					System.out.println("SecurityUtil2.writeHMACFile(users, sk);");
+				} 
+			} catch (Exception e) {
+				System.err.println("Aconteceu um problema durante a criacao do ficheiro de dono do repositorio");
 				e.printStackTrace();
 			}
 		}
-		setTimestamp(f.lastModified());
 	}
 
 	public File getFile(String nameFile) {
@@ -264,9 +269,9 @@ public class RemoteRepository {
 	private void persisteSharedUser(String userName, RemoteRepository remoteRepository) {
 		
 		System.out.println("persisteSharedUser");
+		Path file =     Paths.get(SERVER + File.separator + this.nameRepo + File.separator + SHARED);
+		Path hmacFile = Paths.get(SERVER + File.separator + this.nameRepo + File.separator + "." + SHARED + ".hmac");
 
-		Path file = Paths.get(SERVER + File.separator + this.nameRepo + File.separator + SHARED);
-		Path hmacFile = Paths.get(SERVER + File.separator + "." + file.getFileName() + ".hmac");
 		SecretKey sk = SecurityUtil.getKeyFromServer();
 		byte[] b = userName.getBytes();
 
@@ -293,7 +298,7 @@ public class RemoteRepository {
 				System.out.println("SecurityUtil2.writeHMACFile(users, sk);");
 			}
 		} catch (Exception e) {
-			System.err.println("Existiu um problema a adicinar o user aos ficheiro");
+			System.err.println("Existiu um problema a adicinar o user ao ficheiro");
 			e.printStackTrace();
 		}
 	}
@@ -308,8 +313,9 @@ public class RemoteRepository {
 	
 	private void removeUserFromSharedRepo(String userId) {
 
-		Path file = Paths.get(SERVER + File.separator + this.nameRepo + File.separator + SHARED);
-		Path hmacFile = Paths.get(SERVER + File.separator + "." + file.getFileName() + ".hmac");
+		Path file =     Paths.get(SERVER + File.separator + this.nameRepo + File.separator + SHARED);
+		Path hmacFile = Paths.get(SERVER + File.separator + this.nameRepo + File.separator + "." + SHARED + ".hmac");
+
 		SecretKey sk = SecurityUtil.getKeyFromServer();
 		byte[] b = userId.getBytes();
 

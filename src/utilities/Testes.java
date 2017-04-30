@@ -281,7 +281,7 @@ public class Testes {
     {
 		
 		Pattern pattern = Pattern.compile("//^/(?!.sig|.key.server)([a-z0-9]+)$");
-		
+		/*
 		String[] s = { "a.sig", "a.key.server", "a.txt"};
 
 		Matcher matcher = pattern.matcher(s);
@@ -305,7 +305,7 @@ public class Testes {
 	            System.out.println("Directory " + listOfFiles[i].getName());
 	          }
 	    }
-
+*/
 	    
     }
 	

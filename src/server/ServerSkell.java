@@ -175,6 +175,7 @@ public class ServerSkell {
 
 						if (!error) {
 							out.writeObject((Object) "OK");
+							System.out.println("mrs.getUserId(): "+mrs.getUserId());
 							rr.addShareUserToRepo(mrs.getUserId());
 						}
 					}
