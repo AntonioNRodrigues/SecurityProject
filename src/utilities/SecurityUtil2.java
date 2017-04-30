@@ -1,8 +1,6 @@
 package utilities;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static utilities.ReadWriteUtil.SERVER;
-import static utilities.ReadWriteUtil.USERS;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -14,14 +12,12 @@ import java.math.BigInteger;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.Formatter;
-import java.util.UUID;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
