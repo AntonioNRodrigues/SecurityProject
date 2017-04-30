@@ -1,44 +1,49 @@
 package server.repository;
 
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static utilities.ReadWriteUtil.OWNER;
 import static utilities.ReadWriteUtil.SERVER;
 import static utilities.ReadWriteUtil.SHARED;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.nio.file.Paths;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import utilities.ReadWriteUtil;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+
+import utilities.SecurityUtil;
+import utilities.SecurityUtil2;
 
 public class RemoteRepository {
 	private String owner;
 	private Long timestamp;
 	private String nameRepo;
-	private List<File> listFiles;
+	/**
+	 * For each file we have its list of versions
+	 */
+	private Map<String, CopyOnWriteArrayList<Path>> mapVersions;
 	private List<String> sharedUsers;
 
 	public RemoteRepository(String nameRepo) {
 		super();
 		this.nameRepo = nameRepo;
-		this.listFiles = new CopyOnWriteArrayList<File>();
-		this.sharedUsers = new CopyOnWriteArrayList<String>();
+		this.mapVersions = new ConcurrentHashMap<>();
+		this.sharedUsers = new CopyOnWriteArrayList<>();
 		persisteRemRepo();
 	}
 
@@ -46,104 +51,104 @@ public class RemoteRepository {
 		super();
 		this.owner = onwer;
 		this.nameRepo = nameRepo;
-		this.listFiles = new CopyOnWriteArrayList<File>();
-		this.sharedUsers = new CopyOnWriteArrayList<String>();
+		this.mapVersions = new ConcurrentHashMap<>();
+		this.sharedUsers = new CopyOnWriteArrayList<>();
 		persisteRemRepo();
 	}
 
-	private void persisteRemRepo() {
-		File f = new File(SERVER + File.separator + this.nameRepo);
-		if (!f.exists()) {
-			f.mkdirs();
-			try (BufferedWriter fi = new BufferedWriter(
-					new FileWriter(new File(f.getAbsolutePath() + File.separator + OWNER)))) {
-				// write in the file the owner
-				fi.write(this.owner);
-				// create a file shared.txt
-				File shared = new File(SHARED);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		setTimestamp(f.lastModified());
+	private CopyOnWriteArrayList<Path> getSortedList() {
+		CopyOnWriteArrayList<Path> cp = new CopyOnWriteArrayList<>();
+		cp.sort(myComparator());
+		return cp;
 	}
 
-	public File getFile(String nameRepo, String nameFile) {
+	public CopyOnWriteArrayList<Path> getUniqueList() {
+		CopyOnWriteArrayList<Path> uniqueList = new CopyOnWriteArrayList<>();
 
-		List<File> repoFiles = getListFiles();
-		for (File f : repoFiles) {
-			if (f != null && f.getName().equals(nameFile)) {
-				return f;
+		for (Map.Entry<String, CopyOnWriteArrayList<Path>> pair : mapVersions.entrySet()) {
+			pair.getValue().sort(myComparator());
+			if (!(pair.getKey().equals("owner.txt") || pair.getKey().equals("shared.txt"))) {
+				uniqueList.add(pair.getValue().get(0));
 			}
-		}
-		return null;
-	}
-
-	public Map<String, CopyOnWriteArrayList<File>> sortList() {
-		Map<String, CopyOnWriteArrayList<File>> map = new ConcurrentHashMap<>();
-		Collections.sort(listFiles);
-		CopyOnWriteArrayList<File> tempList = null;
-		for (File f : getListFiles()) {
-			String uniqueName = ReadWriteUtil.getRealFileName(f.getName());
-			System.out.println(uniqueName);
-			if (map.get(uniqueName) == null) {
-				tempList = new CopyOnWriteArrayList<>();
-				tempList.add(f);
-				map.put(uniqueName, tempList);
-			} else if (map.get(uniqueName) != null) {
-				map.get(uniqueName).add(f);
-			}
-		}
-		return map;
-	}
-
-	public CopyOnWriteArrayList<File> getUniqueListFiles() {
-		Map<String, CopyOnWriteArrayList<File>> m = sortList();
-		CopyOnWriteArrayList<File> uniqueList = new CopyOnWriteArrayList<>();
-		
-		for (Map.Entry<String, CopyOnWriteArrayList<File>> pair : m.entrySet()) {
-			System.out.println(pair.getKey());
-			System.out.println(pair.getValue());
-
-			Collections.sort(pair.getValue(), new Comparator<File>() {
-
-				@Override
-				public int compare(File file1, File file2) {
-					int value = 0;
-					if (file1.lastModified() < file2.lastModified()) {
-						value = 1;
-					}
-					if (file1.lastModified() > file2.lastModified()) {
-						value = -1;
-					}
-					if (file1.lastModified() == file2.lastModified()) {
-						value = 0;
-					}
-					return value;
-				}
-			});
-			System.out.println("sorted list" + pair.getValue());
-			uniqueList.add(pair.getValue().get(0));
 		}
 		return uniqueList;
 	}
 
-	public List<File> getFiles(String nameRepo) {
-		return getListFiles();
+	private Comparator<Path> myComparator() {
+		Comparator<Path> myComparator = new Comparator<Path>() {
 
+			@Override
+			public int compare(Path file1, Path file2) {
+
+				int value = 0;
+				if (file1.toFile().lastModified() < file2.toFile().lastModified()) {
+					value = 1;
+				}
+				if (file1.toFile().lastModified() > file2.toFile().lastModified()) {
+					value = -1;
+				}
+				if (file1.toFile().lastModified() == file2.toFile().lastModified()) {
+					value = 0;
+				}
+				return value;
+			}
+		};
+		return myComparator;
 	}
 
-	public boolean fileExists(String repoName, String fileName) {
-		for (File f : listFiles) {
-			if (f.getName().equals(fileName)) {
-				return true;
+	private void persisteRemRepo() {
+
+		File f = new File(SERVER + File.separator + this.nameRepo);
+		if (!f.exists()) {
+			
+			f.mkdirs();
+			setTimestamp(f.lastModified());
+
+			Path file = Paths.get(SERVER + File.separator + this.nameRepo + File.separator + OWNER);
+			Path hmacFile = Paths.get(SERVER + File.separator + this.nameRepo + File.separator + "." + OWNER + ".hmac");
+
+			SecretKey sk = SecurityUtil.getKeyFromServer();
+			byte[] b = this.owner.getBytes();
+
+			try {
+				if (!Files.exists(file)) {
+					// create new file
+					SecurityUtil2.cipherFile(file, sk, b);
+					System.out.println("SecurityUtil2.cipherFile(users, sk, b);");
+					SecurityUtil2.writeHMACFile(file, hmacFile, sk);
+					System.out.println("SecurityUtil2.writeHMACFile(users, sk);");
+				} 
+			} catch (Exception e) {
+				System.err.println("Aconteceu um problema durante a criacao do ficheiro de dono do repositorio");
+				e.printStackTrace();
 			}
 		}
-		return false;
 	}
 
-	public void addFile(String repoName, File received) {
-		listFiles.add(received);
+	public File getFile(String nameFile) {
+		if (mapVersions.get(nameFile) != null) {
+			mapVersions.get(nameFile).sort(myComparator());
+			return mapVersions.get(nameFile).get(0).toFile();
+		}
+		return null;
+	}
+
+	public boolean fileExists(String fileName) {
+		return (this.getMapVersions().get(fileName) == null) ? false : true;
+	}
+
+	public void addFile(String nameFile, File received) {
+		CopyOnWriteArrayList<Path> l = getMapVersions().get(nameFile);
+		if (l == null) {
+			CopyOnWriteArrayList<Path> cp = getSortedList();
+			cp.add(received.toPath());
+			this.getMapVersions().put(nameFile, cp);
+			// System.out.println(this.getMapVersions());
+		} else {
+			this.getMapVersions().get(nameFile).add(received.toPath());
+			// System.out.println(this.getMapVersions());
+		}
+
 	}
 
 	public String getOwner() {
@@ -170,38 +175,16 @@ public class RemoteRepository {
 		this.nameRepo = nameRepo;
 	}
 
-	public List<File> getListFiles() {
-		return listFiles;
+	public List<String> getSharedUsers() {
+		return sharedUsers;
 	}
 
-	public void setListFiles(List<File> listFiles) {
-		this.listFiles = listFiles;
+	public Map<String, CopyOnWriteArrayList<Path>> getMapVersions() {
+		return mapVersions;
 	}
 
-	public void addFilesToRepo(String repoName, List<File> listFiles) {
-		this.listFiles = listFiles;
-	}
-
-	/**
-	 * method to get the single name without the version
-	 * 
-	 * @param nameFile
-	 * @return nameFile without version
-	 */
-	public String getNameWithOutVersion(String nameFile) {
-		String namefile = null;
-		String[] a = nameFile.split(".");
-		if (a[0].length() == 3) {
-			namefile = a[0].substring(0, a[0].length() - 3) + a[1];
-		}
-		if (a[0].length() == 4) {
-			namefile = a[0].substring(0, a[0].length() - 4) + a[1];
-		}
-		if (a[0].length() == 5) {
-			namefile = a[0].substring(0, a[0].length() - 5) + a[1];
-		}
-		return nameFile;
-
+	public void setMapVersions(Map<String, CopyOnWriteArrayList<Path>> mapVersions) {
+		this.mapVersions = mapVersions;
 	}
 
 	/**
@@ -211,21 +194,19 @@ public class RemoteRepository {
 	 * @param userName
 	 */
 	public void addShareUserToRepo(String userName) {
-		sharedUsers.add(userName);
-		System.out.println("addShareUserToRepo" + sharedUsers);
-		// if its not a shared user persist
-		if ((isSharedUser(userName))) {
+		// if the does not have access to the repo add it
+		if (!(existsInSharedList(userName))) {
+			sharedUsers.add(userName);
 			persisteSharedUser(userName, this);
 		}
-		System.out.println("addShareUserToRepo" + sharedUsers);
-
+		System.out.println("Current List of Shared Users for the " + this.nameRepo + ": " + sharedUsers);
 	}
 
+	
 	/*
-	 * method to check is the user is already in the list os shared users
+	 * method to check is the user is already in the list of shared users
 	 */
-	private boolean isSharedUser(String userName) {
-
+	private boolean existsInSharedList(String userName) {
 		return sharedUsers.contains(userName) ? true : false;
 	}
 
@@ -236,63 +217,115 @@ public class RemoteRepository {
 	 * @param remoteRepository
 	 */
 	private void persisteSharedUser(String userName, RemoteRepository remoteRepository) {
+		
 		System.out.println("persisteSharedUser");
-		try (BufferedWriter bf = new BufferedWriter(
-				new FileWriter(new File(SERVER + File.separator + this.nameRepo + File.separator + SHARED), true));
-				PrintWriter out = new PrintWriter(bf)) {
-			out.println(userName);
-		} catch (IOException e) {
-			System.err.println("PROBLEM ADDING THE USER TO THE SHARED FILE");
-		}
-	}
+		Path file =     Paths.get(SERVER + File.separator + this.nameRepo + File.separator + SHARED);
+		Path hmacFile = Paths.get(SERVER + File.separator + this.nameRepo + File.separator + "." + SHARED + ".hmac");
 
-	public void removeUserFromRepo(String userId) {
-		sharedUsers.remove(userId);
-		System.out.println("SHARED USERS LIST::" + sharedUsers);
-		removeUserFromSharedRepo(userId);
-	}
+		SecretKey sk = SecurityUtil.getKeyFromServer();
+		byte[] b = userName.getBytes();
 
-	private void removeUserFromSharedRepo(String userId) {
-
-		UUID uuid = UUID.randomUUID();
-		String uuidString = SERVER + File.separator + uuid.toString();
-		String fileName = SERVER + File.separator + this.nameRepo + File.separator + SHARED;
-		File inputFile = new File(fileName);
-		File tempFile = null;
 		try {
-			tempFile = File.createTempFile(uuidString, ".txt");
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
+			if (Files.exists(file)) {
 
-		try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-				BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));) {
+				if (Files.exists(hmacFile)) {
 
-			String line;
-			while ((line = reader.readLine()) != null) {
-				if (line.equals(userId))
-					continue;
-				writer.write(line + System.getProperty("line.separator"));
+					// append new user to current file
+					if (SecurityUtil2.checkFileIntegrity(file, hmacFile, sk)) {
+						SecurityUtil2.appendToFile(file, sk, b);
+						SecurityUtil2.writeHMACFile(file, hmacFile, sk);
+					} else {
+						System.out.println("incorrect repo shared with info hmac file");
+					}
+				} else {
+					System.out.println("repo shared with info hmac file doesnt exist");
+				}
+			} else {
+				// create new file
+				SecurityUtil2.cipherFile(file, sk, b);
+				System.out.println("SecurityUtil2.cipherFile(users, sk, b);");
+				SecurityUtil2.writeHMACFile(file, hmacFile, sk);
+				System.out.println("SecurityUtil2.writeHMACFile(users, sk);");
 			}
-
-			if (inputFile.delete())
-				if (tempFile.renameTo(inputFile))
-					System.out.println("O utilizador " + userId + " foi removido do ficheiro " + fileName);
-
-		} catch (IOException e) {
+		} catch (Exception e) {
+			System.err.println("Existiu um problema a adicinar o user ao ficheiro");
 			e.printStackTrace();
 		}
-
 	}
 
-	public List<String> getSharedUsers() {
-		return sharedUsers;
+	public void removeSharedUserFromRepo(String userId) {
+		sharedUsers.remove(userId);
+		removeUserFromSharedRepo(userId);
+		System.out.println("Current List of Shared Users for the " + this.nameRepo + ": " + sharedUsers);
 	}
+
+	
+	private void removeUserFromSharedRepo(String userId) {
+
+		Path file =     Paths.get(SERVER + File.separator + this.nameRepo + File.separator + SHARED);
+		Path hmacFile = Paths.get(SERVER + File.separator + this.nameRepo + File.separator + "." + SHARED + ".hmac");
+
+		SecretKey sk = SecurityUtil.getKeyFromServer();
+		byte[] b = userId.getBytes();
+
+		try {
+			if (Files.exists(file)) {
+
+				if (Files.exists(hmacFile)) {
+
+					if (SecurityUtil2.checkFileIntegrity(file, hmacFile, sk)) {
+						
+						updateFile(file, sk, b);
+						
+						SecurityUtil2.writeHMACFile(file, hmacFile, sk);
+						
+						System.out.println("O utilizador " + userId + " foi removido do ficheiro " + file.getFileName());
+
+					} else {
+						System.out.println("incorrect repo shared with info hmac file");
+					}
+				} else {
+					System.out.println("repo shared with info hmac file doesnt exist");
+				}
+			} else {
+				// create new file
+				SecurityUtil2.cipherFile(file, sk, b);
+				System.out.println("SecurityUtil2.cipherFile(users, sk, b);");
+				SecurityUtil2.writeHMACFile(file, hmacFile, sk);
+				System.out.println("SecurityUtil2.writeHMACFile(users, sk);");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	public void updateFile(Path file, SecretKey secretKey, byte[] text)
+			throws IOException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+		
+		ByteArrayOutputStream baos = new ByteArrayOutputStream( );
+
+		for (int i= 0; i<this.sharedUsers.size(); i++) {
+			baos.write(this.sharedUsers.get(i).getBytes());
+			if (i<this.sharedUsers.size()-1) 
+				baos.write("\n".getBytes());
+		}
+		byte fileContent[] = baos.toByteArray( );
+		
+		Path tempFile = Files.createTempFile("foobar", ".tmp");		
+		//encode again to temp file
+		SecurityUtil2.cipherFile(tempFile, secretKey, fileContent);
+
+		//move temp file to file
+		CopyOption[] options = new CopyOption[] { REPLACE_EXISTING };
+		Files.copy(tempFile, file, options);
+		Files.delete(tempFile);
+	}
+	
 
 	@Override
 	public String toString() {
-		return "RemoteRepository [onwer=" + owner + ", timestamp=" + timestamp + ", nameRepo=" + nameRepo
-				+ ", shared with=" + sharedUsers + "]";
+		return "RemoteRepository [owner=" + owner + ", timestamp=" + timestamp + ", nameRepo=" + nameRepo
+				+ ", mapVersions=" + mapVersions + ", sharedUsers=" + sharedUsers +"]";
 	}
-
 }

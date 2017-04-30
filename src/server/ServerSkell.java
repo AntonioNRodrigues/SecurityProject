@@ -9,12 +9,29 @@ package server;
 
 import static utilities.ReadWriteUtil.SERVER;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.KeyPair;
+import java.security.KeyStoreException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
 
 import enums.TypeOperation;
 import enums.TypeSend;
@@ -27,12 +44,14 @@ import server.repository.RepositoryCatalog;
 import user.User;
 import user.UserCatalog;
 import utilities.ReadWriteUtil;
+import utilities.SecurityUtil;
 
 public class ServerSkell {
 	private ObjectOutputStream out;
 	private ObjectInputStream in;
 	private RepositoryCatalog catRepo;
 	private UserCatalog catUsers;
+	private String nonce;
 
 	public ServerSkell(MyGitServer my) {
 		this.catRepo = my.getCatRepo();
@@ -60,8 +79,11 @@ public class ServerSkell {
 		this.in = in;
 	}
 
-	public void receiveMsg(Message msg) throws ClassNotFoundException, IOException {
+	public void receiveMsg(Message msg) throws ClassNotFoundException, IOException, KeyStoreException,
+			NoSuchAlgorithmException, CertificateException, NoSuchPaddingException {
 		catRepo.listRepos();
+
+		// check if the user has the ownership over the request
 
 		RemoteRepository rr = null;
 		if (authentication(msg)) {
@@ -91,7 +113,7 @@ public class ServerSkell {
 						rr = catRepo.getRemRepository(mrs.getRepoName());
 
 						boolean error = false;
-						// Validar se o utilizador é dono
+						// Validar se o utilizador eh dono
 						if (!rr.getOwner().equals(mrs.getLocalUser().getName())) {
 							error = true;
 							out.writeObject((Object) "NOK");
@@ -116,7 +138,7 @@ public class ServerSkell {
 
 						if (!error) {
 							out.writeObject((Object) "OK");
-							rr.removeUserFromRepo(mrs.getUserId());
+							rr.removeSharedUserFromRepo(mrs.getUserId());
 						}
 					}
 
@@ -136,7 +158,7 @@ public class ServerSkell {
 						rr = catRepo.getRemRepository(mrs.getRepoName());
 
 						boolean error = false;
-						// Validar se o utilizador é dono
+						// Validar se o utilizador eh dono
 						if (!rr.getOwner().equals(mrs.getLocalUser().getName())) {
 							error = true;
 							out.writeObject((Object) "NOK");
@@ -153,6 +175,7 @@ public class ServerSkell {
 
 						if (!error) {
 							out.writeObject((Object) "OK");
+							System.out.println("mrs.getUserId(): " + mrs.getUserId());
 							rr.addShareUserToRepo(mrs.getUserId());
 						}
 					}
@@ -165,52 +188,57 @@ public class ServerSkell {
 			} else if (msg instanceof MessageP) {
 
 				MessageP mp = ((MessageP) msg);
-				TypeSend ts = mp.getTypeSend();
-				TypeOperation op = mp.getOperation();
+				TypeSend typeSend = mp.getTypeSend();
+				TypeOperation operation = mp.getOperation();
 
-				switch (ts) {
+				switch (typeSend) {
 				case REPOSITORY:
-					switch (op) {
+					switch (operation) {
 					case PULL:
 
 						boolean error = false;
 						// Validar se o repositorio existe
 						if (!catRepo.repoExists(mp.getRepoName())) {
 							error = true;
-							// System.out.println("Erro: O repositório indicado
-							// não existe");
 							out.writeObject((Object) "NOK");
-							out.writeObject((Object) "Erro: O repositório indicado não existe");
+							out.writeObject((Object) "Erro: O repositorio indicado nao existe");
 						} else
 							rr = catRepo.getRemRepository(mp.getRepoName());
 
-						// Validar se o utilizador é dono ou tem acesso
+						// Validar se o utilizador e dono ou tem acesso
 						// partilhado ao repositorio
 						if (!error && !(rr.getOwner().equals(mp.getLocalUser().getName())
 								|| rr.getSharedUsers().contains(mp.getLocalUser().getName()))) {
 							error = true;
-							// System.out.println("Erro: o utilizador não tem
-							// acesso ao repositório");
 							out.writeObject((Object) "NOK");
-							out.writeObject((Object) "Erro: o utilizador não tem acesso ao repositório");
+							out.writeObject((Object) "Erro: o utilizador nao tem acesso ao repositorio");
 						}
-
 						if (!error) {
 
-							CopyOnWriteArrayList<File> uniqueList = rr.getUniqueListFiles();
-
-							// System.out.println("filesList.size():
-							// "+filesList.size());
+							CopyOnWriteArrayList<Path> uniqueList = rr.getUniqueList();
+							System.out.println("UNIQUE LIST " + uniqueList);
 							if (uniqueList.size() > 0) {
 								try {
 									out.writeObject((Object) "OK");
 									// Enviar o numero de ficheiros
-									out.writeObject((Integer) uniqueList.size());
+									System.out.println("size list" + uniqueList.size());
+									out.writeObject((Object) uniqueList.size());
 
-									for (File f : uniqueList) {
-										out.writeObject((Object) f.lastModified());
+									for (Path f : uniqueList) {
+										System.out.println("TIMESTAMP " + f.toFile().lastModified());
+										// Enviar timeststamp
+										out.writeObject((Object) f.toFile().lastModified());
+										// pull interaction
+										pullInteraction(mp, f.toString().split(" ")[0], "");
+										System.out.println("FILE NAME " + SERVER + File.separator + mp.getRepoName()
+												+ File.separator + f.toFile().getName());
+										// send file
 										ReadWriteUtil.sendFile(SERVER + File.separator + mp.getRepoName()
-												+ File.separator + f.getName(), in, out);
+												+ File.separator + f.toFile().getName(), in, out);
+										System.out.println("SIG " + Paths.get(f + ".sig"));
+										// send the signatureof the file
+										sendSignature(Paths.get(f.toString()));
+
 									}
 								} catch (IOException e) {
 									e.printStackTrace();
@@ -218,11 +246,9 @@ public class ServerSkell {
 									out.writeObject((Object) "SERVER ERROR");
 								}
 							} else {
-								// falta tratar do versionamento...
-								// System.out.println("THE SERVER HAS NOT A
-								// RECENT VERSION FOR U");
 								out.writeObject((Object) "NOK");
-								out.writeObject((Object) "THE SERVER HAS NOT A RECENT VERSION FOR U");
+								out.writeObject(
+										(Object) "O repositorio local esta sincronizado, nao existe nenhuma versao mais recente dos ficheiros.");
 							}
 						}
 						break;
@@ -237,7 +263,7 @@ public class ServerSkell {
 							// Repositorio existe
 							rr = catRepo.getRemRepository(mp.getRepoName());
 
-						// Validar se o utilizador é dono ou tem acesso
+						// Validar se o utilizador e dono ou tem acesso
 						// partilhado ao repositorio
 						if (rr.getOwner().equals(mp.getLocalUser().getName())
 								|| rr.getSharedUsers().contains(mp.getLocalUser().getName())) {
@@ -250,16 +276,48 @@ public class ServerSkell {
 								try {
 
 									String path = SERVER + File.separator + mp.getRepoName() + File.separator;
+									System.out.println(path);
+									// Recebe assinatura do ficheiro
+									byte[] signature = (byte[]) in.readObject();
+									// Guarda-a com a extensao .sig
+									FileOutputStream fos = new FileOutputStream(path + "temp" + ".sig");
+									fos.write(signature);
+									fos.close();
+
+									// Recebe chave key para depois cifra-la
+									// usando a sua chave publica
+									SecretKey key = (SecretKey) in.readObject();
+
+									KeyPair kPair = SecurityUtil.getKeyPairFromKS(Paths.get(".myGitServerKeyStore"),
+											"mygitserver", "badpassword1");
+
+									Cipher cif = Cipher.getInstance("RSA");
+									cif.init(Cipher.WRAP_MODE, kPair.getPublic());
+									byte[] chaveCifrada = cif.wrap(key);
+
+									FileOutputStream kos = new FileOutputStream(path + "temp" + ".key.server");
+									kos.write(chaveCifrada);
+									kos.close();
+
 									Long timestampReceivedFile = (Long) in.readObject();
 									File received = ReadWriteUtil.receiveFile(SERVER + File.separator, in, out);
-									System.out.println(received.getAbsolutePath());
+
+									Files.copy(Paths.get(path + "temp.sig"),
+											new FileOutputStream(new File(path + received.getName() + ".sig")));
+
+									Files.copy(Paths.get(path + "temp.key.server"),
+											new FileOutputStream(new File(path + received.getName() + ".key.server")));
+
 									received.setLastModified(timestampReceivedFile);
-									File fileInRepo = rr.getFile(mp.getRepoName(), received.getName());
+									// most recent file in repository
+									File fileInRepo = rr.getFile(received.getName());
+
 									if (fileInRepo == null) {
-										File f = new File(path + received.getName());
+										File f = new File(path + received.getName()
+												+ ReadWriteUtil.timestamp(timestampReceivedFile));
 										received.renameTo(f);
 										f.setLastModified(timestampReceivedFile);
-										rr.getListFiles().add(f);
+										rr.addFile(f.getName().split(" ")[0], f);
 									} else if (fileInRepo != null) {
 										long timeStampFileInRepo = fileInRepo.lastModified();
 										if (timeStampFileInRepo < received.lastModified()) {
@@ -267,13 +325,19 @@ public class ServerSkell {
 													+ ReadWriteUtil.timestamp(timestampReceivedFile));
 											received.renameTo(f);
 											f.setLastModified(timestampReceivedFile);
-											rr.getListFiles().add(f);
+											rr.addFile(f.getName().split(" ")[0], f);
 										} else {
 											Files.deleteIfExists(received.toPath());
 										}
 									}
+									Files.deleteIfExists(Paths.get(path + received.getName() + ".temp.key.server"));
+									Files.deleteIfExists(Paths.get(path + received.getName() + ".temp.sig"));
 
 								} catch (ClassNotFoundException e) {
+									e.printStackTrace();
+								} catch (InvalidKeyException e) {
+									e.printStackTrace();
+								} catch (IllegalBlockSizeException e) {
 									e.printStackTrace();
 								}
 							}
@@ -291,17 +355,12 @@ public class ServerSkell {
 					break;
 
 				case FILE:
-					switch (op) {
+					switch (operation) {
 					case PULL:
-						// System.out.println("-PULL FILE");
-						long lastModifiedDate = mp.getTimestamp();
-
 						boolean error = false;
 						// Validar se o repositorio existe
 						if (!catRepo.repoExists(mp.getRepoName())) {
 							error = true;
-							// System.out.println("Erro: O repositório indicado
-							// não existe");
 							out.writeObject((Object) "NOK");
 							out.writeObject((Object) "Erro: O repositório indicado não existe");
 						} else
@@ -309,35 +368,46 @@ public class ServerSkell {
 
 						// Validar se o utilizador é dono ou tem acesso
 						// partilhado ao repositorio
+						System.out.println("------" + rr.getSharedUsers() == null);
+						System.out.println(" -----" + mp.getLocalUser().getName() == null);
+
 						if (!error && !(rr.getOwner().equals(mp.getLocalUser().getName())
 								|| rr.getSharedUsers().contains(mp.getLocalUser().getName()))) {
 							error = true;
-							// System.out.println("Erro: o utilizador não tem
-							// acesso ao repositório");
 							out.writeObject((Object) "NOK");
 							out.writeObject((Object) "Erro: o utilizador não tem acesso ao repositório");
 						}
 
 						// Validar se o ficheiro existe
-						if (!error && !rr.fileExists(mp.getRepoName(), mp.getFileName())) {
-							// System.out.println("Erro: O ficheiro indicado não
-							// existe");
+						if (!error && !rr.fileExists(mp.getFileName())) {
 							out.writeObject((Object) "NOK");
 							out.writeObject((Object) "Erro: O ficheiro indicado não existe");
 						} else {
 
-							File inRepo = rr.getFile(mp.getRepoName(), mp.getFileName());
+							// Inicio do envio do ficheiro cifrado
+							File inRepoCifrado = rr.getFile(mp.getFileName());
 
 							// client does not have the recent file so send it
-							if (lastModifiedDate < inRepo.lastModified()) {
+							if (mp.getTimestamp() <= inRepoCifrado.lastModified()) {
 								try {
-
+									String path = SERVER + File.separator + mp.getRepoName() + File.separator;
 									out.writeObject((Object) "OK");
 									// Enviar o numero de ficheiros
-									out.writeObject((Integer) 1);
-									// Enviar o ficheiro
+									out.writeObject((Object) new Integer(1));
+
+									// Enviar timeststamp
+									out.writeObject((Object) inRepoCifrado.lastModified());
+
+									// pull interaction
+									pullInteraction(mp, path, mp.getFileName());
+
+									// send file
 									ReadWriteUtil.sendFile(SERVER + File.separator + mp.getRepoName() + File.separator
-											+ mp.getFileName(), in, out);
+											+ inRepoCifrado.getName(), in, out);
+
+									// Vai buscar a assinatura e envia para o
+									// cliente
+									sendSignature(Paths.get(path + mp.getFileName()));
 
 								} catch (IOException e) {
 									e.printStackTrace();
@@ -345,10 +415,8 @@ public class ServerSkell {
 									out.writeObject((Object) "SERVER ERROR");
 								}
 							} else {
-								// System.out.println("THE SERVER HAS NOT A
-								// RECENT VERSION FOR U");
 								out.writeObject((Object) "NOK");
-								out.writeObject((Object) "THE SERVER HAS NOT A RECENT VERSION FOR U");
+								out.writeObject((Object) "Nao existe nenhuma versao mais recente do ficheiro.");
 							}
 						}
 
@@ -360,14 +428,14 @@ public class ServerSkell {
 						if (!catRepo.repoExists(mp.getRepoName())) {
 
 							out.writeObject((Object) "NOK");
-							out.writeObject((Object) "Erro: O repositório não existe");
+							out.writeObject((Object) "Erro: O repositorio nao existe");
 
 						} else {
 							// Repositorio existe
 
 							rr = catRepo.getRemRepository(mp.getRepoName());
 
-							// Validar se o utilizador é dono ou tem acesso
+							// Validar se o utilizador eh dono ou tem acesso
 							// partilhado ao repositorio
 							if (rr.getOwner().equals(mp.getLocalUser().getName())
 									|| rr.getSharedUsers().contains(mp.getLocalUser().getName())) {
@@ -376,48 +444,73 @@ public class ServerSkell {
 
 								// Receber ficheiro
 								try {
+
+									// Prepara caminhos para o ficheiro
 									String path = SERVER + File.separator + mp.getRepoName() + File.separator;
 									String tempPath = SERVER + File.separator;
-									File received = ReadWriteUtil.receiveFile(tempPath, in, out);
-									System.out.println(received);
-									received.setLastModified(mp.getTimestamp());
-									File fileInRepo = rr.getFile(mp.getRepoName(), mp.getFileName());
 
+									// Recebe assinatura do ficheiro
+									byte[] signature = (byte[]) in.readObject();
+									// Guarda-a com a extens�o .sig
+
+									FileOutputStream fos = new FileOutputStream(path + mp.getFileName() + ".sig");
+									fos.write(signature);
+									fos.close();
+
+									// Recebe chave key para depois cifra-la
+									// usando a sua chave publica
+									SecretKey secretKey = (SecretKey) in.readObject();
+
+									// method to get the certificate from
+									// keystore
+
+									KeyPair kPair = SecurityUtil.getKeyPairFromKS(Paths.get(".myGitServerKeyStore"),
+											"mygitserver", "badpassword1");
+									Cipher cif = Cipher.getInstance("RSA");
+									cif.init(Cipher.WRAP_MODE, kPair.getPublic());
+									byte[] chaveCifrada = cif.wrap(secretKey);
+
+									FileOutputStream kos = new FileOutputStream(
+											path + mp.getFileName() + ".key.server");
+									kos.write(chaveCifrada);
+									kos.close();
+
+									// Recebe ficheiro
+									File received = ReadWriteUtil.receiveFile(tempPath, in, out);
+									received.setLastModified(mp.getTimestamp());
+									File fileInRepo = rr.getFile(mp.getFileName());
 									// file does not exist add it to list
 									if (fileInRepo == null) {
 										// new file inside the repo
-										File f = new File(path + mp.getFileName());
+										File f = new File(
+												path + mp.getFileName() + ReadWriteUtil.timestamp(mp.getTimestamp()));
 										// copy the received file inside the
 										// server to the repoName
 										received.renameTo(f);
 										f.setLastModified(mp.getTimestamp());
-										// File f = new
-										// File(ReadWriteUtil.getRealFileName(received.getName()));
-										rr.getListFiles().add(f);
-										System.out.println("fileInrepo == null");
+										CopyOnWriteArrayList<Path> tempL = new CopyOnWriteArrayList<>();
+										tempL.add(f.toPath());
+										rr.getMapVersions().put(mp.getFileName(), tempL);
 									} else if (fileInRepo != null) {
 										Long timeStampFileInRepo = fileInRepo.lastModified();
-										System.out.println("fileInrepo != null");
 										if (timeStampFileInRepo < received.lastModified()) {
-											// add a new version
-
 											File f = new File(path + mp.getFileName()
 													+ ReadWriteUtil.timestamp(mp.getTimestamp()));
-											System.out.println(f.getName());
 											// pass the received file to repo
 											// folder
 											received.renameTo(f);
 											f.setLastModified(mp.getTimestamp());
-											rr.getListFiles().add(f);
-											System.out.println(rr.getListFiles());
-											// Files.deleteIfExists(received.toPath());
+											rr.getMapVersions().get(mp.getFileName()).add(f.toPath());
 										} else {
 											Files.deleteIfExists(received.toPath());
 										}
-										System.out.println("fileInrepo != null");
 									}
 
 								} catch (ClassNotFoundException e) {
+									e.printStackTrace();
+								} catch (InvalidKeyException e) {
+									e.printStackTrace();
+								} catch (IllegalBlockSizeException e) {
 									e.printStackTrace();
 								}
 
@@ -436,8 +529,6 @@ public class ServerSkell {
 		{
 			out.writeObject((Object) "NOK");
 			out.writeObject((Object) "YOU DOT NOT HAVE PREMISSIONS TO KEEP GOING PLEASE CHECK PASSWORD");
-			// System.out.println("YOU DOT NOT HAVE PREMISSIONS TO KEEP GOING
-			// PLEASE CHECK PASSWORD");
 		}
 	}
 
@@ -449,7 +540,12 @@ public class ServerSkell {
 
 			User u = catUsers.getMapUsers().get(m.getLocalUser().getName());
 			// user does not exist, register user
+			// in this case since there is no pass in the system there is no way
+			// to check
+			// the messageDigest is good or not
 			if (u == null) {
+				// catUsers.registerUser(m.getLocalUser().getName(),
+				// m.getPassword());
 				catUsers.registerUser(m.getLocalUser().getName(), m.getPassword());
 				try {
 					out.writeObject((Object) "OK");
@@ -460,7 +556,23 @@ public class ServerSkell {
 			}
 			// user exists check permissions
 			if (u != null) {
+
+				byte[] mdUser = m.getLocalUser().getB();
+				String str = u.getPassword() + getNonce();
+				byte[] mdServer = SecurityUtil.calcSintese(str);
+
+				boolean mdCompare = MessageDigest.isEqual(mdUser, mdServer);
+				System.out.println(mdCompare);
+				if (mdCompare) {
+					try {
+						out.writeObject((Object) "OK");
+						out.writeObject((Object) "-- O  utilizador " + m.getLocalUser().getName() + " foi autenticado");
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
 				// user has password filled and its the same
+
 				if (u.getPassword().equals(m.getLocalUser().getPassword())) {
 					try {
 						out.writeObject((Object) "OK");
@@ -514,6 +626,70 @@ public class ServerSkell {
 			}
 			return false;
 		}
+	}
+
+	public String getNonce() {
+		return nonce;
+	}
+
+	public void setNonce(String nonce) {
+		this.nonce = nonce;
+	}
+
+	private void pullInteraction(MessageP mp, String path, String nameFile) {
+		System.out.println("PULLINTEREACTION PATH " + path);
+		System.out.println("PULLINTEREACTION NAME FILE " + nameFile);
+		try {
+
+			// saca chave .key.server
+			System.out.println("KEY.SERVER" + path + nameFile + ".key.server");
+			FileInputStream fis = new FileInputStream(path + nameFile + ".key.server");
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			byte[] b = new byte[16];
+			int len = 0;
+			while ((len = fis.read(b)) != -1) {
+				baos.write(b, 0, len);
+			}
+			fis.close();
+
+			Path p = Paths.get(".myGitServerKeyStore");
+			KeyPair kp = SecurityUtil.getKeyPairFromKS(p, "mygitserver", "badpassword1");
+
+			Key k = null;
+			Cipher decrypt = Cipher.getInstance("RSA");
+
+			try {
+				decrypt.init(Cipher.UNWRAP_MODE, kp.getPrivate());
+				k = decrypt.unwrap(baos.toByteArray(), "AES", Cipher.SECRET_KEY);
+
+			} catch (InvalidKeyException e1) {
+				e1.printStackTrace();
+				System.out.println("ERRO: NAO FOI POSSIVEL INICIALIZAR O DECRIPTADOR");
+			}
+			baos.close();
+
+			// Convert byte[] to Secret Key
+			SecretKey keyFinal = (SecretKey) k;
+			// Envia a chave K para o cliente
+			out.writeObject(keyFinal);
+		} catch (IOException | NoSuchAlgorithmException | NoSuchPaddingException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	private void sendSignature(Path f) {
+		System.out.println("SIGNATURE SENd " + f);
+		String realPath = f.toString().split(" ")[0] + ".sig";
+		System.out.println("SIGNATURE SENd " + realPath);
+		File realFile = new File(realPath);
+		try (FileInputStream fiStream = new FileInputStream(realFile)) {
+			byte[] data = new byte[(int) realFile.length()];
+			fiStream.read(data);
+			out.writeObject((Object) data);
+		} catch (Exception e) {
+		}
+
 	}
 
 }

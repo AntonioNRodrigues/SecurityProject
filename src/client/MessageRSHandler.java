@@ -37,8 +37,9 @@ public class MessageRSHandler extends MessageHandler {
 
 	public String sendShareMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
 
-		MessageRS mrs = new MessageRS(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(),
-				params.getPassword(), params.getRepName(), params.getUserId(), TypeOperation.SHARE);
+		MessageRS mrs = new MessageRS(new User(params.getLocalUser(), params.getPassword(), MyGitClient.nonce),
+				params.getServerAddress(), params.getPassword(), params.getRepName(), params.getUserId(),
+				TypeOperation.SHARE);
 		try {
 			out.writeObject((Object) mrs);
 		} catch (IOException e) {
@@ -72,8 +73,9 @@ public class MessageRSHandler extends MessageHandler {
 
 	public String sendRemoveMessage(ObjectInputStream in, ObjectOutputStream out, MyGitClient params) {
 
-		MessageRS mrs = new MessageRS(new User(params.getLocalUser(), params.getPassword()), params.getServerAddress(),
-				params.getPassword(), params.getRepName(), params.getUserId(), TypeOperation.REMOVE);
+		MessageRS mrs = new MessageRS(new User(params.getLocalUser(), params.getPassword(), MyGitClient.nonce),
+				params.getServerAddress(), params.getPassword(), params.getRepName(), params.getUserId(),
+				TypeOperation.REMOVE);
 		try {
 			out.writeObject((Object) mrs);
 		} catch (IOException e) {
