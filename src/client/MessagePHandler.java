@@ -220,7 +220,7 @@ public class MessagePHandler extends MessageHandler {
 		// Se o ficheiro a que se está a fazer pull já existe então armazenar
 		// e
 		// enviar a data da última modificação
-		Path path = Paths.get("CLIENT" + File.separator + params.getRepOrFileName());
+		Path path = Paths.get(CLIENT + File.separator + params.getRepOrFileName());
 		boolean exists = Files.exists(path);
 		// boolean isDirectory = Files.isDirectory(path);
 		boolean isFile = Files.isRegularFile(path);
@@ -325,22 +325,19 @@ public class MessagePHandler extends MessageHandler {
 			try {
 				Long receivedTimeStamp = (Long) in.readObject();
 				// Recebe a chave K do servidor para decifrar o ficheiro
-
+				
 				SecretKey secretKey = (SecretKey) in.readObject();
+				
 				System.out.println("SECRET KEY " + secretKey);
+				
 				Path path = Paths.get(CLIENT + File.separator + repoName + File.separator);
 				// Recebe o ficheiro cifrado.
+				
 				System.out.println("path file receivede" + path.toString());
-				File received = ReadWriteUtil.receiveFile(path.toString() + "/", in, out);
+				
+				File received = ReadWriteUtil.receiveFile(path.toString() + File.separator, in, out);
 				System.out.println(" path  " + received.getAbsolutePath());
-				// Decifrar o ficheiro recebido com K
-				// TODO: Falta verificar se com o ficheiro de destino sendo o
-				// mesmo,
-				// se o ficheiro fica bem 'descifrado'. A alternativa � mandar
-				// o
-				// ficheiro do servidor com o append de uma extens�o e aqui
-				// retirar
-				// a extens�o do ficheiro.
+
 				SecurityUtil.decipherFile2(received.toPath(), secretKey,
 						Paths.get(path + File.separator + "temp" + received.getName()));
 
@@ -349,6 +346,7 @@ public class MessagePHandler extends MessageHandler {
 
 				Certificate c = SecurityUtil.getCertFromKeyStore(Paths.get(".myGitClientKeyStore"), "mygitclient",
 						"badpassword2");
+				
 				PublicKey pk = c.getPublicKey();
 
 				File file = new File(path + File.separator + "temp" + received.getName());

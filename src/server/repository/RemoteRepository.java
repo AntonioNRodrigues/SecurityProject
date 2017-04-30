@@ -39,17 +39,12 @@ public class RemoteRepository {
 	 */
 	private Map<String, CopyOnWriteArrayList<Path>> mapVersions;
 	private List<String> sharedUsers;
-	/**
-	 * Map of the users that have shared access to the repository
-	 */
-	private Map<String, PublicKey> sharedPublicKey;
 
 	public RemoteRepository(String nameRepo) {
 		super();
 		this.nameRepo = nameRepo;
 		this.mapVersions = new ConcurrentHashMap<>();
 		this.sharedUsers = new CopyOnWriteArrayList<>();
-		this.setSharedPublicKey(new ConcurrentHashMap<>());
 		persisteRemRepo();
 	}
 
@@ -59,7 +54,6 @@ public class RemoteRepository {
 		this.nameRepo = nameRepo;
 		this.mapVersions = new ConcurrentHashMap<>();
 		this.sharedUsers = new CopyOnWriteArrayList<>();
-		this.setSharedPublicKey(new ConcurrentHashMap<>());
 		persisteRemRepo();
 	}
 
@@ -77,7 +71,6 @@ public class RemoteRepository {
 			if (!(pair.getKey().equals("owner.txt") || pair.getKey().equals("shared.txt"))) {
 				uniqueList.add(pair.getValue().get(0));
 			}
-
 		}
 		return uniqueList;
 	}
@@ -108,7 +101,7 @@ public class RemoteRepository {
 
 		File f = new File(SERVER + File.separator + this.nameRepo);
 		if (!f.exists()) {
-			
+
 			f.mkdirs();
 			setTimestamp(f.lastModified());
 
@@ -125,7 +118,7 @@ public class RemoteRepository {
 					System.out.println("SecurityUtil2.cipherFile(users, sk, b);");
 					SecurityUtil2.writeHMACFile(file, hmacFile, sk);
 					System.out.println("SecurityUtil2.writeHMACFile(users, sk);");
-				} 
+				}
 			} catch (Exception e) {
 				System.err.println("Aconteceu um problema durante a criacao do ficheiro de dono do repositorio");
 				e.printStackTrace();
@@ -195,14 +188,6 @@ public class RemoteRepository {
 		this.mapVersions = mapVersions;
 	}
 
-	public Map<String, PublicKey> getSharedPublicKey() {
-		return sharedPublicKey;
-	}
-
-	public void setSharedPublicKey(Map<String, PublicKey> sharedPublicKey) {
-		this.sharedPublicKey = sharedPublicKey;
-	}
-
 	/**
 	 * method to add the user to the shared list to this repository and persist
 	 * the user in the file if its not already there.
@@ -213,22 +198,6 @@ public class RemoteRepository {
 		// if the does not have access to the repo add it
 		if (!(existsInSharedList(userName))) {
 			sharedUsers.add(userName);
-			sharedPublicKey.put(userName, null);
-			persisteSharedUser(userName, this);
-		}
-		System.out.println("Current List of Shared Users for the " + this.nameRepo + ": " + sharedUsers);
-	}
-
-	/**
-	 * method to add the user to the shared list to this repository and persist
-	 * the user in the file if its not already there.
-	 * 
-	 * @param userName
-	 */
-	public void addPublicKeytoShareUserToRepo(String userName) {
-		// if the does not have access to the repo add it
-		if (existsInSharedMap(userName)) {
-			sharedPublicKey.put(userName, null);
 			persisteSharedUser(userName, this);
 		}
 		System.out.println("Current List of Shared Users for the " + this.nameRepo + ": " + sharedUsers);
@@ -242,34 +211,15 @@ public class RemoteRepository {
 	}
 
 	/**
-	 * method to check if the user exists in the map of shared users
-	 * 
-	 * @param userName
-	 * @return
-	 */
-	private boolean existsInSharedMap(String userName) {
-		return sharedPublicKey.containsKey(userName) ? true : false;
-	}
-
-	public boolean addPublicKeySharedUser(String userName, PublicKey pk) {
-		// if the entry for the username exists and its value is null
-		if (existsInSharedMap(userName) && (sharedPublicKey.get(userName) == null)) {
-			sharedPublicKey.putIfAbsent(userName, pk);
-			return true;
-		}
-		return false;
-	}
-
-	/**
 	 * method to write the name of the shared user.
 	 * 
 	 * @param userName
 	 * @param remoteRepository
 	 */
 	private void persisteSharedUser(String userName, RemoteRepository remoteRepository) {
-		
+
 		System.out.println("persisteSharedUser");
-		Path file =     Paths.get(SERVER + File.separator + this.nameRepo + File.separator + SHARED);
+		Path file = Paths.get(SERVER + File.separator + this.nameRepo + File.separator + SHARED);
 		Path hmacFile = Paths.get(SERVER + File.separator + this.nameRepo + File.separator + "." + SHARED + ".hmac");
 
 		SecretKey sk = SecurityUtil.getKeyFromServer();
@@ -305,15 +255,13 @@ public class RemoteRepository {
 
 	public void removeSharedUserFromRepo(String userId) {
 		sharedUsers.remove(userId);
-		sharedPublicKey.remove(userId);
 		removeUserFromSharedRepo(userId);
 		System.out.println("Current List of Shared Users for the " + this.nameRepo + ": " + sharedUsers);
 	}
 
-	
 	private void removeUserFromSharedRepo(String userId) {
 
-		Path file =     Paths.get(SERVER + File.separator + this.nameRepo + File.separator + SHARED);
+		Path file = Paths.get(SERVER + File.separator + this.nameRepo + File.separator + SHARED);
 		Path hmacFile = Paths.get(SERVER + File.separator + this.nameRepo + File.separator + "." + SHARED + ".hmac");
 
 		SecretKey sk = SecurityUtil.getKeyFromServer();
@@ -325,12 +273,13 @@ public class RemoteRepository {
 				if (Files.exists(hmacFile)) {
 
 					if (SecurityUtil2.checkFileIntegrity(file, hmacFile, sk)) {
-						
+
 						updateFile(file, sk, b);
-						
+
 						SecurityUtil2.writeHMACFile(file, hmacFile, sk);
-						
-						System.out.println("O utilizador " + userId + " foi removido do ficheiro " + file.getFileName());
+
+						System.out
+								.println("O utilizador " + userId + " foi removido do ficheiro " + file.getFileName());
 
 					} else {
 						System.out.println("incorrect repo shared with info hmac file");
@@ -349,35 +298,33 @@ public class RemoteRepository {
 			e.printStackTrace();
 		}
 	}
-	
-	
-	public void updateFile(Path file, SecretKey secretKey, byte[] text)
-			throws IOException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
-		
-		ByteArrayOutputStream baos = new ByteArrayOutputStream( );
 
-		for (int i= 0; i<this.sharedUsers.size(); i++) {
+	public void updateFile(Path file, SecretKey secretKey, byte[] text)
+			throws IOException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
+			NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+		for (int i = 0; i < this.sharedUsers.size(); i++) {
 			baos.write(this.sharedUsers.get(i).getBytes());
-			if (i<this.sharedUsers.size()-1) 
+			if (i < this.sharedUsers.size() - 1)
 				baos.write("\n".getBytes());
 		}
-		byte fileContent[] = baos.toByteArray( );
-		
-		Path tempFile = Files.createTempFile("foobar", ".tmp");		
-		//encode again to temp file
+		byte fileContent[] = baos.toByteArray();
+
+		Path tempFile = Files.createTempFile("foobar", ".tmp");
+		// encode again to temp file
 		SecurityUtil2.cipherFile(tempFile, secretKey, fileContent);
 
-		//move temp file to file
+		// move temp file to file
 		CopyOption[] options = new CopyOption[] { REPLACE_EXISTING };
 		Files.copy(tempFile, file, options);
 		Files.delete(tempFile);
 	}
-	
 
 	@Override
 	public String toString() {
 		return "RemoteRepository [owner=" + owner + ", timestamp=" + timestamp + ", nameRepo=" + nameRepo
-				+ ", mapVersions=" + mapVersions + ", sharedUsers=" + sharedUsers + ", sharedPublicKey="
-				+ sharedPublicKey + "]";
+				+ ", mapVersions=" + mapVersions + ", sharedUsers=" + sharedUsers + "]";
 	}
 }
