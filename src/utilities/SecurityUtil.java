@@ -16,7 +16,6 @@ import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyPair;
@@ -185,7 +184,7 @@ public class SecurityUtil {
 	 */
 	public static void generateSecretKeyFromPass(String str) {
 		byte[] pass = str.getBytes();
-		SecretKey sk = new SecretKeySpec(pass, AES);		
+		SecretKey sk = new SecretKeySpec(pass, AES);
 		persisteKey(sk, ReadWriteUtil.SERVER + File.separator + SERVER_KEY);
 	}
 
@@ -218,7 +217,7 @@ public class SecurityUtil {
 		cos.close();
 		fis.close();
 
-		//Files.deleteIfExists(file);
+		// Files.deleteIfExists(file);
 	}
 
 	/**
@@ -303,34 +302,6 @@ public class SecurityUtil {
 	}
 
 	/**
-	 * 
-	 * @param f
-	 * @param sk
-	 * @throws NoSuchAlgorithmException
-	 * @throws NoSuchPaddingException
-	 * @throws InvalidKeyException
-	 * @throws IllegalBlockSizeException
-	 * @throws BadPaddingException
-	 * @throws IOException
-	 */
-	public static void cipherFileToMemory(File f, SecretKey sk) throws NoSuchAlgorithmException, NoSuchPaddingException,
-			InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
-		Cipher c = getCipher();
-		c.init(Cipher.DECRYPT_MODE, sk);
-		// get ciphered file
-		CipherInputStream cis = new CipherInputStream(new FileInputStream(f), c);
-		BufferedOutputStream bf = new BufferedOutputStream(System.out);
-		byte[] b = new byte[16];
-		int i = cis.read(b);
-		while (i != -1) {
-			bf.write(b, 0, i);
-			i = cis.read(b);
-		}
-		cis.close();
-		bf.close();
-	}
-
-	/**
 	 * method to get the key of the server
 	 * 
 	 * @return the secretKey
@@ -367,11 +338,7 @@ public class SecurityUtil {
 	 */
 	public static String generateNonce() {
 		byte[] binaryData = UUID.randomUUID().toString().getBytes();
-		return  Base64.getEncoder().encodeToString(binaryData);
-		
-		// used java.util class instead of the apache xerces class
-		//return Base64.encode(binaryData);
-
+		return Base64.getEncoder().encodeToString(binaryData);
 	}
 
 	/**
@@ -552,28 +519,4 @@ public class SecurityUtil {
 		return cert;
 	}
 
-	/**
-	 * method to get the keystore
-	 * 
-	 * @param keyStore
-	 *            path to the keystore
-	 * @param alias
-	 *            from the keystore
-	 * @param pass
-	 *            from the keystore
-	 * @return the keystore
-	 */
-	public static KeyStore getTrustStore(Path trustStore, String alias, String pss) {
-		KeyStore ts = null;
-		InputStream is = null;
-		try {
-			is = new FileInputStream(trustStore.toFile());
-			ts = KeyStore.getInstance(KeyStore.getDefaultType());
-			ts.load(is, pss.toCharArray());
-		} catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException e) {
-			e.printStackTrace();
-		}
-
-		return ts;
-	}
 }

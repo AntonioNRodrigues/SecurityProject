@@ -541,7 +541,7 @@ public class ServerSkell {
 			// the messageDigest is good or not
 			if (u == null) {
 				//catUsers.registerUser(m.getLocalUser().getName(), m.getPassword());
-				catUsers.registerUser2(m.getLocalUser().getName(), m.getPassword());
+				catUsers.registerUser(m.getLocalUser().getName(), m.getPassword());
 				try {
 					out.writeObject((Object) "OK");
 					out.writeObject((Object) "-- O  utilizador " + m.getLocalUser().getName() + " foi criado");

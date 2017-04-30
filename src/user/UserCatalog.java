@@ -17,26 +17,13 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-
-import com.sun.corba.se.spi.ior.Writeable;
 
 import utilities.SecurityUtil;
 import utilities.SecurityUtil2;
 
 public class UserCatalog {
 	private Map<String, User> mapUsers;
-
-	/*public UserCatalog() {
-		this.mapUsers = new ConcurrentHashMap<>();
-		if (!buildUsers()) {
-			readFile();
-		}
-		System.out.println(mapUsers);
-	}*/
 	
 	public UserCatalog() {
 		this.mapUsers = new ConcurrentHashMap<>();
@@ -47,30 +34,9 @@ public class UserCatalog {
 			}
 			
 		} catch (InvalidKeyException | NoSuchAlgorithmException | InvalidAlgorithmParameterException | IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		System.out.println(mapUsers);
-	}
-
-
-	/**
-	 * Read the file users.txt and populates the map with user:password
-	 */
-	private void readFile() {
-		Path usersFile = Paths.get(SERVER + File.separator + USERS);
-		// decipher file and read content
-		SecretKey sk = SecurityUtil.getKeyFromServer();
-		try {
-			String content = SecurityUtil.decipherFileToMemory(usersFile.toFile(), sk);
-			String[] array = content.split("\n");
-			for (String s : array) {
-				splitLine(s);
-			}
-		} catch (IOException | InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException
-				| IllegalBlockSizeException | BadPaddingException e) {
-			e.printStackTrace();
-		}
 	}
 
 	/**
@@ -90,31 +56,6 @@ public class UserCatalog {
 		mapUsers.put(u.getName(), u);
 	}
 
-	/**
-	 * method to build a ciphered users.txt file
-	 * 
-	 * @return true is the file was created and false if the file already exists
-	 *         in the server
-	 */
-	private boolean buildUsers() {
-		System.out.println("BUILDUSERS");
-		File users = new File(SERVER + File.separator + USERS);
-		File temp = new File(SERVER + File.separator + "temp.txt");
-		boolean create = false;
-		// if users.txt does not exist create
-		if (!users.exists()) {
-			try {
-				create = temp.createNewFile();
-				// GET key an cipher this file with server.key
-				SecretKey sk = SecurityUtil.getKeyFromServer();				
-				SecurityUtil.cipherFile(temp.toPath(), sk, users.toPath());
-			} catch (Exception e) {
-				e.printStackTrace();
-				System.err.println("THE FILE CAN NOT BE CREATED:: CHECK PERMISSIONS");
-			}
-		}
-		return create;
-	}
 
 	public Map<String, User> getMapUsers() {
 		return mapUsers;
@@ -124,51 +65,11 @@ public class UserCatalog {
 		this.mapUsers = mapUsers;
 	}
 
-	/**
-	 * method to register a user in the map
-	 * 
-	 * @param name
-	 *            of the user
-	 * @param password
-	 *            of the user
-	 * @return
-	 */
-	public boolean registerUser(String name, String password) {
-		System.out.println("REGISTER USER");
-		Path users = Paths.get(SERVER + File.separator + USERS);
-		Path temp = Paths.get(SERVER + File.separator + "temp.txt");
-
-		mapUsers.put(name, new User(name, password));
-		// get secretKey of the server
-		SecretKey sk = SecurityUtil.getKeyFromServer();
-		
-		//
-		try {
-			// decript file of users
-			// TODO: doesn't check if file exists --> THIS CHECK IS MADE IN THE BUILDUSERS
-			SecurityUtil.decipherFile(users, sk, temp);
-			
-			persisteUser(name, password);
-			
-			// encript file of users
-			SecurityUtil.cipherFile(temp, sk, users);
-			
-
-		} catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException
-				| BadPaddingException | IOException e) {
-			e.printStackTrace();
-		}
-
-		System.out.println(mapUsers);
-		return true;
-
-	}
 		
 	/*
 	 * register user with user's file integrity check
 	 */
-	public boolean registerUser2(String name, String password) {
-		System.out.println("REGISTER USER2");
+	public boolean registerUser(String name, String password) {
 
 		Path file = Paths.get(SERVER + File.separator + USERS);
 		Path hmacFile = Paths.get(SERVER + File.separator + "." + file.getFileName() + ".hmac");
@@ -242,7 +143,6 @@ public class UserCatalog {
 						} catch (IOException | InvalidKeyException e) {
 							e.printStackTrace();
 						} catch (InvalidAlgorithmParameterException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
@@ -271,7 +171,6 @@ public class UserCatalog {
 	 *            of the user
 	 */
 	public void persisteUser(String name, String password) {
-		System.out.println("PERSISTING USER");
 		try (FileWriter fw = new FileWriter(new File(SERVER + File.separator + "temp.txt"), true);
 				BufferedWriter bf = new BufferedWriter(fw);
 				PrintWriter out = new PrintWriter(bf)) {
