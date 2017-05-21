@@ -1,9 +1,9 @@
 # SecurityProject
 
  Grupo n.33
- Pedro Pais, n.ยบ 41375
- Pedro Candido, n.ยบ15674
- Antonio Rodrigues n.ยบ40853
+ Pedro Pais, n.บ 41375
+ Pedro Candido, n.บ15674
+ Antonio Rodrigues n.บ40853
 
 
 Run client:
@@ -59,7 +59,7 @@ keytool -genkeypair -keysize 2048 -keyalg RSA -keystore .pedroKeyStore -alias pe
 
 3) criar truststores dos clientes []
 //export do certificado a partir da keystore do servidor
-// este cetificado tem a chaeve publica do servidor.
+// este cetificado tem a chave publica do servidor.
 keytool -exportcert -alias myGitServer -file myGitServer.cer -keystore .myGitServerKeyStore
 
 //import do certificado para a truststore do cliente
