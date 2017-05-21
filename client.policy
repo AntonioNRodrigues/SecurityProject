@@ -1,7 +1,7 @@
 //keystore ".myGitClientKeyStore";
 
 grant codeBase "file:bin/*"{
-    permission java.net.SocketPermission "*:23456", "connect";
+    permission java.net.SocketPermission "*:4567", "connect";
     permission java.util.PropertyPermission "user.home", "read"; 
     permission java.util.PropertyPermission "user.dir", "read";    
     permission java.io.FilePermission "${user.dir}", "read";
