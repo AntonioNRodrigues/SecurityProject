@@ -38,14 +38,14 @@ java -Djava.security.manager -Djava.security.policy=server.policy -cp bin server
 keytool -genkeypair -keysize 2048 -keyalg RSA -keystore .myGitServerKeyStore -alias myGitServer
 
 
-2) Gerar par de chaves dos utilizadores
+2) Gerar par de chaves dos utilizadores [NÃO FOI UTILIZADO]
 
 keytool -genkeypair -keysize 2048 -keyalg RSA -keystore .antonioKeyStore -alias antonio
 
 keytool -genkeypair -keysize 2048 -keyalg RSA -keystore .pedroKeyStore -alias pedro
 
 
-3) criar truststores dos clientes (slide 8)
+3) criar truststores dos clientes
 
 //export do certificado a partir da keystore do servidor
 
