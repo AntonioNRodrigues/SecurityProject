@@ -60,6 +60,7 @@ public class MyGitServer {
 		System.out.println("MyGitServer is Running with password");
 		// SecurityUtil.generateSecretKeyFromPass(pass);
 		try {
+			// this option creats a secretkey with PBKDF2WithHmacSHA256 with salt and the password
 			SecurityUtil2.createKey(pass);
 		} catch (InvalidKeyException | NoSuchAlgorithmException | InvalidKeySpecException e) {
 			e.printStackTrace();

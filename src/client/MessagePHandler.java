@@ -332,7 +332,7 @@ public class MessagePHandler extends MessageHandler {
 				// Recebe o ficheiro cifrado.
 
 				File received = ReadWriteUtil.receiveFile(path.toString() + File.separator, in, out);
-
+				System.out.println("NAME FILE RECEIVED" + received.getAbsolutePath() + received.getName());
 				SecurityUtil.decipherFile2(received.toPath(), secretKey,
 						Paths.get(path + File.separator + "temp" + received.getName()));
 

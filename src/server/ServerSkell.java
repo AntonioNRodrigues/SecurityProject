@@ -105,7 +105,7 @@ public class ServerSkell {
 					if (!catRepo.repoExists(mrs.getRepoName())) {
 
 						out.writeObject((Object) "NOK");
-						out.writeObject((Object) "Erro: O repositório não existe");
+						out.writeObject((Object) "Erro: O repositorio nao existe");
 
 					} else {
 						// Repositorio existe
